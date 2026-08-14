@@ -1,0 +1,90 @@
+{
+  "name": "@indianic/themeseed",
+  "version": "0.1.0",
+  "description": "Seed realistic demo content into any CMS so you can preview a theme with real-looking articles, images, galleries and video — instead of an empty install. MCP server + CLI. Ghost supported today; WordPress, Joomla, Drupal and Magento planned.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cms",
+    "ghost",
+    "theme",
+    "demo-content",
+    "seed",
+    "wordpress",
+    "content-generation"
+  ],
+  "license": "MIT",
+  "author": "IndiaNIC Infotech Ltd.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "themeseed": "./dist/cli/index.js",
+    "themeseed-mcp": "./dist/mcp/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "import": "./dist/providers/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/chmod-bins.mjs",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "clean": "rm -rf dist coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run --project unit",
+    "test:watch": "vitest --project unit",
+    "test:e2e": "vitest run --project e2e",
+    "test:all": "vitest run",
+    "test:loop": "tsx scripts/test-loop.ts",
+    "verify": "npm run typecheck && npm run lint && npm run test",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "commander": "^15.0.0",
+    "dotenv": "^17.4.2",
+    "picocolors": "^1.1.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.10.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.6",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.10"
+  },
+  "publishConfig": {
+    "registry": "https://npm.indianic.in/",
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/indianic/themeseed.git"
+  }
+}

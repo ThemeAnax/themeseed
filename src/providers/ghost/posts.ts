@@ -1,0 +1,262 @@
+/**
+ * The Ghost publish path: neutral `SeedContent` in, real Ghost posts out.
+ *
+ * Order matters. Every image referenced by a post — the feature image, inline
+ * images, gallery members — is uploaded to Ghost *first*, then the post body is
+ * built against the resulting hosted URLs. Creating the post first and patching
+ * images in afterwards would leave a window where the post renders with dead
+ * `src`s, and Ghost has no transactional way to close it.
+ */
+
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+import { logger } from '../../core/logger.js';
+import { SEED_TAG, type ContentBlockType, type ImageRef, type SeedContent, type SeedResult } from '../../core/types.js';
+import { extensionFor, probeImage, type ImageFormat } from '../../images/inspect.js';
+import type { GhostClient } from './client.js';
+import { blocksToLexical, type HostedImage } from './lexical.js';
+import type { GhostPost } from './types.js';
+
+export interface PublishOptions {
+  onProgress?: (done: number, total: number, current: SeedResult) => void;
+  /** Retry count for transient upload/create failures. */
+  maxRetries?: number;
+}
+
+export async function publishPosts(
+  client: GhostClient,
+  items: SeedContent[],
+  options: PublishOptions = {}
+): Promise<SeedResult[]> {
+  const results: SeedResult[] = [];
+  const uploadCache = new Map<string, HostedImage>();
+
+  for (const [index, item] of items.entries()) {
+    let result: SeedResult;
+    try {
+      result = await publishOne(client, item, uploadCache, options);
+    } catch (err) {
+      // One bad post must not lose the other fourteen. Record and continue —
+      // the caller reports failures rather than the run aborting mid-way.
+      logger.warn(`failed to create post "${item.title}":`, err);
+      result = {
+        id: `failed-${index}`,
+        title: item.title,
+        status: item.status,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+    results.push(result);
+    options.onProgress?.(index + 1, items.length, result);
+  }
+
+  return results;
+}
+
+async function publishOne(
+  client: GhostClient,
+  item: SeedContent,
+  cache: Map<string, HostedImage>,
+  options: PublishOptions
+): Promise<SeedResult> {
+  const refs = collectImageRefs(item);
+  const hosted = new Map<string, HostedImage>();
+
+  for (const ref of refs) {
+    const key = imageKey(ref);
+    const cached = cache.get(key);
+    if (cached) {
+      hosted.set(key, cached);
+      continue;
+    }
+    try {
+      const uploaded = await uploadImageRef(client, ref, options.maxRetries ?? 2);
+      cache.set(key, uploaded);
+      hosted.set(key, uploaded);
+    } catch (err) {
+      // A missing image degrades the post; it does not invalidate it. The
+      // Lexical builder drops blocks whose images failed to resolve.
+      logger.warn(`skipping image ${ref.location}:`, err);
+    }
+  }
+
+  const resolve = (ref: ImageRef): HostedImage | undefined => hosted.get(imageKey(ref));
+  const lexical = blocksToLexical(item.blocks, resolve);
+
+  const featureImage = item.featureImage ? resolve(item.featureImage) : undefined;
+
+  const payload: Record<string, unknown> = {
+    title: item.title,
+    lexical,
+    status: item.status,
+    // Ghost creates missing tags automatically when they are given by name,
+    // so the seed tag needs no separate provisioning step.
+    tags: [SEED_TAG, ...item.tags].map((name) => ({ name })),
+  };
+
+  if (item.slug) payload['slug'] = item.slug;
+  if (item.excerpt) payload['custom_excerpt'] = truncateExcerpt(item.excerpt);
+  if (featureImage) {
+    payload['feature_image'] = featureImage.url;
+    payload['feature_image_alt'] = truncateAlt(item.featureImage?.alt ?? featureImage.alt ?? item.title);
+    if (item.featureImage?.caption) payload['feature_image_caption'] = item.featureImage.caption;
+  }
+  if (item.publishedAt && item.status === 'published') {
+    payload['published_at'] = item.publishedAt;
+  }
+
+  const created = await withRetry(
+    () => client.createPost(payload),
+    options.maxRetries ?? 2,
+    `create post "${item.title}"`
+  );
+
+  return toSeedResult(created, item, Boolean(featureImage));
+}
+
+// ---------------------------------------------------------------------------
+// images
+// ---------------------------------------------------------------------------
+
+function collectImageRefs(item: SeedContent): ImageRef[] {
+  const refs: ImageRef[] = [];
+  if (item.featureImage) refs.push(item.featureImage);
+  for (const block of item.blocks) {
+    if (block.type === 'image') refs.push(block.image);
+    else if (block.type === 'gallery') refs.push(...block.images);
+  }
+  // De-duplicate so the same picture used twice uploads once.
+  const seen = new Set<string>();
+  return refs.filter((ref) => {
+    const key = imageKey(ref);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function imageKey(ref: ImageRef): string {
+  return `${ref.kind}:${ref.location}`;
+}
+
+async function uploadImageRef(
+  client: GhostClient,
+  ref: ImageRef,
+  maxRetries: number
+): Promise<HostedImage> {
+  const bytes = ref.kind === 'file' ? await readLocalImage(ref.location) : await downloadImage(ref.location);
+
+  const info = probeImage(bytes);
+  if (!info) {
+    // Stock APIs and CDNs return HTML error pages with image URLs often enough
+    // that uploading unverified bytes reliably produces broken posts.
+    throw new Error(`${ref.location} is not a valid image (${bytes.byteLength} bytes)`);
+  }
+
+  const filename = filenameFor(ref, info.format);
+  const uploaded = await withRetry(
+    () => client.uploadImage(bytes, filename, info.mimeType),
+    maxRetries,
+    `upload ${filename}`
+  );
+
+  return {
+    url: uploaded.url,
+    width: info.width,
+    height: info.height,
+    ...(ref.alt ? { alt: ref.alt } : {}),
+    ...(ref.caption ? { caption: ref.caption } : {}),
+    fileName: filename,
+  };
+}
+
+async function readLocalImage(location: string): Promise<Uint8Array> {
+  const buffer = await fs.readFile(location);
+  return new Uint8Array(buffer);
+}
+
+async function downloadImage(url: string): Promise<Uint8Array> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 45_000);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'themeseed/0.1' },
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${url}`);
+    return new Uint8Array(await response.arrayBuffer());
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function filenameFor(ref: ImageRef, format: ImageFormat): string {
+  const base =
+    ref.kind === 'file'
+      ? path.basename(ref.location).replace(/\.\w+$/, '')
+      : (new URL(ref.location).pathname.split('/').pop() ?? 'image').replace(/\.\w+$/, '');
+  const safe = (base || 'image').replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 60);
+  return `${safe}.${extensionFor(format)}`;
+}
+
+// ---------------------------------------------------------------------------
+// helpers
+// ---------------------------------------------------------------------------
+
+export function toSeedResult(
+  post: GhostPost,
+  item?: Pick<SeedContent, 'blocks'>,
+  hasFeatureImage?: boolean
+): SeedResult {
+  const blockTypes = item ? uniqueBlockTypes(item) : undefined;
+  return {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    status: normaliseStatus(post.status),
+    ...(post.url ? { url: post.url } : {}),
+    ...(blockTypes ? { blockTypes } : {}),
+    hasFeatureImage: hasFeatureImage ?? Boolean(post.feature_image),
+    ...(post.created_at ? { createdAt: post.created_at } : {}),
+  };
+}
+
+function uniqueBlockTypes(item: Pick<SeedContent, 'blocks'>): ContentBlockType[] {
+  return [...new Set(item.blocks.map((block) => block.type))];
+}
+
+/** Ghost's `sent` status has no neutral equivalent; treat it as published. */
+function normaliseStatus(status: GhostPost['status']): SeedResult['status'] {
+  return status === 'sent' ? 'published' : status;
+}
+
+/** Ghost rejects custom excerpts over 300 characters. */
+function truncateExcerpt(text: string): string {
+  return text.length <= 300 ? text : `${text.slice(0, 297).trimEnd()}…`;
+}
+
+/** Ghost caps feature_image_alt at 191 characters. */
+function truncateAlt(text: string): string {
+  return text.length <= 191 ? text : `${text.slice(0, 188).trimEnd()}…`;
+}
+
+async function withRetry<T>(operation: () => Promise<T>, retries: number, label: string): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await operation();
+    } catch (err) {
+      lastError = err;
+      if (attempt === retries) break;
+      const delay = 400 * 2 ** attempt;
+      logger.debug(`${label} failed (attempt ${attempt + 1}/${retries + 1}); retrying in ${delay}ms`);
+      await sleep(delay);
+    }
+  }
+  throw lastError;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
