@@ -58,7 +58,7 @@
     "test:all": "vitest run",
     "test:loop": "tsx scripts/test-loop.ts",
     "verify": "npm run typecheck && npm run lint && npm run test",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",

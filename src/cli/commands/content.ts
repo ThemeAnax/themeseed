@@ -22,6 +22,7 @@ import {
   warn,
   yesNo,
   spinner as makeSpinner,
+  assertInteractive,
 } from '../ui.js';
 
 export async function analyzeCommand(
@@ -125,6 +126,7 @@ export async function seedCommand(
 
   let topic = flags.topic;
   if (!topic) {
+    assertInteractive('A topic', 'Pass --topic "your subject".');
     const value = await p.text({
       message: 'What is this publication about?',
       placeholder: 'SaaS productivity blog',
@@ -141,6 +143,7 @@ export async function seedCommand(
   const imageSource = (flags.imageSource as ImageSourceKind) ?? 'stock';
 
   if (!flags.yes) {
+    assertInteractive('Confirmation', 'Pass --yes to seed without confirming.');
     const confirmed = await p.confirm({
       message: `Create ${count} ${status} post(s) about "${topic}" on ${pc.bold(resolved)} (${site.url})?`,
       initialValue: true,
@@ -245,6 +248,8 @@ export async function wipeCommand(
   }
 
   if (!flags.yes) {
+    // Deleting without an explicit --yes in a script would be indefensible.
+    assertInteractive('Confirmation', 'Pass --yes to wipe without confirming.');
     const confirmed = await p.confirm({
       message: `Permanently delete ${pending.length} themeseed post(s) from ${pc.bold(resolved)}? Content themeseed did not create is untouched.`,
       initialValue: false,

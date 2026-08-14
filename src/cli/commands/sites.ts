@@ -22,7 +22,14 @@ import { describeError } from '../../core/errors.js';
 import { IMPLEMENTED_PLATFORMS, type Platform } from '../../core/types.js';
 import { createProvider, implementedPlatforms } from '../../providers/registry.js';
 import type { SiteConfig } from '../../providers/provider.js';
-import { cancelled, fail, note, success, spinner as makeSpinner } from '../ui.js';
+import {
+  cancelled,
+  fail,
+  note,
+  success,
+  spinner as makeSpinner,
+  assertInteractive,
+} from '../ui.js';
 
 export interface AddSiteFlags {
   slug?: string;
@@ -35,7 +42,13 @@ export interface AddSiteFlags {
 
 export async function addSiteCommand(flags: AddSiteFlags = {}): Promise<void> {
   const interactive = !flags.slug || !flags.url || !flags.key;
-  if (interactive) p.intro(pc.bgCyan(pc.black(' themeseed — add a site ')));
+  if (interactive) {
+    assertInteractive(
+      'Site details',
+      'Pass --slug, --url and --key (and --platform) to add a site without prompts.'
+    );
+    p.intro(pc.bgCyan(pc.black(' themeseed — add a site ')));
+  }
 
   const slug = flags.slug ?? (await promptSlug());
   assertValidSlug(slug);
@@ -45,8 +58,15 @@ export async function addSiteCommand(flags: AddSiteFlags = {}): Promise<void> {
 
   const url = normaliseUrl(flags.url ?? (await promptUrl()));
   const credentials = await collectCredentials(platform, flags.key);
+
+  // Only ever ask about this when the invocation was already interactive. A
+  // fully-flagged `add-site` is how scripts and CI call this, and prompting
+  // there exits silently on a non-TTY instead of saving the site.
   const themesDir =
-    flags.themesDir ?? (platform === 'ghost' ? await promptThemesDir(url) : undefined);
+    flags.themesDir ??
+    (interactive && platform === 'ghost' && process.stdout.isTTY
+      ? await promptThemesDir(url)
+      : undefined);
 
   const site: SiteConfig = {
     platform,
@@ -202,6 +222,7 @@ export async function removeSiteCommand(
 
   let target = slug;
   if (!target) {
+    assertInteractive('A site slug', 'Pass the slug: themeseed remove-site <slug>.');
     const value = await p.select({
       message: 'Remove which site?',
       options: sites.map((site) => ({
@@ -215,6 +236,7 @@ export async function removeSiteCommand(
   }
 
   if (!flags.yes) {
+    assertInteractive('Confirmation', 'Pass --yes to remove without confirming.');
     const confirmed = await p.confirm({
       message: `Forget "${target}"? This only removes local configuration — no content is deleted.`,
       initialValue: false,

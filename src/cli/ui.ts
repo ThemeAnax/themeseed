@@ -3,6 +3,8 @@
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 
+import { ThemeseedError } from '../core/errors.js';
+
 export function success(message: string): void {
   console.log(`${pc.green('✔')} ${message}`);
 }
@@ -27,6 +29,28 @@ export function heading(message: string): void {
 export function cancelled(): never {
   p.cancel('Cancelled.');
   process.exit(130);
+}
+
+export function isInteractive(): boolean {
+  return Boolean(process.stdin.isTTY && process.stdout.isTTY);
+}
+
+/**
+ * Refuses to prompt when there is nobody to answer.
+ *
+ * Without this, a missing flag in a script or CI job hits a clack prompt that
+ * cannot read input and the command exits silently having done nothing — which
+ * looks exactly like a successful run that quietly lost the data.
+ */
+export function assertInteractive(needed: string, remedy: string): void {
+  if (isInteractive()) return;
+  throw new ThemeseedError(
+    `${needed} is required, and there is no terminal to ask for it`,
+    {
+      code: 'NOT_INTERACTIVE',
+      hint: remedy,
+    }
+  );
 }
 
 export function yesNo(value: boolean): string {
