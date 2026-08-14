@@ -1,0 +1,33 @@
+# --- secrets (must never be committed) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# themeseed writes site credentials to ~/.themeseed/sites.json.
+# That path is outside the repo by design. Guard against a stray local copy:
+.themeseed/
+sites.json
+
+# --- build output ---
+dist/
+*.tsbuildinfo
+
+# --- dependencies ---
+node_modules/
+.pnpm-store/
+
+# --- test / runtime artifacts ---
+coverage/
+test-loop.log
+*.db
+*.sqlite
+.tmp/
+tmp/
+
+# --- editor / OS ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
