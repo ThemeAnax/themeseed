@@ -5,6 +5,30 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] — 2026-08-14
+
+### Added
+
+- Three more AI image adapters alongside `openai` and `procedural`: `grok`
+  (`XAI_API_KEY`, `grok-imagine-image`), `gemini` (`GOOGLE_API_KEY`) and `fal` (`FAL_KEY`).
+  Whichever key is present is used; `THEMESEED_AI_IMAGE_ADAPTER` forces one and
+  `THEMESEED_AI_IMAGE_MODEL` overrides the model.
+- `nearestAspectLabel` snaps a theme's measured aspect ratio onto whatever labels each
+  backend accepts, so the generator only ever asks for a number.
+- `scripts/probe-ai-adapters.ts` — reports which adapters actually work on this machine.
+- `scripts/seed-architecture.ts` — a worked `ContentEngine` example.
+
+### Changed
+
+- Repository is public at `github.com/ThemeAnax/themeseed`; package metadata updated.
+
+### Notes
+
+- Google image models return `429 RESOURCE_EXHAUSTED` immediately unless billing is enabled
+  on the project — the adapter's hint says so, because it otherwise reads as a transient
+  rate limit.
+- fal keys are `<id>:<secret>` and are sent as `Authorization: Key …`, not `Bearer`.
+
 ## [Unreleased]
 
 Nothing yet.
@@ -76,5 +100,5 @@ First release. Ghost support, complete CLI, MCP server.
 - Ghost's image card silently renders `alt=""` when given `altText`; the property it honours is
   `alt`.
 
-[Unreleased]: https://github.com/indianic/themeseed/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/indianic/themeseed/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ThemeAnax/themeseed/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ThemeAnax/themeseed/releases/tag/v0.1.0

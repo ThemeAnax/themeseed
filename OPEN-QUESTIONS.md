@@ -44,8 +44,14 @@ confirming which is canonical.
 keep the private scope as a mirror for internal pinning. If it is not, soften the README —
 promising community contributions on a repo nobody can reach is worse than not mentioning it.
 
-**Blocked on this:** the `repository.url` in `package.json` currently points at
-`github.com/indianic/themeseed`, which does not exist yet.
+**Decided (2026-08-14):** the source is public at
+[`github.com/ThemeAnax/themeseed`](https://github.com/ThemeAnax/themeseed); the npm package
+stays private on `npm.indianic.in` as `@indianic/themeseed`.
+
+That combination is deliberate — outside contributors can read, fork and send providers for
+WordPress/Joomla/Drupal/Magento, while distribution stays under IndiaNIC's control. The one
+loose end is that a public repo whose install instructions require private-registry auth is
+mildly awkward for a first-time reader; publishing a public mirror package remains open.
 
 ---
 
