@@ -57,7 +57,13 @@ export async function createUsableImageSource(
   return source;
 }
 
-export { AiImageSource, ProceduralImageAdapter, selectAiAdapter } from './ai-source.js';
+export {
+  AiImageSource,
+  ProceduralImageAdapter,
+  falImageSize,
+  nearestAspectLabel,
+  selectAiAdapter,
+} from './ai-source.js';
 export type { AiAdapterName, AiImageAdapter, GeneratedImage } from './ai-source.js';
 export { LocalImageSource } from './local-source.js';
 export { selectStockProvider, StockImageSource } from './stock-source.js';

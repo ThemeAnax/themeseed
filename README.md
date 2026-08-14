@@ -284,18 +284,40 @@ returns carries a `credit` saying exactly that. Set `THEMESEED_STOCK_PROVIDER` t
 
 ### `ai`
 
-| Adapter      | Key              | Actually AI?        |
-| ------------ | ---------------- | ------------------- |
-| `openai`     | `OPENAI_API_KEY` | yes — `gpt-image-1` |
-| `procedural` | none             | **no**              |
+| Adapter      | Key              | Default model            | Actually AI? |
+| ------------ | ---------------- | ------------------------ | ------------ |
+| `openai`     | `OPENAI_API_KEY` | `gpt-image-1`            | yes          |
+| `grok`       | `XAI_API_KEY`    | `grok-imagine-image`     | yes          |
+| `gemini`     | `GOOGLE_API_KEY` | `gemini-2.5-flash-image` | yes          |
+| `fal`        | `FAL_KEY`        | `fal-ai/flux/schnell`    | yes          |
+| `procedural` | none             | —                        | **no**       |
+
+Whichever key is present is used; `THEMESEED_AI_IMAGE_ADAPTER` forces one and
+`THEMESEED_AI_IMAGE_MODEL` overrides the model. Each backend asks for output shape
+differently — `aspect_ratio`, `imageConfig.aspectRatio`, named size presets — so themeseed
+snaps the theme's measured ratio onto whatever that backend supports and the generator only
+ever asks for a number.
+
+Two things worth knowing before picking one:
+
+- **Gemini image models require billing enabled on the project.** Without it every call
+  returns `429 RESOURCE_EXHAUSTED` immediately, which reads like a rate limit that will clear
+  on its own. It will not.
+- **fal keys are `<id>:<secret>`**, sent as `Authorization: Key …` rather than `Bearer`.
 
 `procedural` renders deterministic abstract artwork locally — gradients and soft geometry, no
 network, no key. It exists so `--image-source ai` still produces valid, correctly-sized images
 out of the box and so the integration tests are hermetic. It is not AI, and every image it
-produces says so in its credit line. Set `THEMESEED_AI_IMAGE_ADAPTER` to force one.
+produces says so in its credit line.
+
+Check what actually works on your machine, one image per configured adapter:
+
+```bash
+npx tsx scripts/probe-ai-adapters.ts --ratio 1.5
+```
 
 Adding a backend (Replicate, Stability, a local diffusion server) means implementing
-`AiImageAdapter` — see `src/images/ai-source.ts`.
+`AiImageAdapter` and adding one line to `selectAiAdapter` — see `src/images/ai-source.ts`.
 
 ### Validation
 
