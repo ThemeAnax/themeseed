@@ -147,7 +147,13 @@ function probeJpeg(bytes: Uint8Array, view: DataView): ImageInfo | null {
       continue;
     }
     // SOF0-SOF15, excluding DHT (c4), JPG (c8) and DAC (cc), carry dimensions.
-    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+    if (
+      marker >= 0xc0 &&
+      marker <= 0xcf &&
+      marker !== 0xc4 &&
+      marker !== 0xc8 &&
+      marker !== 0xcc
+    ) {
       return {
         format: 'jpeg',
         height: view.getUint16(offset + 5, false),

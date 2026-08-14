@@ -79,10 +79,13 @@ export class AiImageSource implements ImageSource {
 
   async fetch(request: ImageRequest, count: number): Promise<ImageRef[]> {
     if (!this.adapter.isConfigured()) {
-      throw new ThemeseedError(`AI image adapter "${this.adapter.name}" is not configured`, {
-        code: 'AI_NOT_CONFIGURED',
-        hint: this.adapter.configurationHint(),
-      });
+      throw new ThemeseedError(
+        `AI image adapter "${this.adapter.name}" is not configured`,
+        {
+          code: 'AI_NOT_CONFIGURED',
+          hint: this.adapter.configurationHint(),
+        }
+      );
     }
 
     const generated = await this.adapter.generate(request, count);
@@ -94,7 +97,9 @@ export class AiImageSource implements ImageSource {
       // generation that returns a JSON error body would otherwise be uploaded.
       const info = probeImage(image.bytes);
       if (!info) {
-        logger.warn(`${this.adapter.name} returned data that is not a valid image; skipping`);
+        logger.warn(
+          `${this.adapter.name} returned data that is not a valid image; skipping`
+        );
         continue;
       }
       const name = `${hashString(`${request.query}#${index}`).toString(36)}.${image.extension}`;
@@ -173,7 +178,9 @@ class OpenAiImageAdapter implements AiImageAdapter {
       });
     }
 
-    const data = (await response.json()) as { data?: Array<{ b64_json?: string; url?: string }> };
+    const data = (await response.json()) as {
+      data?: Array<{ b64_json?: string; url?: string }>;
+    };
     const images: GeneratedImage[] = [];
 
     for (const entry of data.data ?? []) {
@@ -307,7 +314,8 @@ const BAYER_4X4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 function dimensionsFor(request: ImageRequest): { width: number; height: number } {
   const orientation = orientationFor(request);
   const ratio =
-    request.aspectRatio ?? (orientation === 'portrait' ? 0.75 : orientation === 'square' ? 1 : 1.5);
+    request.aspectRatio ??
+    (orientation === 'portrait' ? 0.75 : orientation === 'square' ? 1 : 1.5);
   // 1600px wide is enough for a hero on a 2x display without making the PNG
   // encoder the slowest part of a seed run.
   const width = Math.min(request.minWidth ?? 1600, 2000);

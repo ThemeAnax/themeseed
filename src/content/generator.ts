@@ -67,7 +67,9 @@ export interface GenerateSummary {
 
 const GALLERY_SIZE = 3;
 
-export async function generateSeedContent(options: GenerateOptions): Promise<GenerateSummary> {
+export async function generateSeedContent(
+  options: GenerateOptions
+): Promise<GenerateSummary> {
   const {
     topic,
     count,
@@ -83,7 +85,8 @@ export async function generateSeedContent(options: GenerateOptions): Promise<Gen
   const videoFinder =
     options.videoFinder === null
       ? null
-      : (options.videoFinder ?? (capabilities.supportsVideoEmbed ? new YouTubeVideoFinder() : null));
+      : (options.videoFinder ??
+        (capabilities.supportsVideoEmbed ? new YouTubeVideoFinder() : null));
 
   const titles = options.titles?.length
     ? options.titles.slice(0, count)
@@ -219,7 +222,8 @@ async function enrichBlocks(args: EnrichArgs): Promise<ContentBlock[]> {
   }
 
   if (args.wantsGallery && anchors.length > 0) {
-    const images = await args.imageSource.fetch(
+    const images = await manyImages(
+      args.imageSource,
       { query: `${args.profile} — details`, minWidth: 1200, role: 'gallery' },
       GALLERY_SIZE
     );
@@ -228,21 +232,31 @@ async function enrichBlocks(args: EnrichArgs): Promise<ContentBlock[]> {
     if (images.length >= 2) {
       insertions.push({
         at: anchors[Math.min(1, anchors.length - 1)]!,
-        block: { type: 'gallery', images, caption: `${capitalise(args.profile)} in practice` },
+        block: {
+          type: 'gallery',
+          images,
+          caption: `${capitalise(args.profile)} in practice`,
+        },
       });
       args.stats.withGallery += 1;
     } else {
-      logger.debug(`gallery skipped for "${args.title}": image source returned ${images.length}`);
+      logger.debug(
+        `gallery skipped for "${args.title}": image source returned ${images.length}`
+      );
     }
   }
 
   if (args.wantsVideo && args.videoFinder && anchors.length > 0) {
-    const video = await args.videoFinder.find(`${args.profile} ${args.title}`.slice(0, 90));
+    const video = await args.videoFinder.find(
+      `${args.profile} ${args.title}`.slice(0, 90)
+    );
     if (video) {
       insertions.push({ at: anchors[Math.min(1, anchors.length - 1)]!, block: video });
       args.stats.withVideo += 1;
     } else {
-      logger.debug(`no verified video found for "${args.title}"; leaving the post without one`);
+      logger.debug(
+        `no verified video found for "${args.title}"; leaving the post without one`
+      );
     }
   }
 
@@ -270,16 +284,29 @@ function findInsertionPoints(blocks: ContentBlock[]): number[] {
   return points;
 }
 
-async function firstImage(source: ImageSource, request: ImageRequest): Promise<ImageRef | undefined> {
+/**
+ * Images are an enhancement: a source that is down should cost pictures, not
+ * the whole seed run. Every call into an `ImageSource` goes through one of
+ * these two helpers so there is no path where a throw escapes.
+ */
+async function manyImages(
+  source: ImageSource,
+  request: ImageRequest,
+  count: number
+): Promise<ImageRef[]> {
   try {
-    const images = await source.fetch(request, 1);
-    return images[0];
+    return await source.fetch(request, count);
   } catch (err) {
-    // Images are an enhancement; a source that is down should cost pictures,
-    // not the whole seed run.
     logger.warn(`image lookup failed for "${request.query}":`, err);
-    return undefined;
+    return [];
   }
+}
+
+async function firstImage(
+  source: ImageSource,
+  request: ImageRequest
+): Promise<ImageRef | undefined> {
+  return (await manyImages(source, request, 1))[0];
 }
 
 // ---------------------------------------------------------------------------

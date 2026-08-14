@@ -94,7 +94,9 @@ export class LocalImageSource implements ImageSource {
     const target = request.aspectRatio ?? defaultRatioFor(request);
     const minWidth = request.minWidth ?? 0;
     return [...images]
-      .filter((image) => image.width >= minWidth || images.every((i) => i.width < minWidth))
+      .filter(
+        (image) => image.width >= minWidth || images.every((i) => i.width < minWidth)
+      )
       .sort((a, b) => {
         const delta = Math.abs(a.ratio - target) - Math.abs(b.ratio - target);
         if (Math.abs(delta) > 0.05) return delta;

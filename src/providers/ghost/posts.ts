@@ -12,7 +12,13 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 import { logger } from '../../core/logger.js';
-import { SEED_TAG, type ContentBlockType, type ImageRef, type SeedContent, type SeedResult } from '../../core/types.js';
+import {
+  SEED_TAG,
+  type ContentBlockType,
+  type ImageRef,
+  type SeedContent,
+  type SeedResult,
+} from '../../core/types.js';
 import { extensionFor, probeImage, type ImageFormat } from '../../images/inspect.js';
 import type { GhostClient } from './client.js';
 import { blocksToLexical, type HostedImage } from './lexical.js';
@@ -99,8 +105,11 @@ async function publishOne(
   if (item.excerpt) payload['custom_excerpt'] = truncateExcerpt(item.excerpt);
   if (featureImage) {
     payload['feature_image'] = featureImage.url;
-    payload['feature_image_alt'] = truncateAlt(item.featureImage?.alt ?? featureImage.alt ?? item.title);
-    if (item.featureImage?.caption) payload['feature_image_caption'] = item.featureImage.caption;
+    payload['feature_image_alt'] = truncateAlt(
+      item.featureImage?.alt ?? featureImage.alt ?? item.title
+    );
+    if (item.featureImage?.caption)
+      payload['feature_image_caption'] = item.featureImage.caption;
   }
   if (item.publishedAt && item.status === 'published') {
     payload['published_at'] = item.publishedAt;
@@ -145,14 +154,28 @@ async function uploadImageRef(
   ref: ImageRef,
   maxRetries: number
 ): Promise<HostedImage> {
-  const bytes = ref.kind === 'file' ? await readLocalImage(ref.location) : await downloadImage(ref.location);
-
-  const info = probeImage(bytes);
-  if (!info) {
-    // Stock APIs and CDNs return HTML error pages with image URLs often enough
-    // that uploading unverified bytes reliably produces broken posts.
-    throw new Error(`${ref.location} is not a valid image (${bytes.byteLength} bytes)`);
-  }
+  // Retry the fetch *and* the validation together. Stock CDNs intermittently
+  // answer with a 5xx or an HTML error page, and a single unlucky response
+  // would otherwise cost that post its feature image permanently — which is
+  // exactly what a "14/15 posts have a feature image" run looks like.
+  const { bytes, info } = await withRetry(
+    async () => {
+      const data =
+        ref.kind === 'file'
+          ? await readLocalImage(ref.location)
+          : await downloadImage(ref.location);
+      const probed = probeImage(data);
+      if (!probed) {
+        throw new Error(
+          `${ref.location} is not a valid image (${data.byteLength} bytes)`
+        );
+      }
+      return { bytes: data, info: probed };
+    },
+    // Local files are not flaky; a bad one will still be bad on the third try.
+    ref.kind === 'file' ? 0 : maxRetries,
+    `fetch ${ref.location}`
+  );
 
   const filename = filenameFor(ref, info.format);
   const uploaded = await withRetry(
@@ -195,7 +218,10 @@ function filenameFor(ref: ImageRef, format: ImageFormat): string {
   const base =
     ref.kind === 'file'
       ? path.basename(ref.location).replace(/\.\w+$/, '')
-      : (new URL(ref.location).pathname.split('/').pop() ?? 'image').replace(/\.\w+$/, '');
+      : (new URL(ref.location).pathname.split('/').pop() ?? 'image').replace(
+          /\.\w+$/,
+          ''
+        );
   const safe = (base || 'image').replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 60);
   return `${safe}.${extensionFor(format)}`;
 }
@@ -241,7 +267,11 @@ function truncateAlt(text: string): string {
   return text.length <= 191 ? text : `${text.slice(0, 188).trimEnd()}…`;
 }
 
-async function withRetry<T>(operation: () => Promise<T>, retries: number, label: string): Promise<T> {
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  retries: number,
+  label: string
+): Promise<T> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -250,7 +280,9 @@ async function withRetry<T>(operation: () => Promise<T>, retries: number, label:
       lastError = err;
       if (attempt === retries) break;
       const delay = 400 * 2 ** attempt;
-      logger.debug(`${label} failed (attempt ${attempt + 1}/${retries + 1}); retrying in ${delay}ms`);
+      logger.debug(
+        `${label} failed (attempt ${attempt + 1}/${retries + 1}); retrying in ${delay}ms`
+      );
       await sleep(delay);
     }
   }

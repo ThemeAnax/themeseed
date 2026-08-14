@@ -116,7 +116,9 @@ export function knownTargets(): McpTarget[] {
         'settings',
         'cline_mcp_settings.json'
       ),
-      detectPaths: [path.join(vsCodeUser, 'User', 'globalStorage', 'saoudrizwan.claude-dev')],
+      detectPaths: [
+        path.join(vsCodeUser, 'User', 'globalStorage', 'saoudrizwan.claude-dev'),
+      ],
       serversKey: ['mcpServers'],
     },
     {
@@ -158,7 +160,9 @@ async function hasServer(target: McpTarget, serverName: string): Promise<boolean
   const config = await readConfig(target.configPath);
   if (!config) return false;
   const servers = getIn(config, target.serversKey);
-  return Boolean(servers && typeof servers === 'object' && serverName in (servers as object));
+  return Boolean(
+    servers && typeof servers === 'object' && serverName in (servers as object)
+  );
 }
 
 /**
@@ -287,7 +291,10 @@ function getIn(object: Record<string, unknown>, keys: string[]): unknown {
   return current;
 }
 
-function ensureIn(object: Record<string, unknown>, keys: string[]): Record<string, unknown> {
+function ensureIn(
+  object: Record<string, unknown>,
+  keys: string[]
+): Record<string, unknown> {
   let current = object;
   for (const key of keys) {
     const next = current[key];

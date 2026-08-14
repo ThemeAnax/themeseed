@@ -48,7 +48,9 @@ export class GhostClient {
 
   /** Mints a fresh admin JWT. Exposed for tests; not part of the public API. */
   createToken(now: number = Math.floor(Date.now() / 1000)): string {
-    const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT', kid: this.keyId }));
+    const header = base64url(
+      JSON.stringify({ alg: 'HS256', typ: 'JWT', kid: this.keyId })
+    );
     const payload = base64url(
       JSON.stringify({ iat: now, exp: now + TOKEN_TTL_SECONDS, aud: '/admin/' })
     );
@@ -92,10 +94,13 @@ export class GhostClient {
       });
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
-        throw new ProviderError(`Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path}`, {
-          code: 'GHOST_TIMEOUT',
-          hint: 'Is the site reachable and awake?',
-        });
+        throw new ProviderError(
+          `Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path}`,
+          {
+            code: 'GHOST_TIMEOUT',
+            hint: 'Is the site reachable and awake?',
+          }
+        );
       }
       throw new ProviderError(`Could not reach Ghost at ${this.baseUrl}`, {
         code: 'GHOST_UNREACHABLE',
@@ -153,7 +158,9 @@ export class GhostClient {
     return map;
   }
 
-  async listPosts(query: Record<string, string | number | undefined> = {}): Promise<GhostPost[]> {
+  async listPosts(
+    query: Record<string, string | number | undefined> = {}
+  ): Promise<GhostPost[]> {
     const data = await this.request<{ posts: GhostPost[] }>('GET', '/posts/', {
       query: { limit: 'all', ...query },
     });
@@ -168,7 +175,8 @@ export class GhostClient {
       body: { posts: [post] },
     });
     const created = data.posts?.[0];
-    if (!created) throw new ProviderError('Ghost accepted the post but returned no record');
+    if (!created)
+      throw new ProviderError('Ghost accepted the post but returned no record');
     return created;
   }
 
@@ -176,7 +184,9 @@ export class GhostClient {
     await this.request<void>('DELETE', `/posts/${encodeURIComponent(id)}/`);
   }
 
-  async listTags(query: Record<string, string | number | undefined> = {}): Promise<GhostTag[]> {
+  async listTags(
+    query: Record<string, string | number | undefined> = {}
+  ): Promise<GhostTag[]> {
     const data = await this.request<{ tags: GhostTag[] }>('GET', '/tags/', {
       query: { limit: 'all', ...query },
     });
@@ -184,9 +194,12 @@ export class GhostClient {
   }
 
   async createTag(tag: { name: string; description?: string }): Promise<GhostTag> {
-    const data = await this.request<{ tags: GhostTag[] }>('POST', '/tags/', { body: { tags: [tag] } });
+    const data = await this.request<{ tags: GhostTag[] }>('POST', '/tags/', {
+      body: { tags: [tag] },
+    });
     const created = data.tags?.[0];
-    if (!created) throw new ProviderError('Ghost accepted the tag but returned no record');
+    if (!created)
+      throw new ProviderError('Ghost accepted the tag but returned no record');
     return created;
   }
 
@@ -231,9 +244,13 @@ export class GhostClient {
       clearTimeout(timer);
     }
 
-    const data = await this.parse<{ images: GhostUploadedImage[] }>(response, 'POST /images/upload/');
+    const data = await this.parse<{ images: GhostUploadedImage[] }>(
+      response,
+      'POST /images/upload/'
+    );
     const image = data.images?.[0];
-    if (!image?.url) throw new ProviderError(`Ghost returned no URL for uploaded image ${filename}`);
+    if (!image?.url)
+      throw new ProviderError(`Ghost returned no URL for uploaded image ${filename}`);
     return image;
   }
 }
@@ -273,7 +290,9 @@ function base64url(input: string): string {
 
 function ghostErrorMessage(body: string, status: number, context: string): string {
   try {
-    const parsed = JSON.parse(body) as { errors?: Array<{ message?: string; context?: string }> };
+    const parsed = JSON.parse(body) as {
+      errors?: Array<{ message?: string; context?: string }>;
+    };
     const first = parsed.errors?.[0];
     if (first?.message) {
       return first.context
@@ -290,7 +309,8 @@ function hintForStatus(status: number): string | undefined {
   if (status === 401 || status === 403) {
     return 'The Admin API key was rejected. Confirm it is an Admin API key (not Content API), and that the integration still exists.';
   }
-  if (status === 404) return 'Endpoint not found — check the site URL includes any subdirectory Ghost is mounted at.';
+  if (status === 404)
+    return 'Endpoint not found — check the site URL includes any subdirectory Ghost is mounted at.';
   if (status === 422) return 'Ghost rejected the payload as invalid.';
   if (status >= 500) return 'Ghost hit an internal error; check its own logs.';
   return undefined;

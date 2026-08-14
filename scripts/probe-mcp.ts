@@ -24,7 +24,9 @@ const { tools } = await client.listTools();
 console.log(`Server exposes ${tools.length} tools:\n`);
 for (const tool of tools) {
   const params = Object.keys(tool.inputSchema?.properties ?? {});
-  console.log(`  ${tool.name.padEnd(16)} ${params.length ? params.join(', ') : '(no parameters)'}`);
+  console.log(
+    `  ${tool.name.padEnd(16)} ${params.length ? params.join(', ') : '(no parameters)'}`
+  );
 }
 
 console.log('\nCalling list_sites…');

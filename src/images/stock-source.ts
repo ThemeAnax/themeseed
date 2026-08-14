@@ -61,10 +61,13 @@ export class StockImageSource implements ImageSource {
 
   async fetch(request: ImageRequest, count: number): Promise<ImageRef[]> {
     if (!this.provider.isConfigured()) {
-      throw new ThemeseedError(`Stock provider "${this.provider.name}" is not configured`, {
-        code: 'STOCK_NOT_CONFIGURED',
-        hint: this.provider.configurationHint(),
-      });
+      throw new ThemeseedError(
+        `Stock provider "${this.provider.name}" is not configured`,
+        {
+          code: 'STOCK_NOT_CONFIGURED',
+          hint: this.provider.configurationHint(),
+        }
+      );
     }
     return this.provider.search(request, count);
   }
@@ -75,11 +78,14 @@ export class StockImageSource implements ImageSource {
  * the keyless fallback. Never silently prefers a keyed provider whose key is
  * missing — that produced confusing "0 images" runs.
  */
-export function selectStockProvider(options: StockImageSourceOptions = {}): StockProvider {
+export function selectStockProvider(
+  options: StockImageSourceOptions = {}
+): StockProvider {
   const unsplashKey = options.unsplashAccessKey ?? process.env.UNSPLASH_ACCESS_KEY;
   const pexelsKey = options.pexelsApiKey ?? process.env.PEXELS_API_KEY;
   const requested =
-    options.provider ?? (process.env.THEMESEED_STOCK_PROVIDER as StockProviderName | undefined);
+    options.provider ??
+    (process.env.THEMESEED_STOCK_PROVIDER as StockProviderName | undefined);
 
   const build = (name: StockProviderName): StockProvider => {
     switch (name) {
@@ -96,7 +102,9 @@ export function selectStockProvider(options: StockImageSourceOptions = {}): Stoc
   if (unsplashKey) return build('unsplash');
   if (pexelsKey) return build('pexels');
 
-  logger.debug('no stock API key configured; falling back to Lorem Picsum (results ignore the query)');
+  logger.debug(
+    'no stock API key configured; falling back to Lorem Picsum (results ignore the query)'
+  );
   return build('picsum');
 }
 
@@ -156,20 +164,25 @@ class UnsplashProvider implements StockProvider {
     }
 
     const data = (await response.json()) as { results?: UnsplashPhoto[] };
-    return (data.results ?? []).slice(0, count).map((photo) => {
-      const source = photo.urls.raw ?? photo.urls.full ?? photo.urls.regular ?? '';
-      return {
-        kind: 'url' as const,
-        // Ask Unsplash for a sensible delivery size rather than the raw
-        // original, which can be 20MB+ and slows every upload down.
-        location: source ? withUnsplashSizing(source, request) : '',
-        width: photo.width,
-        height: photo.height,
-        alt: photo.alt_description ?? photo.description ?? request.query,
-        credit: photo.user?.name ? `Photo by ${photo.user.name} on Unsplash` : 'Photo via Unsplash',
-        source: 'stock' as const,
-      };
-    }).filter((ref) => ref.location !== '');
+    return (data.results ?? [])
+      .slice(0, count)
+      .map((photo) => {
+        const source = photo.urls.raw ?? photo.urls.full ?? photo.urls.regular ?? '';
+        return {
+          kind: 'url' as const,
+          // Ask Unsplash for a sensible delivery size rather than the raw
+          // original, which can be 20MB+ and slows every upload down.
+          location: source ? withUnsplashSizing(source, request) : '',
+          width: photo.width,
+          height: photo.height,
+          alt: photo.alt_description ?? photo.description ?? request.query,
+          credit: photo.user?.name
+            ? `Photo by ${photo.user.name} on Unsplash`
+            : 'Photo via Unsplash',
+          source: 'stock' as const,
+        };
+      })
+      .filter((ref) => ref.location !== '');
   }
 }
 
@@ -239,7 +252,9 @@ class PexelsProvider implements StockProvider {
         width: photo.width,
         height: photo.height,
         alt: photo.alt || request.query,
-        credit: photo.photographer ? `Photo by ${photo.photographer} on Pexels` : 'Photo via Pexels',
+        credit: photo.photographer
+          ? `Photo by ${photo.photographer} on Pexels`
+          : 'Photo via Pexels',
         source: 'stock' as const,
       }))
       .filter((ref) => ref.location !== '');
@@ -277,7 +292,8 @@ class PicsumProvider implements StockProvider {
         width,
         height,
         alt: request.query,
-        credit: 'Photo via Lorem Picsum (not matched to the topic — set UNSPLASH_ACCESS_KEY or PEXELS_API_KEY for relevant imagery)',
+        credit:
+          'Photo via Lorem Picsum (not matched to the topic — set UNSPLASH_ACCESS_KEY or PEXELS_API_KEY for relevant imagery)',
         source: 'stock',
       });
     }
@@ -309,6 +325,12 @@ class PicsumProvider implements StockProvider {
 
 function dimensionsFor(request: ImageRequest): { width: number; height: number } {
   const width = request.minWidth ?? 1600;
-  const ratio = request.aspectRatio ?? (orientationFor(request) === 'portrait' ? 0.75 : orientationFor(request) === 'square' ? 1 : 1.5);
+  const ratio =
+    request.aspectRatio ??
+    (orientationFor(request) === 'portrait'
+      ? 0.75
+      : orientationFor(request) === 'square'
+        ? 1
+        : 1.5);
   return { width, height: Math.max(1, Math.round(width / ratio)) };
 }

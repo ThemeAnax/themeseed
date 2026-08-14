@@ -32,7 +32,9 @@ export interface ImageSource {
 }
 
 /** Shared helper: turn an aspect ratio into the orientation stock APIs want. */
-export function orientationFor(request: ImageRequest): 'landscape' | 'portrait' | 'square' {
+export function orientationFor(
+  request: ImageRequest
+): 'landscape' | 'portrait' | 'square' {
   if (request.orientation) return request.orientation;
   const ratio = request.aspectRatio;
   if (ratio === undefined) return 'landscape';

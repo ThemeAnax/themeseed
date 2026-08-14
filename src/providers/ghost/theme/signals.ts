@@ -113,8 +113,11 @@ export function mergeSignals(
   // trust of the strategies that did the measuring. A theme name alone should
   // not read as a confident analysis.
   const coverage = measured.size / MEASURABLE_KEYS.length;
-  const bestConfidence = ordered.length ? Math.max(...ordered.map((s) => s.confidence)) : 0;
-  const confidence = ordered.length === 0 ? 0 : round2(Math.min(1, coverage * 0.5 + bestConfidence * 0.5));
+  const bestConfidence = ordered.length
+    ? Math.max(...ordered.map((s) => s.confidence))
+    : 0;
+  const confidence =
+    ordered.length === 0 ? 0 : round2(Math.min(1, coverage * 0.5 + bestConfidence * 0.5));
 
   return {
     capabilities: merged as MeasurableCapabilities,
@@ -160,7 +163,9 @@ export function detectCardCss(css: string): CardCssSignals {
 
 /** Turns the first `aspect-ratio: 21/9` (or `16 / 9`, or `1.5`) into a number. */
 export function parseAspectRatio(source: string): number | undefined {
-  const match = source.match(/aspect-ratio\s*:\s*(\d+(?:\.\d+)?)\s*(?:\/\s*(\d+(?:\.\d+)?))?/);
+  const match = source.match(
+    /aspect-ratio\s*:\s*(\d+(?:\.\d+)?)\s*(?:\/\s*(\d+(?:\.\d+)?))?/
+  );
   if (!match) return undefined;
   return ratioFrom(match[1], match[2]);
 }
@@ -168,7 +173,8 @@ export function parseAspectRatio(source: string): number | undefined {
 function ratioFrom(w: string | undefined, h: string | undefined): number | undefined {
   const width = Number(w);
   const height = h === undefined ? 1 : Number(h);
-  if (!Number.isFinite(width) || !Number.isFinite(height) || height === 0) return undefined;
+  if (!Number.isFinite(width) || !Number.isFinite(height) || height === 0)
+    return undefined;
   return round2(width / height);
 }
 
@@ -219,27 +225,46 @@ export function dominantFeatureImageRatio(
     else counts.set(ratio, { count: 1, source });
   };
 
+  // Collect the ratio-bearing elements first, so each one's search window can
+  // be cut off at the next one. Without that boundary a 1:1 avatar counts the
+  // feature image of the card that happens to follow it in the file.
+  interface Candidate {
+    start: number;
+    inline?: number;
+    classes: number[];
+  }
+  const candidates: Candidate[] = [];
+
   for (const tag of markup.matchAll(/<[a-zA-Z][^>]*>/g)) {
     const element = tag[0];
-    const start = tag.index ?? 0;
-    // A ratio belongs to the feature image if the image reference sits inside
-    // this element's own attributes or just after its opening tag.
-    const window = markup.slice(start, start + 500);
-    if (!/feature_image|img_url|og:image/.test(window)) continue;
-
     const inline = parseAspectRatio(element);
-    if (inline !== undefined) tally(inline, 'inline');
-
     const classAttr = element.match(/class\s*=\s*["']([^"']+)["']/)?.[1];
-    if (classAttr) {
-      for (const name of classAttr.split(/\s+/)) {
-        const ratio = classRatios.get(name);
-        if (ratio !== undefined) tally(ratio, 'class');
-      }
-    }
+    const classes = (classAttr?.split(/\s+/) ?? [])
+      .map((name) => classRatios.get(name))
+      .filter((ratio): ratio is number => ratio !== undefined);
+
+    if (inline === undefined && classes.length === 0) continue;
+    candidates.push({
+      start: tag.index ?? 0,
+      ...(inline !== undefined ? { inline } : {}),
+      classes,
+    });
   }
 
-  let best: { ratio: number; occurrences: number; source: 'class' | 'inline' } | undefined;
+  for (const [index, candidate] of candidates.entries()) {
+    // A ratio belongs to the feature image when the image reference appears
+    // after this element's opening tag and before the next sized element.
+    const nextStart = candidates[index + 1]?.start ?? markup.length;
+    const end = Math.min(nextStart, candidate.start + 500);
+    const window = markup.slice(candidate.start, end);
+    if (!/feature_image|img_url|og:image/.test(window)) continue;
+
+    if (candidate.inline !== undefined) tally(candidate.inline, 'inline');
+    for (const ratio of candidate.classes) tally(ratio, 'class');
+  }
+
+  let best:
+    { ratio: number; occurrences: number; source: 'class' | 'inline' } | undefined;
   for (const [ratio, info] of counts) {
     if (!best || info.count > best.occurrences) {
       best = { ratio, occurrences: info.count, source: info.source };

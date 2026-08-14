@@ -1,0 +1,20 @@
+# Installing @indianic/themeseed from the private registry.
+#
+# Copy the scope line into your project's .npmrc (or run the npm config command
+# below to set it globally). Do NOT commit credentials — `npm login` writes the
+# auth token into your user-level ~/.npmrc, which is where it belongs.
+
+@indianic:registry=https://npm.indianic.in/
+
+# One-time setup:
+#
+#   npm config set @indianic:registry https://npm.indianic.in/
+#   npm login --registry https://npm.indianic.in/ --scope @indianic
+#   npm install -g @indianic/themeseed
+#
+# In CI, prefer a token over interactive login:
+#
+#   //npm.indianic.in/:_authToken=${NPM_INDIANIC_TOKEN}
+#
+# with NPM_INDIANIC_TOKEN supplied as a masked environment variable. Never
+# hard-code the token in a committed .npmrc.

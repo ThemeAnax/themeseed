@@ -7,8 +7,19 @@
 
 import { ProviderError } from '../../core/errors.js';
 import { logger } from '../../core/logger.js';
-import { SEED_TAG, type SeedContent, type SeedResult, type ThemeCapabilities, type WipeSummary } from '../../core/types.js';
-import type { CmsProvider, CreateContentOptions, SiteConfig, SiteInfo } from '../provider.js';
+import {
+  SEED_TAG,
+  type SeedContent,
+  type SeedResult,
+  type ThemeCapabilities,
+  type WipeSummary,
+} from '../../core/types.js';
+import type {
+  CmsProvider,
+  CreateContentOptions,
+  SiteConfig,
+  SiteInfo,
+} from '../provider.js';
 import { GhostClient } from './client.js';
 import { publishPosts, toSeedResult } from './posts.js';
 import { analyzeGhostTheme } from './theme/index.js';
@@ -35,7 +46,8 @@ export class GhostProvider implements CmsProvider {
   private readonly options: GhostProviderOptions;
 
   constructor(site: SiteConfig, options: GhostProviderOptions = {}) {
-    const adminApiKey = site.credentials['adminApiKey'] ?? site.credentials['admin_api_key'];
+    const adminApiKey =
+      site.credentials['adminApiKey'] ?? site.credentials['admin_api_key'];
     if (!adminApiKey) {
       throw new ProviderError('Ghost site is missing an adminApiKey credential', {
         code: 'GHOST_MISSING_KEY',
@@ -57,8 +69,18 @@ export class GhostProvider implements CmsProvider {
     });
   }
 
+  /**
+   * Confirms both that the site is reachable *and* that the key works.
+   *
+   * `GET /site/` alone is not enough: Ghost serves it without authentication —
+   * the admin client calls it before login — so a completely invalid key
+   * returns a cheerful 200. Verifying with it would let `themeseed add-site`
+   * save a broken credential and surface the failure much later, half way
+   * through a seed run. `/settings/` does require auth, so it is the one that
+   * actually proves anything.
+   */
   async verifyConnection(): Promise<SiteInfo> {
-    const site = await this.client.getSite();
+    const [site] = await Promise.all([this.client.getSite(), this.client.getSettings()]);
     return {
       title: site.title,
       url: site.url,
@@ -74,7 +96,10 @@ export class GhostProvider implements CmsProvider {
     });
   }
 
-  async createContent(items: SeedContent[], options: CreateContentOptions = {}): Promise<SeedResult[]> {
+  async createContent(
+    items: SeedContent[],
+    options: CreateContentOptions = {}
+  ): Promise<SeedResult[]> {
     return publishPosts(this.client, items, {
       ...(options.onProgress ? { onProgress: options.onProgress } : {}),
     });
@@ -111,7 +136,10 @@ export class GhostProvider implements CmsProvider {
         await this.client.deletePost(post.id);
         removed += 1;
       } catch (err) {
-        failed.push({ id: post.id, error: err instanceof Error ? err.message : String(err) });
+        failed.push({
+          id: post.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
 

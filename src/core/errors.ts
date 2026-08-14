@@ -5,7 +5,10 @@ export class ThemeseedError extends Error {
   /** Concrete next step for the user, when there is one. */
   readonly hint?: string;
 
-  constructor(message: string, options: { code?: string; hint?: string; cause?: unknown } = {}) {
+  constructor(
+    message: string,
+    options: { code?: string; hint?: string; cause?: unknown } = {}
+  ) {
     super(message, options.cause !== undefined ? { cause: options.cause } : undefined);
     this.name = 'ThemeseedError';
     this.code = options.code ?? 'THEMESEED_ERROR';

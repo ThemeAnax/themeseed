@@ -53,7 +53,9 @@ export class LocalThemeSource implements ThemeAnalysisStrategy {
     if (!dir) return null;
 
     const evidence: string[] = [`read theme sources from ${dir}`];
-    const capabilities: Partial<MeasurableCapabilities> = { themeName: this.options.themeName };
+    const capabilities: Partial<MeasurableCapabilities> = {
+      themeName: this.options.themeName,
+    };
 
     const pkg = await this.readPackage(dir, evidence, capabilities);
     const templates = await this.readTemplates(dir);
@@ -124,7 +126,9 @@ export class LocalThemeSource implements ThemeAnalysisStrategy {
       if (pkg.description) capabilities.description = pkg.description;
       if (typeof pkg.config?.posts_per_page === 'number') {
         capabilities.postsPerPage = pkg.config.posts_per_page;
-        evidence.push(`package.json config.posts_per_page = ${pkg.config.posts_per_page}`);
+        evidence.push(
+          `package.json config.posts_per_page = ${pkg.config.posts_per_page}`
+        );
       }
       return pkg;
     } catch {
@@ -187,12 +191,15 @@ export class LocalThemeSource implements ThemeAnalysisStrategy {
     // Checked across every template, not just post.hbs: a theme whose post
     // header is text-only still shows feature images on index and tag cards,
     // and generating posts without one would leave those archives grey.
-    const hasFeatureImage = /\{\{#if\s+feature_image\}\}|\{\{\s*img_url\s+feature_image/.test(all);
+    const hasFeatureImage =
+      /\{\{#if\s+feature_image\}\}|\{\{\s*img_url\s+feature_image/.test(all);
     capabilities.supportsFeatureImage = hasFeatureImage;
     evidence.push(
       hasFeatureImage
         ? `templates reference feature_image${
-            /feature_image/.test(post) ? '' : ' (in listing templates only, not on the post page)'
+            /feature_image/.test(post)
+              ? ''
+              : ' (in listing templates only, not on the post page)'
           }`
         : 'no template references feature_image'
     );
@@ -207,8 +214,12 @@ export class LocalThemeSource implements ThemeAnalysisStrategy {
       );
     }
 
-    capabilities.displaysTags = /\{\{#foreach\s+tags|\{\{#if\s+tags\}\}|primary_tag/.test(all);
-    capabilities.displaysAuthor = /\{\{#primary_author\}\}|\{\{#foreach\s+authors/.test(all);
+    capabilities.displaysTags = /\{\{#foreach\s+tags|\{\{#if\s+tags\}\}|primary_tag/.test(
+      all
+    );
+    capabilities.displaysAuthor = /\{\{#primary_author\}\}|\{\{#foreach\s+authors/.test(
+      all
+    );
     capabilities.displaysAuthorImage = /profile_image/.test(all);
     capabilities.displaysExcerpt = /custom_excerpt|\{\{excerpt/.test(all);
     capabilities.displaysReadingTime = /\{\{\s*reading_time/.test(all);
@@ -239,14 +250,17 @@ export class LocalThemeSource implements ThemeAnalysisStrategy {
       capabilities.supportsBookmarkCard = true;
       capabilities.supportsCodeBlocks = true;
       capabilities.supportsWideImages = true;
-      evidence.push('package.json config.card_assets enables Ghost card styles for all cards');
+      evidence.push(
+        'package.json config.card_assets enables Ghost card styles for all cards'
+      );
       return;
     }
 
     if (Array.isArray(cardsEnabled)) {
       capabilities.supportsGallery = cardsEnabled.includes('gallery') || fromCss.gallery;
       capabilities.supportsVideoEmbed = cardsEnabled.includes('embed') || fromCss.embed;
-      capabilities.supportsBookmarkCard = cardsEnabled.includes('bookmark') || fromCss.bookmark;
+      capabilities.supportsBookmarkCard =
+        cardsEnabled.includes('bookmark') || fromCss.bookmark;
       capabilities.supportsCodeBlocks = true;
       capabilities.supportsWideImages = fromCss.wide;
       evidence.push(`card_assets allow-list: ${cardsEnabled.join(', ')}`);
@@ -277,8 +291,11 @@ export class LocalThemeSource implements ThemeAnalysisStrategy {
     // than one the theme ships on by default, but both mean the theme was
     // designed for articles long enough to need one.
     const tocSetting = custom['table_of_contents'];
-    const tocDefaultOff = typeof tocSetting?.default === 'string' && tocSetting.default === 'off';
-    const hasToc = (/\bid="toc|class="toc\b|toc-slot|toc-links/.test(post) || Boolean(tocSetting)) && !tocDefaultOff;
+    const tocDefaultOff =
+      typeof tocSetting?.default === 'string' && tocSetting.default === 'off';
+    const hasToc =
+      (/\bid="toc|class="toc\b|toc-slot|toc-links/.test(post) || Boolean(tocSetting)) &&
+      !tocDefaultOff;
 
     const widthSetting = custom['content_width'];
     const contentWidth =
@@ -325,7 +342,11 @@ async function isDirectory(target: string): Promise<boolean> {
 }
 
 /** Recursive file walk with a depth cap, skipping node_modules and dotfiles. */
-async function collectFiles(root: string, extension: string, maxDepth: number): Promise<string[]> {
+async function collectFiles(
+  root: string,
+  extension: string,
+  maxDepth: number
+): Promise<string[]> {
   const found: string[] = [];
 
   async function walk(dir: string, depth: number): Promise<void> {

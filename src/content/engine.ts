@@ -40,8 +40,24 @@ export interface ContentEngine {
 // ---------------------------------------------------------------------------
 
 const STOPWORDS = new Set([
-  'a', 'an', 'the', 'and', 'or', 'for', 'of', 'to', 'in', 'on', 'with', 'about',
-  'blog', 'site', 'website', 'magazine', 'publication', 'newsletter',
+  'a',
+  'an',
+  'the',
+  'and',
+  'or',
+  'for',
+  'of',
+  'to',
+  'in',
+  'on',
+  'with',
+  'about',
+  'blog',
+  'site',
+  'website',
+  'magazine',
+  'publication',
+  'newsletter',
 ]);
 
 export interface TopicProfile {
@@ -64,10 +80,14 @@ export function profileTopic(topic: string): TopicProfile {
   // noun phrases; concatenating across the conjunction produces "urban cycling
   // city", which reads as nonsense in every headline it lands in.
   const firstClause = cleaned.split(/\s*(?:,|;| and | or | & |\/)\s*/i)[0] ?? cleaned;
-  const clauseTerms = firstClause.split(' ').filter((word) => !STOPWORDS.has(word.toLowerCase()));
+  const clauseTerms = firstClause
+    .split(' ')
+    .filter((word) => !STOPWORDS.has(word.toLowerCase()));
 
   const subject =
-    (clauseTerms.length ? clauseTerms : terms.length ? terms : words).slice(0, 3).join(' ') ||
+    (clauseTerms.length ? clauseTerms : terms.length ? terms : words)
+      .slice(0, 3)
+      .join(' ') ||
     cleaned ||
     'the subject';
 
@@ -321,7 +341,9 @@ export class TemplateContentEngine implements ContentEngine {
       const frame = frames[Math.floor(random() * frames.length)]!;
       // Frames that begin with {subject} would otherwise inherit the topic's
       // casing and produce a headline starting in lower case.
-      const title = sentenceCase(fill(frame, profile, { n: 3 + Math.floor(random() * 6) }));
+      const title = sentenceCase(
+        fill(frame, profile, { n: 3 + Math.floor(random() * 6) })
+      );
       if (seen.has(title.toLowerCase())) continue;
       seen.add(title.toLowerCase());
       titles.push(title);
@@ -386,7 +408,10 @@ export class TemplateContentEngine implements ContentEngine {
 
       const paragraphsInSection = 2 + Math.floor(random() * 2);
       for (let i = 0; i < paragraphsInSection && words < request.targetWords; i++) {
-        const sentences = [fill(claims.next(), profile, {}), fill(elaborations.next(), profile, {})];
+        const sentences = [
+          fill(claims.next(), profile, {}),
+          fill(elaborations.next(), profile, {}),
+        ];
         // A third sentence roughly two thirds of the time, so paragraph length
         // varies the way real writing does rather than marching in lockstep.
         const roll = random();
@@ -402,7 +427,10 @@ export class TemplateContentEngine implements ContentEngine {
       if (!quoteUsed && words > request.targetWords * 0.35 && random() > 0.4) {
         quoteUsed = true;
         const quote = pick(QUOTES, random);
-        push({ type: 'quote', text: quote, attribution: 'Overheard in a retrospective' }, quote);
+        push(
+          { type: 'quote', text: quote, attribution: 'Overheard in a retrospective' },
+          quote
+        );
       }
 
       if (!listUsed && words > request.targetWords * 0.5 && random() > 0.45) {

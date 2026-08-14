@@ -73,7 +73,9 @@ for (const kind of ['local', 'stock', 'ai'] as ImageSourceKind[]) {
       const bytes = await bytesFor(ref);
       const info = probeImage(bytes);
       if (!info) {
-        console.log(`  FAIL: ${ref.location} is not a decodable image (${bytes.length} bytes)`);
+        console.log(
+          `  FAIL: ${ref.location} is not a decodable image (${bytes.length} bytes)`
+        );
         failures += 1;
         continue;
       }
@@ -88,5 +90,9 @@ for (const kind of ['local', 'stock', 'ai'] as ImageSourceKind[]) {
   }
 }
 
-console.log(failures === 0 ? '\nAll image sources returned valid images.' : `\n${failures} failure(s).`);
+console.log(
+  failures === 0
+    ? '\nAll image sources returned valid images.'
+    : `\n${failures} failure(s).`
+);
 process.exit(failures === 0 ? 0 : 1);

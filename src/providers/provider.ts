@@ -70,7 +70,10 @@ export interface CmsProvider {
    * item — record the failure in that item's `SeedResult.error` and carry on,
    * so one bad image does not lose fourteen good posts.
    */
-  createContent(items: SeedContent[], options?: CreateContentOptions): Promise<SeedResult[]>;
+  createContent(
+    items: SeedContent[],
+    options?: CreateContentOptions
+  ): Promise<SeedResult[]>;
 
   /** Everything previously created by themeseed on this site. */
   listSeeded(): Promise<SeedResult[]>;

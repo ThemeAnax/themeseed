@@ -47,7 +47,9 @@ const site: SiteConfig = {
   platform: 'ghost',
   url: endpoint,
   credentials: { adminApiKey },
-  ...(process.env.GHOST_THEMES_DIR ? { options: { themesDir: process.env.GHOST_THEMES_DIR } } : {}),
+  ...(process.env.GHOST_THEMES_DIR
+    ? { options: { themesDir: process.env.GHOST_THEMES_DIR } }
+    : {}),
 };
 
 const client = new GhostClient({ url: endpoint, adminApiKey });
@@ -118,7 +120,11 @@ async function verify(capabilities: ThemeCapabilities): Promise<Check[]> {
   const embeds = countMatches(html, /kg-embed-card/g);
   checks.push(
     capabilities.supportsVideoEmbed
-      ? { name: 'video embed', ok: embeds >= 1, detail: `${embeds} video embed(s) rendered` }
+      ? {
+          name: 'video embed',
+          ok: embeds >= 1,
+          detail: `${embeds} video embed(s) rendered`,
+        }
       : {
           name: 'video embed',
           ok: embeds === 0,
@@ -148,7 +154,8 @@ async function verify(capabilities: ThemeCapabilities): Promise<Check[]> {
   checks.push({
     name: 'image srcs',
     ok: brokenImages === 0,
-    detail: brokenImages === 0 ? 'no empty image srcs' : `${brokenImages} empty image src(s)`,
+    detail:
+      brokenImages === 0 ? 'no empty image srcs' : `${brokenImages} empty image src(s)`,
   });
 
   return checks;
@@ -217,7 +224,9 @@ async function main(): Promise<void> {
 
       if (passed) {
         consecutiveClean += 1;
-        await log(`  RESULT: PASS (${seconds}s) — ${consecutiveClean}/${REQUIRED_CLEAN_RUNS} consecutive clean runs`);
+        await log(
+          `  RESULT: PASS (${seconds}s) — ${consecutiveClean}/${REQUIRED_CLEAN_RUNS} consecutive clean runs`
+        );
       } else {
         consecutiveClean = 0;
         await log(`  RESULT: FAIL (${seconds}s) — consecutive counter reset`);
@@ -235,7 +244,10 @@ async function main(): Promise<void> {
 
   await log(`\n--- final wipe ---`);
   const summary = await provider.wipeSeeded();
-  const remaining = await client.listPosts({ filter: 'tag:hash-themeseed', limit: 'all' });
+  const remaining = await client.listPosts({
+    filter: 'tag:hash-themeseed',
+    limit: 'all',
+  });
   const wipeClean = remaining.length === 0;
 
   await log(`  removed ${summary.removed} post(s); ${remaining.length} remain`);

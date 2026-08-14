@@ -16,7 +16,12 @@ import pc from 'picocolors';
 import { describeError, ThemeseedError } from '../core/errors.js';
 import { setLogLevel, type LogLevel } from '../core/logger.js';
 import { readVersion } from '../core/version.js';
-import { analyzeCommand, listCommand, seedCommand, wipeCommand } from './commands/content.js';
+import {
+  analyzeCommand,
+  listCommand,
+  seedCommand,
+  wipeCommand,
+} from './commands/content.js';
 import { initCommand } from './commands/init.js';
 import { installCommand, printMcpConfig, uninstallCommand } from './commands/install.js';
 import {
@@ -51,7 +56,9 @@ program
 
 program
   .command('init')
-  .description('First-run setup: register the MCP server with your editors and add a site')
+  .description(
+    'First-run setup: register the MCP server with your editors and add a site'
+  )
   .option('-y, --yes', 'Accept defaults without prompting')
   .option('--registry <url>', 'npm registry to install from')
   .option('--skip-editors', 'Do not touch any editor configuration')
@@ -60,7 +67,9 @@ program
 
 program
   .command('install')
-  .description('Register the themeseed MCP server with an editor (without the full init flow)')
+  .description(
+    'Register the themeseed MCP server with an editor (without the full init flow)'
+  )
   .option('-t, --tool <id...>', 'Tool ids to configure, e.g. claude-code cursor')
   .option('-a, --all', 'Configure every detected tool')
   .option('-y, --yes', 'Do not prompt')
@@ -109,7 +118,10 @@ program
   .option('-y, --yes', 'Do not prompt for confirmation')
   .action((slug, options) => removeSiteCommand(slug, options));
 
-program.command('list-sites').description('List configured sites').action(listSitesCommand);
+program
+  .command('list-sites')
+  .description('List configured sites')
+  .action(listSitesCommand);
 
 program
   .command('use <slug>')
@@ -127,8 +139,16 @@ program
 program
   .command('seed [site]')
   .description('Generate and publish demo content that suits the active theme')
-  .option('-t, --topic <topic>', 'What the publication is about, e.g. "SaaS productivity blog"')
-  .option('-c, --count <n>', 'How many posts to create', (value) => Number.parseInt(value, 10), 12)
+  .option(
+    '-t, --topic <topic>',
+    'What the publication is about, e.g. "SaaS productivity blog"'
+  )
+  .option(
+    '-c, --count <n>',
+    'How many posts to create',
+    (value) => Number.parseInt(value, 10),
+    12
+  )
   .option('-i, --image-source <source>', 'local | stock | ai', 'stock')
   .option('--draft', 'Create drafts instead of published posts')
   .option('--author <name>', 'Author name to attribute posts to')

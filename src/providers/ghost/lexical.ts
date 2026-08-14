@@ -15,11 +15,7 @@
  */
 
 import type { ContentBlock, ImageRef } from '../../core/types.js';
-import type {
-  LexicalNode,
-  LexicalRoot,
-  LexicalTextNode,
-} from './types.js';
+import type { LexicalNode, LexicalRoot, LexicalTextNode } from './types.js';
 
 /** An image after it has been uploaded to Ghost. */
 export interface HostedImage {
@@ -62,7 +58,10 @@ export function blocksToLexical(blocks: ContentBlock[], resolve: ImageResolver):
   return JSON.stringify(root);
 }
 
-function blockToNode(block: ContentBlock, resolve: ImageResolver): LexicalNode | LexicalNode[] | null {
+function blockToNode(
+  block: ContentBlock,
+  resolve: ImageResolver
+): LexicalNode | LexicalNode[] | null {
   switch (block.type) {
     case 'paragraph':
       return paragraph(block.text);

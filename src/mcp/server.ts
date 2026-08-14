@@ -13,12 +13,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-import {
-  addSite,
-  listSitesSafe,
-  removeSite,
-  resolveSite,
-} from '../config/sites.js';
+import { addSite, listSitesSafe, removeSite, resolveSite } from '../config/sites.js';
 import { describeError } from '../core/errors.js';
 import { seedSite } from '../core/seed.js';
 import { IMPLEMENTED_PLATFORMS, PLATFORMS, type Platform } from '../core/types.js';
@@ -59,12 +54,16 @@ function registerSiteTools(server: McpServer): void {
     async () => {
       const sites = await listSitesSafe();
       if (sites.length === 0) {
-        return text('No sites configured yet. Add one with add_site, or run `themeseed init`.', {
-          sites: [],
-        });
+        return text(
+          'No sites configured yet. Add one with add_site, or run `themeseed init`.',
+          {
+            sites: [],
+          }
+        );
       }
       const lines = sites.map(
-        (site) => `${site.isDefault ? '*' : ' '} ${site.slug} — ${site.platform} at ${site.url}`
+        (site) =>
+          `${site.isDefault ? '*' : ' '} ${site.slug} — ${site.platform} at ${site.url}`
       );
       return text(`Configured sites (* = default):\n${lines.join('\n')}`, { sites });
     }
@@ -78,11 +77,18 @@ function registerSiteTools(server: McpServer): void {
         'Registers a CMS and verifies the credentials before saving. For Ghost, credentials must ' +
         'contain adminApiKey in "<id>:<secret>" form (Ghost Admin → Settings → Integrations).',
       inputSchema: {
-        slug: z.string().describe('Short identifier used to refer to this site, e.g. "client-blog".'),
+        slug: z
+          .string()
+          .describe('Short identifier used to refer to this site, e.g. "client-blog".'),
         platform: z
           .enum(PLATFORMS as unknown as [Platform, ...Platform[]])
-          .describe(`CMS platform. Implemented today: ${IMPLEMENTED_PLATFORMS.join(', ')}.`),
-        url: z.string().url().describe('Base URL of the site, e.g. https://blog.example.com'),
+          .describe(
+            `CMS platform. Implemented today: ${IMPLEMENTED_PLATFORMS.join(', ')}.`
+          ),
+        url: z
+          .string()
+          .url()
+          .describe('Base URL of the site, e.g. https://blog.example.com'),
         credentials: z
           .record(z.string(), z.string())
           .describe('Platform credentials. Ghost: { "adminApiKey": "<id>:<secret>" }'),
@@ -127,7 +133,9 @@ function registerSiteTools(server: McpServer): void {
     async ({ slug }) => {
       const removed = await removeSite(slug);
       return text(
-        removed ? `Removed "${slug}" from local configuration.` : `No site configured with slug "${slug}".`,
+        removed
+          ? `Removed "${slug}" from local configuration.`
+          : `No site configured with slug "${slug}".`,
         { slug, removed }
       );
     }
@@ -148,7 +156,10 @@ function registerContentTools(server: McpServer): void {
         'aspect ratio, gallery and video card support, expected article length, whether tags and ' +
         'authors are shown. Returns evidence for each conclusion and a confidence score.',
       inputSchema: {
-        site: z.string().optional().describe('Site slug. Defaults to the configured default site.'),
+        site: z
+          .string()
+          .optional()
+          .describe('Site slug. Defaults to the configured default site.'),
       },
     },
     async ({ site: slug }) => {
@@ -159,7 +170,9 @@ function registerContentTools(server: McpServer): void {
       const summary = [
         `Theme "${capabilities.themeName}"${capabilities.themeVersion ? ` v${capabilities.themeVersion}` : ''} on ${resolved}`,
         `  feature image:   ${yesNo(capabilities.supportsFeatureImage)}${
-          capabilities.featureImageAspectRatio ? ` (aspect ratio ≈ ${capabilities.featureImageAspectRatio})` : ''
+          capabilities.featureImageAspectRatio
+            ? ` (aspect ratio ≈ ${capabilities.featureImageAspectRatio})`
+            : ''
         }`,
         `  gallery card:    ${yesNo(capabilities.supportsGallery)}`,
         `  video embed:     ${yesNo(capabilities.supportsVideoEmbed)}`,
@@ -186,9 +199,20 @@ function registerContentTools(server: McpServer): void {
         'Every post is tagged #themeseed so wipe_seeded can remove exactly this content later. ' +
         'Supply `titles` to use your own headlines instead of generated ones.',
       inputSchema: {
-        site: z.string().optional().describe('Site slug. Defaults to the configured default site.'),
-        topic: z.string().describe('Subject of the publication, e.g. "SaaS productivity blog".'),
-        count: z.number().int().min(1).max(50).default(12).describe('How many posts to create.'),
+        site: z
+          .string()
+          .optional()
+          .describe('Site slug. Defaults to the configured default site.'),
+        topic: z
+          .string()
+          .describe('Subject of the publication, e.g. "SaaS productivity blog".'),
+        count: z
+          .number()
+          .int()
+          .min(1)
+          .max(50)
+          .default(12)
+          .describe('How many posts to create.'),
         imageSource: z
           .enum(['local', 'stock', 'ai'])
           .default('stock')
@@ -203,12 +227,16 @@ function registerContentTools(server: McpServer): void {
         titles: z
           .array(z.string())
           .optional()
-          .describe('Your own post titles. Better copy than the built-in template engine produces.'),
+          .describe(
+            'Your own post titles. Better copy than the built-in template engine produces.'
+          ),
         authorName: z.string().optional(),
         includeVideo: z
           .boolean()
           .default(true)
-          .describe('Look up real YouTube videos to embed. Set false to skip the network calls.'),
+          .describe(
+            'Look up real YouTube videos to embed. Set false to skip the network calls.'
+          ),
       },
     },
     async (args) => {
@@ -245,7 +273,12 @@ function registerContentTools(server: McpServer): void {
         created: report.created,
         failed: report.failed,
         generation: report.generation,
-        posts: report.results.map((r) => ({ id: r.id, title: r.title, url: r.url, status: r.status })),
+        posts: report.results.map((r) => ({
+          id: r.id,
+          title: r.title,
+          url: r.url,
+          status: r.status,
+        })),
       });
     }
   );
@@ -254,7 +287,8 @@ function registerContentTools(server: McpServer): void {
     'list_seeded',
     {
       title: 'List seeded content',
-      description: 'Lists posts themeseed created on a site (everything tagged #themeseed).',
+      description:
+        'Lists posts themeseed created on a site (everything tagged #themeseed).',
       inputSchema: { site: z.string().optional() },
     },
     async ({ site: slug }) => {
@@ -263,14 +297,22 @@ function registerContentTools(server: McpServer): void {
       const results = await provider.listSeeded();
 
       if (results.length === 0) {
-        return text(`No themeseed content found on "${resolved}".`, { site: resolved, posts: [] });
+        return text(`No themeseed content found on "${resolved}".`, {
+          site: resolved,
+          posts: [],
+        });
       }
-      const lines = results.map((r) => `  ${r.status.padEnd(9)} ${r.title}${r.url ? ` — ${r.url}` : ''}`);
-      return text(`${results.length} seeded post(s) on "${resolved}":\n${lines.join('\n')}`, {
-        site: resolved,
-        count: results.length,
-        posts: results,
-      });
+      const lines = results.map(
+        (r) => `  ${r.status.padEnd(9)} ${r.title}${r.url ? ` — ${r.url}` : ''}`
+      );
+      return text(
+        `${results.length} seeded post(s) on "${resolved}":\n${lines.join('\n')}`,
+        {
+          site: resolved,
+          count: results.length,
+          posts: results,
+        }
+      );
     }
   );
 
@@ -286,7 +328,9 @@ function registerContentTools(server: McpServer): void {
         confirm: z
           .boolean()
           .default(false)
-          .describe('Must be true to actually delete. False returns what would be removed.'),
+          .describe(
+            'Must be true to actually delete. False returns what would be removed.'
+          ),
       },
     },
     async ({ site: slug, confirm }) => {
@@ -307,7 +351,8 @@ function registerContentTools(server: McpServer): void {
       const lines = [`Removed ${summary.removed} seeded post(s) from "${resolved}".`];
       if (summary.failed?.length) {
         lines.push(`${summary.failed.length} could not be removed:`);
-        for (const failure of summary.failed) lines.push(`  - ${failure.id}: ${failure.error}`);
+        for (const failure of summary.failed)
+          lines.push(`  - ${failure.id}: ${failure.error}`);
       }
       lines.push(`${remaining.length} seeded post(s) remain.`);
 
@@ -328,7 +373,9 @@ function registerContentTools(server: McpServer): void {
 function text(message: string, structured?: unknown) {
   return {
     content: [{ type: 'text' as const, text: message }],
-    ...(structured !== undefined ? { structuredContent: structured as Record<string, unknown> } : {}),
+    ...(structured !== undefined
+      ? { structuredContent: structured as Record<string, unknown> }
+      : {}),
   };
 }
 

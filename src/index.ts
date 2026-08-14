@@ -8,7 +8,12 @@
  */
 
 export * from './core/types.js';
-export { ConfigError, ProviderError, ThemeseedError, describeError } from './core/errors.js';
+export {
+  ConfigError,
+  ProviderError,
+  ThemeseedError,
+  describeError,
+} from './core/errors.js';
 export { logger, setLogLevel, maskSecret } from './core/logger.js';
 export type { LogLevel } from './core/logger.js';
 export { seedSite } from './core/seed.js';

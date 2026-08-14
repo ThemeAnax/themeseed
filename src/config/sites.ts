@@ -53,12 +53,21 @@ export async function loadSites(): Promise<SitesFile> {
   }
 
   const data = parsed as Partial<SitesFile>;
-  if (!data || typeof data !== 'object' || typeof data.sites !== 'object' || !data.sites) {
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    typeof data.sites !== 'object' ||
+    !data.sites
+  ) {
     throw new ConfigError(`${file} does not look like a themeseed config`, {
       hint: 'Expected an object with a "sites" key.',
     });
   }
-  return { version: 1, sites: data.sites, ...(data.defaultSite ? { defaultSite: data.defaultSite } : {}) };
+  return {
+    version: 1,
+    sites: data.sites,
+    ...(data.defaultSite ? { defaultSite: data.defaultSite } : {}),
+  };
 }
 
 export async function saveSites(data: SitesFile): Promise<void> {
@@ -88,7 +97,9 @@ export async function getSite(slug: string): Promise<SiteConfig> {
 }
 
 /** Resolves an explicit slug, else the default, else the only configured site. */
-export async function resolveSite(slug?: string): Promise<{ slug: string; site: SiteConfig }> {
+export async function resolveSite(
+  slug?: string
+): Promise<{ slug: string; site: SiteConfig }> {
   const data = await loadSites();
   const slugs = Object.keys(data.sites);
 
@@ -96,7 +107,9 @@ export async function resolveSite(slug?: string): Promise<{ slug: string; site: 
     const site = data.sites[slug];
     if (!site) {
       throw new ConfigError(`No site configured with slug "${slug}"`, {
-        hint: slugs.length ? `Known sites: ${slugs.join(', ')}` : 'Add one with `themeseed add-site`.',
+        hint: slugs.length
+          ? `Known sites: ${slugs.join(', ')}`
+          : 'Add one with `themeseed add-site`.',
       });
     }
     return { slug, site };
@@ -111,7 +124,9 @@ export async function resolveSite(slug?: string): Promise<{ slug: string; site: 
     return { slug: only, site: data.sites[only]! };
   }
   throw new ConfigError(
-    slugs.length === 0 ? 'No sites configured yet.' : 'Multiple sites configured; specify one.',
+    slugs.length === 0
+      ? 'No sites configured yet.'
+      : 'Multiple sites configured; specify one.',
     {
       hint:
         slugs.length === 0

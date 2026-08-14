@@ -14,7 +14,11 @@ import type { ThemeCapabilities } from '../../../core/types.js';
 import type { GhostClient } from '../client.js';
 import { LocalThemeSource } from './local-theme-source.js';
 import { RenderedThemeSource } from './rendered-theme-source.js';
-import { mergeSignals, type ThemeAnalysisStrategy, type ThemeSignalSet } from './signals.js';
+import {
+  mergeSignals,
+  type ThemeAnalysisStrategy,
+  type ThemeSignalSet,
+} from './signals.js';
 
 export interface AnalyzeThemeOptions {
   /** Explicit path to Ghost's `content/themes` directory. */

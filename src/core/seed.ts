@@ -53,7 +53,12 @@ export async function seedSite(request: SeedRequest): Promise<SeedReport> {
 
   request.onProgress?.('analyzing', 0, 1, 'reading the active theme');
   const capabilities = request.capabilities ?? (await provider.analyzeTheme());
-  request.onProgress?.('analyzing', 1, 1, `${capabilities.themeName} (confidence ${capabilities.confidence})`);
+  request.onProgress?.(
+    'analyzing',
+    1,
+    1,
+    `${capabilities.themeName} (confidence ${capabilities.confidence})`
+  );
 
   if (capabilities.confidence < 0.35) {
     logger.warn(
@@ -63,7 +68,10 @@ export async function seedSite(request: SeedRequest): Promise<SeedReport> {
   }
 
   const imageSourceKind = request.imageSource ?? 'stock';
-  const imageSource = await createUsableImageSource(imageSourceKind, request.imageSourceOptions ?? {});
+  const imageSource = await createUsableImageSource(
+    imageSourceKind,
+    request.imageSourceOptions ?? {}
+  );
 
   const generation = await generateSeedContent({
     topic: request.topic,
@@ -76,20 +84,34 @@ export async function seedSite(request: SeedRequest): Promise<SeedReport> {
     ...(request.authorName ? { authorName: request.authorName } : {}),
     ...(request.engine ? { engine: request.engine } : {}),
     ...(request.includeVideo === false ? { videoFinder: null } : {}),
-    onProgress: (done, total, title) => request.onProgress?.('generating', done, total, title),
+    onProgress: (done, total, title) =>
+      request.onProgress?.('generating', done, total, title),
   });
 
   const results = await provider.createContent(generation.posts, {
     imageSource,
     onProgress: (done, total, current) =>
-      request.onProgress?.('publishing', done, total, current.error ? `${current.title} — FAILED` : current.title),
+      request.onProgress?.(
+        'publishing',
+        done,
+        total,
+        current.error ? `${current.title} — FAILED` : current.title
+      ),
   });
 
   const failed = results.filter((result) => result.error).length;
+
+  // Report what actually landed, not what was planned. An image that failed to
+  // download is dropped at publish time, so the generator's own count would
+  // claim a feature image the post does not have.
+  const publishedFeatureImages = results.filter(
+    (result) => result.hasFeatureImage
+  ).length;
+
   return {
     capabilities,
     results,
-    generation: generation.stats,
+    generation: { ...generation.stats, withFeatureImage: publishedFeatureImages },
     created: results.length - failed,
     failed,
   };

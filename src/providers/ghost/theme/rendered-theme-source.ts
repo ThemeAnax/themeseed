@@ -54,7 +54,9 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
     }
 
     const evidence: string[] = [`fetched ${this.baseUrl}`];
-    const capabilities: Partial<MeasurableCapabilities> = { themeName: this.options.themeName };
+    const capabilities: Partial<MeasurableCapabilities> = {
+      themeName: this.options.themeName,
+    };
 
     const css = await this.fetchThemeStylesheets(home, evidence);
     if (css) this.applyCardSignals(css, capabilities, evidence);
@@ -65,7 +67,9 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
       evidence.push(`inspected post page ${postUrl}`);
       this.applyPostSignals(postHtml, css ?? '', capabilities, evidence);
     } else {
-      evidence.push('no published post available to inspect; post-level signals unmeasured');
+      evidence.push(
+        'no published post available to inspect; post-level signals unmeasured'
+      );
     }
 
     return {
@@ -103,7 +107,10 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
    * `cards.min.css` is skipped: it is present on sites whose theme never
    * styled a card, so counting it would make every site look gallery-capable.
    */
-  private async fetchThemeStylesheets(html: string, evidence: string[]): Promise<string | null> {
+  private async fetchThemeStylesheets(
+    html: string,
+    evidence: string[]
+  ): Promise<string | null> {
     const hrefs = [...html.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi)]
       .map((m) => m[0].match(/href=["']([^"']+)["']/i)?.[1])
       .filter((href): href is string => Boolean(href))
@@ -154,7 +161,12 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
     for (const href of candidates) {
       const pathname = new URL(href).pathname;
       if (pathname === '/' || pathname === '') continue;
-      if (/^\/(tag|author|page|ghost|rss|about|contact|signin|signup|members)\b/.test(pathname)) continue;
+      if (
+        /^\/(tag|author|page|ghost|rss|about|contact|signin|signup|members)\b/.test(
+          pathname
+        )
+      )
+        continue;
       if (/\.(css|js|png|jpe?g|svg|webp|xml|ico)$/i.test(pathname)) continue;
       // Ghost permalinks are a single slug segment by default.
       if (pathname.split('/').filter(Boolean).length === 1) return href;
@@ -192,7 +204,9 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
 
     // og:image is set from the feature image, so its presence in <head> says
     // the post *has* one; a matching <img> in <body> says the theme shows it.
-    const ogImage = /property=["']og:image["'][^>]*content=["']([^"']+)["']/i.exec(head)?.[1];
+    const ogImage = /property=["']og:image["'][^>]*content=["']([^"']+)["']/i.exec(
+      head
+    )?.[1];
     let heroStem = '';
     if (ogImage) {
       const filename = ogImage.split('/').pop()?.split('?')[0] ?? '';
@@ -209,7 +223,9 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
     const ratio = this.heroRatio(body, css, heroStem);
     if (ratio !== undefined) {
       capabilities.featureImageAspectRatio = ratio;
-      evidence.push(`feature image aspect-ratio ≈ ${ratio} from the element wrapping the hero`);
+      evidence.push(
+        `feature image aspect-ratio ≈ ${ratio} from the element wrapping the hero`
+      );
     }
 
     const hasTags = /\/tag\/[a-z0-9-]+/i.test(body);
@@ -251,7 +267,9 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
     if (imgIndex >= 0) {
       // ~1200 chars covers the handful of wrappers a hero is nested in.
       const before = body.slice(Math.max(0, imgIndex - 1200), imgIndex);
-      const openTags = [...before.matchAll(/<[a-zA-Z][^>]*>/g)].map((m) => m[0]).reverse();
+      const openTags = [...before.matchAll(/<[a-zA-Z][^>]*>/g)]
+        .map((m) => m[0])
+        .reverse();
       for (const tag of openTags) {
         const inline = parseAspectRatio(tag);
         if (inline !== undefined) return inline;
