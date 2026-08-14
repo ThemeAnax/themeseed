@@ -5,9 +5,9 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.1] - 2026-08-14
+## [Unreleased]
 
-- Add grok, gemini and fal AI image adapters
+Nothing yet.
 
 ## [0.1.1] — 2026-08-14
 
@@ -32,10 +32,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   on the project — the adapter's hint says so, because it otherwise reads as a transient
   rate limit.
 - fal keys are `<id>:<secret>` and are sent as `Authorization: Key …`, not `Bearer`.
-
-## [Unreleased]
-
-Nothing yet.
 
 ## [0.1.0] — 2026-08-14
 
@@ -104,5 +100,6 @@ First release. Ghost support, complete CLI, MCP server.
 - Ghost's image card silently renders `alt=""` when given `altText`; the property it honours is
   `alt`.
 
-[Unreleased]: https://github.com/ThemeAnax/themeseed/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ThemeAnax/themeseed/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ThemeAnax/themeseed/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ThemeAnax/themeseed/releases/tag/v0.1.0
