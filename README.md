@@ -446,3 +446,6 @@ Three decisions are deliberately **not** settled in code. See
 ## License
 
 MIT — see [LICENSE](LICENSE). Provisional pending the decision above.
+
+## Validated
+[![M8ven Score](https://m8ven.ai/badge/mcp/themeanax-themeseed-tizj0o)](https://m8ven.ai/mcp/themeanax-themeseed-tizj0o)
