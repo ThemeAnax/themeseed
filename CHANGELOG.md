@@ -7,7 +7,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- `themeseed images` configures stock, AI and local image providers at any time,
+  with `--list`, `--set`, `--remove` and an interactive wizard.
+- `themeseed init` now asks which image providers to set up, and writes
+  `~/.themeseed/.env` and `~/.themeseed/sites.example.json`. Both list every
+  setting, commented out, so they can be filled in by hand. `--skip-images`
+  skips the prompt.
+- `imageSource: "none"` publishes posts without images, and `"auto"` picks a
+  source from whichever provider keys are configured.
+- `studyTheme` on `generate_posts`, and `themeseed seed --study-theme`, read the
+  active theme and shape content to it.
+
+### Changed
+
+- **Provider keys now load from `~/.themeseed/.env`** instead of the current
+  working directory. The MCP server is launched by an editor in whatever
+  directory it has open, so the old lookup found an unrelated `.env` or none at
+  all, and stock lookups degraded silently to keyless Lorem Picsum.
+- **`imageSource` defaults to `auto`, not `stock`.** With no key configured,
+  posts publish without images rather than with unrelated placeholder
+  photography. Passing `stock` or `ai` explicitly still fails loudly when the
+  key is missing.
+- **Theme analysis no longer runs on every seed.** It costs a round trip and
+  now happens only when `studyTheme` is set, or when `analyze_theme` /
+  `themeseed analyze` is called directly.
 
 ## [0.1.1] — 2026-08-14
 

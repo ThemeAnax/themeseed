@@ -140,7 +140,8 @@ to plain line output when stdout is not a TTY, so piping and CI logs stay readab
 
 | Command                             | What it does                                                         |
 | ----------------------------------- | -------------------------------------------------------------------- |
-| `themeseed init`                    | First-run setup: detect editors, register the MCP server, add a site |
+| `themeseed init`                    | First-run setup: write config files, register the MCP server, pick image providers, add a site |
+| `themeseed images [--list]`         | Configure where post images come from, at any time                   |
 | `themeseed install [-t <id>…] [-a]` | Register the MCP server with an editor, without the full init flow   |
 | `themeseed uninstall [-t <id>…]`    | Remove the MCP server from editor configuration                      |
 | `themeseed mcp-config`              | Print the JSON snippet for manual configuration                      |
@@ -166,7 +167,7 @@ history and in `ps` output.
 | Command                             | What it does                                            |
 | ----------------------------------- | ------------------------------------------------------- |
 | `themeseed analyze [site] [--json]` | Report what the active theme can display, with evidence |
-| `themeseed seed [site]`             | Generate and publish content that suits the theme       |
+| `themeseed seed [site]`             | Generate and publish demo content                       |
 | `themeseed list [site] [--json]`    | List content themeseed created                          |
 | `themeseed wipe [site] [-y]`        | Delete everything themeseed created                     |
 
@@ -176,7 +177,8 @@ history and in `ps` output.
 | ----------------------------- | ---------- | -------------------------------------------- |
 | `-t, --topic <topic>`         | prompted   | What the publication is about                |
 | `-c, --count <n>`             | `12`       | How many posts to create                     |
-| `-i, --image-source <source>` | `stock`    | `local`, `stock` or `ai`                     |
+| `-i, --image-source <source>` | `auto`     | `auto`, `local`, `stock`, `ai` or `none`     |
+| `--study-theme`               | off        | Read the active theme and shape content to it |
 | `--draft`                     | off        | Create drafts instead of published posts     |
 | `--author <name>`             | —          | Author to attribute posts to                 |
 | `--no-video`                  | off        | Skip YouTube lookups (faster, fully offline) |
@@ -218,7 +220,18 @@ supply the words while themeseed handles structure, images, capability-gating an
 
 ## How theme analysis works
 
-This is the part that makes the output fit rather than merely exist.
+This is the part that makes the output fit rather than merely exist. It is **opt-in**, because
+it costs a round trip and only pays for itself when you want content shaped to a specific
+theme:
+
+```bash
+themeseed seed blog --topic "SaaS productivity" --study-theme
+themeseed analyze blog          # read the theme without publishing anything
+```
+
+Over MCP, set `studyTheme: true` on `generate_posts`. Without it, themeseed generates against
+neutral assumptions — a feature image, tags, an author, about 850 words, and no cards a theme
+might not style.
 
 Ghost's Admin API **will not serve theme files**: `GET /ghost/api/admin/themes/` returns
 `403 NoPermissionError` for API-token auth on every Ghost version, because it requires a staff
@@ -260,7 +273,32 @@ themeseed only emits a block when the theme was measured to support it.
 
 ## Image sources
 
-One interface, three interchangeable implementations, selected with `--image-source`.
+One interface, four interchangeable implementations, selected with `--image-source`.
+
+**Images are optional.** With no provider key configured, posts publish as text, which is a
+fair preview of a theme in its own right. Configure a provider whenever you want one:
+
+```bash
+themeseed images                 # interactive
+themeseed images --list          # what is configured, and what `auto` picks
+themeseed images --set unsplash --key <key>
+themeseed images --set local --key /Users/you/Pictures/seed
+themeseed images --remove unsplash
+```
+
+Keys are stored in `~/.themeseed/.env`. `themeseed init` asks about this too.
+
+### `auto` (the default)
+
+Uses `ai` when an AI key is set, `stock` when a stock key is, and `none` otherwise. A
+generated image matches the post's subject exactly; a searched photograph is at least topical;
+neither is worth faking with unrelated placeholder art. `auto` never fails — it degrades.
+Naming a source explicitly is a decision rather than a preference, so `stock` and `ai` still
+fail loudly when their key is missing.
+
+### `none`
+
+Sources no images. Posts publish as text.
 
 ### `local`
 
@@ -362,7 +400,23 @@ the content generator, image sources, CLI or MCP tools needs to change. See
 
 ## Configuration
 
-Sites live in `~/.themeseed/sites.json`, written `0600`, never inside a repository:
+Everything lives in `~/.themeseed/`, never inside a repository:
+
+| File                 | What it holds                                                            |
+| -------------------- | ------------------------------------------------------------------------ |
+| `sites.json`         | The sites you seed, with credentials. Written by `themeseed add-site`     |
+| `.env`               | Image and AI provider keys. Written by `themeseed init` and `images`      |
+| `sites.example.json` | A documented template for `sites.json`, with every field explained        |
+
+`themeseed init` creates all three. Every setting appears in `.env` already, commented out, so
+you can fill it in with an editor instead of a prompt — themeseed never overwrites that file.
+Set `THEMESEED_CONFIG_DIR` to move the directory elsewhere.
+
+Both the CLI and the MCP server read `~/.themeseed/.env` by absolute path. They deliberately do
+not read a `.env` from the current directory: an editor launches the MCP server in whatever
+directory it has open, so a relative lookup finds a different file every time, or none.
+
+`sites.json` is written `0600`:
 
 ```json
 {
@@ -382,7 +436,8 @@ Sites live in `~/.themeseed/sites.json`, written `0600`, never inside a reposito
 Get a Ghost Admin API key from **Ghost Admin → Settings → Integrations → Add custom
 integration**. It is the key with a colon in it — the Content API key will not work.
 
-Environment variables (all optional) are documented in [`.env.example`](.env.example).
+Every environment variable is listed and documented in the generated `~/.themeseed/.env`.
+(The repository's own [`.env.example`](.env.example) configures the e2e suite, not normal use.)
 `THEMESEED_LOG_LEVEL=debug` turns on verbose diagnostics; all logging goes to stderr, because
 stdout belongs to the MCP protocol.
 
