@@ -10,9 +10,9 @@
  */
 
 import { Command } from 'commander';
-import dotenv from 'dotenv';
 import pc from 'picocolors';
 
+import { loadUserEnv } from '../config/env.js';
 import { describeError, ThemeseedError } from '../core/errors.js';
 import { setLogLevel, type LogLevel } from '../core/logger.js';
 import { readVersion } from '../core/version.js';
@@ -32,7 +32,9 @@ import {
 } from './commands/sites.js';
 import { upgradeCommand } from './commands/upgrade.js';
 
-dotenv.config({ quiet: true });
+// Read the same ~/.themeseed/.env the MCP server reads, so both surfaces see
+// the same provider keys regardless of the directory they were started in.
+loadUserEnv();
 
 const program = new Command();
 

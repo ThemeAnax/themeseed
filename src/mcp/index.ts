@@ -3,17 +3,20 @@
  * `themeseed-mcp` — the MCP server entry point, speaking JSON-RPC over stdio.
  *
  * stdout belongs to the protocol. Diagnostics go to stderr via `logger`, and
- * `dotenv` is loaded quietly for the same reason.
+ * the config file is read quietly for the same reason.
  */
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import dotenv from 'dotenv';
 
+import { loadUserEnv } from '../config/env.js';
 import { logger } from '../core/logger.js';
 import { readVersion } from '../core/version.js';
 import { createThemeseedServer } from './server.js';
 
-dotenv.config({ quiet: true });
+// Provider keys come from ~/.themeseed/.env, not the working directory: an
+// editor launches this server wherever it likes, and a relative lookup there
+// finds a different file every time, or none.
+loadUserEnv();
 
 async function main(): Promise<void> {
   const version = await readVersion();
