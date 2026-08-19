@@ -11,7 +11,7 @@ import pc from 'picocolors';
 import { resolveSite } from '../../config/sites.js';
 import { describeError } from '../../core/errors.js';
 import { seedSite } from '../../core/seed.js';
-import type { ImageSourceKind, PublishStatus } from '../../core/types.js';
+import type { PublishStatus, RequestedImageSource } from '../../core/types.js';
 import { createProvider } from '../../providers/registry.js';
 import {
   cancelled,
@@ -114,6 +114,7 @@ export interface SeedFlags {
   draft?: boolean;
   yes?: boolean;
   noVideo?: boolean;
+  studyTheme?: boolean;
   author?: string;
   seed?: number;
 }
@@ -140,7 +141,7 @@ export async function seedCommand(
   const status: PublishStatus = flags.draft
     ? 'draft'
     : ((flags.status as PublishStatus) ?? 'published');
-  const imageSource = (flags.imageSource as ImageSourceKind) ?? 'stock';
+  const imageSource = (flags.imageSource as RequestedImageSource) ?? 'auto';
 
   if (!flags.yes) {
     assertInteractive('Confirmation', 'Pass --yes to seed without confirming.');
@@ -156,7 +157,7 @@ export async function seedCommand(
   }
 
   const spinner = makeSpinner();
-  spinner.start('Analyzing the theme');
+  spinner.start(flags.studyTheme ? 'Analyzing the theme' : 'Preparing');
 
   try {
     const report = await seedSite({
@@ -166,6 +167,7 @@ export async function seedCommand(
       imageSource,
       status,
       includeVideo: !flags.noVideo,
+      studyTheme: Boolean(flags.studyTheme),
       ...(flags.author ? { authorName: flags.author } : {}),
       ...(flags.seed !== undefined ? { seed: flags.seed } : {}),
       onProgress: (phase, done, total, detail) => {
@@ -180,7 +182,9 @@ export async function seedCommand(
     spinner.stop(`Created ${report.created} of ${count} post(s) on "${resolved}"`);
 
     console.log('');
-    console.log(`  theme            ${pc.bold(report.capabilities.themeName)}`);
+    if (flags.studyTheme) {
+      console.log(`  theme            ${pc.bold(report.capabilities.themeName)}`);
+    }
     console.log(`  feature images   ${report.generation.withFeatureImage}`);
     console.log(`  inline images    ${report.generation.withInlineImage}`);
     console.log(

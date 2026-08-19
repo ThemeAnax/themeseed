@@ -27,9 +27,12 @@ export function createThemeseedServer(version: string): McpServer {
     {
       instructions:
         'themeseed fills a CMS with realistic demo content so a theme can be previewed with ' +
-        'real-looking articles, images, galleries and video embeds. Call analyze_theme first to ' +
-        'learn what the active theme can display, then generate_posts. Everything it creates is ' +
-        'tagged #themeseed and can be removed with wipe_seeded. Ghost is supported today.',
+        'real-looking articles, images, galleries and video embeds. Call generate_posts directly; ' +
+        'it needs no setup call first. Call analyze_theme only when the user asks about the theme, ' +
+        "and set generate_posts.studyTheme when they want content shaped to the theme's design. " +
+        'Images are optional: with no provider key configured, posts publish without them. ' +
+        'Everything it creates is tagged #themeseed and can be removed with wipe_seeded. ' +
+        'Ghost is supported today.',
     }
   );
 
@@ -194,10 +197,12 @@ function registerContentTools(server: McpServer): void {
     {
       title: 'Generate and publish demo posts',
       description:
-        'Analyzes the theme, generates posts that suit it, sources images, and publishes them. ' +
-        'Galleries and video embeds are only included when the theme actually supports them. ' +
-        'Every post is tagged #themeseed so wipe_seeded can remove exactly this content later. ' +
-        'Supply `titles` to use your own headlines instead of generated ones.',
+        'Generates posts, sources images, and publishes them. Set studyTheme to read the ' +
+        "active theme first and include only cards it can display; otherwise generic " +
+        'defaults are used and no theme is read. Images are optional and resolve from ' +
+        'whichever provider keys are configured. Every post is tagged #themeseed so ' +
+        'wipe_seeded can remove exactly this content later. Supply `titles` to use your ' +
+        'own headlines instead of generated ones.',
       inputSchema: {
         site: z
           .string()
@@ -214,11 +219,13 @@ function registerContentTools(server: McpServer): void {
           .default(12)
           .describe('How many posts to create.'),
         imageSource: z
-          .enum(['local', 'stock', 'ai'])
-          .default('stock')
+          .enum(['auto', 'local', 'stock', 'ai', 'none'])
+          .default('auto')
           .describe(
-            'local = a folder on disk (THEMESEED_LOCAL_IMAGE_DIR); stock = Unsplash/Pexels if a key ' +
-              'is set, otherwise keyless Lorem Picsum; ai = generated (OPENAI_API_KEY) or procedural placeholders.'
+            'auto = AI if an AI key is configured, else stock if a stock key is, else no images. ' +
+              'local = a folder on disk (THEMESEED_LOCAL_IMAGE_DIR); stock = Unsplash/Pexels, ' +
+              'falling back to keyless Lorem Picsum; ai = a generated image; none = text only. ' +
+              'Keys live in ~/.themeseed/.env; the user sets them with `themeseed images`.'
           ),
         status: z
           .enum(['draft', 'published'])
@@ -237,6 +244,14 @@ function registerContentTools(server: McpServer): void {
           .describe(
             'Look up real YouTube videos to embed. Set false to skip the network calls.'
           ),
+        studyTheme: z
+          .boolean()
+          .default(false)
+          .describe(
+            "Read the site's active theme first and shape content to what it can display. " +
+              'Set this when the user asks for content that matches their theme or design; ' +
+              'leave it false otherwise, because the analysis costs an extra round trip.'
+          ),
       },
     },
     async (args) => {
@@ -248,12 +263,15 @@ function registerContentTools(server: McpServer): void {
         imageSource: args.imageSource,
         status: args.status,
         includeVideo: args.includeVideo,
+        studyTheme: args.studyTheme,
         ...(args.titles?.length ? { titles: args.titles } : {}),
         ...(args.authorName ? { authorName: args.authorName } : {}),
       });
 
       const lines = [
-        `Created ${report.created} of ${args.count} posts on "${slug}" (theme: ${report.capabilities.themeName}).`,
+        `Created ${report.created} of ${args.count} posts on "${slug}"${
+          args.studyTheme ? ` (theme: ${report.capabilities.themeName})` : ''
+        }.`,
         `  feature images:  ${report.generation.withFeatureImage}`,
         `  inline images:   ${report.generation.withInlineImage}`,
         `  galleries:       ${report.generation.withGallery}${report.generation.skipped.gallery ? ` (skipped — ${report.generation.skipped.gallery})` : ''}`,

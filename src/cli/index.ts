@@ -140,7 +140,9 @@ program
 
 program
   .command('seed [site]')
-  .description('Generate and publish demo content that suits the active theme')
+  .description(
+    'Generate and publish demo content (add --study-theme to shape it to the active theme)'
+  )
   .option(
     '-t, --topic <topic>',
     'What the publication is about, e.g. "SaaS productivity blog"'
@@ -151,7 +153,15 @@ program
     (value) => Number.parseInt(value, 10),
     12
   )
-  .option('-i, --image-source <source>', 'local | stock | ai', 'stock')
+  .option(
+    '-i, --image-source <source>',
+    'auto | local | stock | ai | none. auto uses AI if a key is set, else stock, else no images',
+    'auto'
+  )
+  .option(
+    '--study-theme',
+    "Read the site's active theme and shape content to it (costs an extra round trip)"
+  )
   .option('--draft', 'Create drafts instead of published posts')
   .option('--author <name>', 'Author name to attribute posts to')
   .option('--no-video', 'Skip YouTube lookups')
