@@ -1,20 +1,24 @@
 /**
- * The one high-level operation: analyze a theme, generate content that fits it,
- * publish it.
+ * The one high-level operation: generate content and publish it, optionally
+ * shaping it to the site's real theme first.
  *
  * Both the MCP tools and the CLI call this, so the two surfaces cannot drift
  * apart in behaviour — only in presentation.
  */
 
-import { createUsableImageSource, type ImageSourceOptions } from '../images/index.js';
+import {
+  createRequestedImageSource,
+  type ImageSourceOptions,
+} from '../images/index.js';
 import { generateSeedContent, type GenerateSummary } from '../content/generator.js';
 import type { ContentEngine } from '../content/engine.js';
 import { createProvider } from '../providers/registry.js';
 import type { CmsProvider, SiteConfig } from '../providers/provider.js';
 import { logger } from './logger.js';
+import { genericCapabilities } from './theme-defaults.js';
 import type {
-  ImageSourceKind,
   PublishStatus,
+  RequestedImageSource,
   SeedResult,
   ThemeCapabilities,
 } from './types.js';
@@ -23,7 +27,8 @@ export interface SeedRequest {
   site: SiteConfig;
   topic: string;
   count: number;
-  imageSource?: ImageSourceKind;
+  /** Defaults to `auto`: AI if a key is set, else stock, else no images. */
+  imageSource?: RequestedImageSource;
   status?: PublishStatus;
   /** Titles from the caller (e.g. written by an MCP host's model). */
   titles?: string[];
@@ -33,6 +38,12 @@ export interface SeedRequest {
   imageSourceOptions?: ImageSourceOptions;
   /** Reuse an existing analysis instead of running one. */
   capabilities?: ThemeCapabilities;
+  /**
+   * Read the site's real theme and shape content to it. Off by default: the
+   * analysis costs a round trip and only pays for itself when the caller
+   * actually wants content matched to the theme's design.
+   */
+  studyTheme?: boolean;
   /** Skip YouTube lookups (offline runs, or when speed matters more). */
   includeVideo?: boolean;
   onProgress?: (phase: SeedPhase, done: number, total: number, detail: string) => void;
@@ -51,25 +62,34 @@ export interface SeedReport {
 export async function seedSite(request: SeedRequest): Promise<SeedReport> {
   const provider: CmsProvider = createProvider(request.site);
 
-  request.onProgress?.('analyzing', 0, 1, 'reading the active theme');
-  const capabilities = request.capabilities ?? (await provider.analyzeTheme());
+  const studyTheme = request.studyTheme ?? false;
+
+  if (studyTheme) request.onProgress?.('analyzing', 0, 1, 'reading the active theme');
+  const capabilities =
+    request.capabilities ??
+    (studyTheme
+      ? await provider.analyzeTheme()
+      : genericCapabilities(request.site.platform));
   request.onProgress?.(
     'analyzing',
     1,
     1,
-    `${capabilities.themeName} (confidence ${capabilities.confidence})`
+    studyTheme
+      ? `${capabilities.themeName} (confidence ${capabilities.confidence})`
+      : 'using generic defaults (pass studyTheme to read the theme)'
   );
 
-  if (capabilities.confidence < 0.35) {
+  // Only an analysis that ran can be low confidence. Warning about defaults
+  // would nag every run about a reading nobody asked for.
+  if (studyTheme && !request.capabilities && capabilities.confidence < 0.35) {
     logger.warn(
       `theme analysis for "${capabilities.themeName}" is low confidence (${capabilities.confidence}); ` +
         'content will use conservative defaults. Point --themes-dir at the Ghost install for an accurate reading.'
     );
   }
 
-  const imageSourceKind = request.imageSource ?? 'stock';
-  const imageSource = await createUsableImageSource(
-    imageSourceKind,
+  const imageSource = await createRequestedImageSource(
+    request.imageSource ?? 'auto',
     request.imageSourceOptions ?? {}
   );
 
