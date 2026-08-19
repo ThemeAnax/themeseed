@@ -22,6 +22,7 @@ import {
   seedCommand,
   wipeCommand,
 } from './commands/content.js';
+import { imagesCommand } from './commands/images.js';
 import { initCommand } from './commands/init.js';
 import { installCommand, printMcpConfig, uninstallCommand } from './commands/install.js';
 import {
@@ -64,6 +65,7 @@ program
   .option('-y, --yes', 'Accept defaults without prompting')
   .option('--registry <url>', 'npm registry to install from')
   .option('--skip-editors', 'Do not touch any editor configuration')
+  .option('--skip-images', 'Do not prompt for image providers')
   .option('--skip-site', 'Do not prompt to add a site')
   .action((options) => initCommand(options));
 
@@ -90,6 +92,18 @@ program
   .description('Print the MCP server JSON snippet for manual configuration')
   .option('--registry <url>', 'npm registry to reference')
   .action((options) => printMcpConfig(options.registry));
+
+program
+  .command('images')
+  .description('Configure where post images come from (stock, AI or a local folder)')
+  .option('--list', 'Show which providers are configured')
+  .option('--set <provider>', 'Configure one provider without prompting')
+  .option(
+    '--key <value>',
+    'API key for --set, or a directory path for `--set local`. Prefer the prompt — a key passed as a flag lands in shell history'
+  )
+  .option('--remove <provider>', 'Forget a provider key')
+  .action((options) => imagesCommand(options));
 
 program
   .command('upgrade')
