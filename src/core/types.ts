@@ -119,7 +119,14 @@ export interface ImageRef {
   source?: ImageSourceKind;
 }
 
-export type ImageSourceKind = 'local' | 'stock' | 'ai';
+export type ImageSourceKind = 'local' | 'stock' | 'ai' | 'none';
+
+/**
+ * What a caller may ask for. `auto` picks a kind from whichever provider keys
+ * are configured, so it is a request and never an answer — `ImageRef.source`
+ * records the kind that actually produced the bytes.
+ */
+export type RequestedImageSource = ImageSourceKind | 'auto';
 
 export interface ImageRequest {
   /** What the image should depict. */
