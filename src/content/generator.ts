@@ -61,6 +61,12 @@ export interface GenerateSummary {
       gallery?: string;
       video?: string;
       featureImage?: string;
+      /**
+       * Why image lookups failed, when they did. A quota-exhausted provider
+       * fails every request in a run, and reporting that only to stderr is how
+       * a run that lost every image still called itself a success.
+       */
+      images?: string;
     };
   };
 }
@@ -149,14 +155,18 @@ export async function generateSeedContent(
 
     let featureImage: ImageRef | undefined;
     if (capabilities.supportsFeatureImage) {
-      featureImage = await firstImage(imageSource, {
-        query: `${title} — ${profile.subject}`,
-        ...(capabilities.featureImageAspectRatio !== undefined
-          ? { aspectRatio: capabilities.featureImageAspectRatio }
-          : {}),
-        minWidth: 1600,
-        role: 'feature',
-      });
+      featureImage = await firstImage(
+        imageSource,
+        {
+          query: `${title} — ${profile.subject}`,
+          ...(capabilities.featureImageAspectRatio !== undefined
+            ? { aspectRatio: capabilities.featureImageAspectRatio }
+            : {}),
+          minWidth: 1600,
+          role: 'feature',
+        },
+        stats
+      );
       if (featureImage) stats.withFeatureImage += 1;
     }
 
@@ -206,12 +216,16 @@ async function enrichBlocks(args: EnrichArgs): Promise<ContentBlock[]> {
   const anchors = findInsertionPoints(blocks);
 
   if (anchors.length > 0) {
-    const image = await firstImage(args.imageSource, {
-      query: `${args.profile}: ${args.title}`,
-      minWidth: 1400,
-      role: 'body',
-      ...(args.capabilities.supportsWideImages ? {} : { aspectRatio: 1.5 }),
-    });
+    const image = await firstImage(
+      args.imageSource,
+      {
+        query: `${args.profile}: ${args.title}`,
+        minWidth: 1400,
+        role: 'body',
+        ...(args.capabilities.supportsWideImages ? {} : { aspectRatio: 1.5 }),
+      },
+      args.stats
+    );
     if (image) {
       insertions.push({
         at: anchors[0]!,
@@ -230,7 +244,8 @@ async function enrichBlocks(args: EnrichArgs): Promise<ContentBlock[]> {
     const images = await manyImages(
       args.imageSource,
       { query: `${args.profile} — details`, minWidth: 1200, role: 'gallery' },
-      GALLERY_SIZE
+      GALLERY_SIZE,
+      args.stats
     );
     // Ghost lays a gallery out as a grid; with fewer than two images that grid
     // is just a lopsided single image, so fall back rather than ship it.
@@ -297,21 +312,28 @@ function findInsertionPoints(blocks: ContentBlock[]): number[] {
 async function manyImages(
   source: ImageSource,
   request: ImageRequest,
-  count: number
+  count: number,
+  stats?: GenerateSummary['stats']
 ): Promise<ImageRef[]> {
   try {
     return await source.fetch(request, count);
   } catch (err) {
     logger.warn(`image lookup failed for "${request.query}":`, err);
+    // First failure only: every later one in the run has the same cause, and a
+    // report repeating "rate limit reached" twenty times is no clearer.
+    if (stats) {
+      stats.skipped.images ??= err instanceof Error ? err.message : String(err);
+    }
     return [];
   }
 }
 
 async function firstImage(
   source: ImageSource,
-  request: ImageRequest
+  request: ImageRequest,
+  stats?: GenerateSummary['stats']
 ): Promise<ImageRef | undefined> {
-  return (await manyImages(source, request, 1))[0];
+  return (await manyImages(source, request, 1, stats))[0];
 }
 
 // ---------------------------------------------------------------------------
