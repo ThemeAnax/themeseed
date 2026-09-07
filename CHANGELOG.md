@@ -7,6 +7,40 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-09-07
+
+### Added
+
+- **`update_post` (MCP) and `themeseed update` (CLI) edit a post that already
+  exists.** Attach a feature image to a post that has none, remove one, splice a
+  body image into the prose without rewriting it, or change title, excerpt and
+  status. Until now the only repair for one bad post was deleting it and seeding
+  again, which is absurd when the failure hit the last three posts of
+  twenty-five. Only the fields you name are touched, and the edit carries the
+  `updated_at` it read so a concurrent change in Ghost Admin collides rather
+  than being silently overwritten.
+- **Stock image providers now chain.** With both an Unsplash and a Pexels key
+  configured, a provider that fails — a quota, an outage, an empty result — hands
+  off to the next instead of ending the run's images. Naming a provider
+  explicitly puts it first without disabling the spare. Picsum stays a
+  standalone last resort: it cannot search, so chaining it behind a keyed
+  provider would quietly swap searched photography for random photography.
+
+### Changed
+
+- **`generate_posts` now reports why images are missing.** A failed image lookup
+  only ever reached stderr, which an MCP host does not display, so a run whose
+  provider had hit its hourly quota still reported `created: 25, failed: 0` with
+  nothing in any of them. The reason now appears in `skipped.images` on both
+  surfaces.
+
+### Security
+
+- `update_post` refuses to edit a post that does not carry `#themeseed` unless
+  `allowUnseeded` is passed. The tag is re-checked on the record the CMS
+  returns, never on the caller's claim, so a mistyped or misremembered id cannot
+  overwrite a real article.
+
 ## [0.3.0] — 2026-09-07
 
 ### Added
