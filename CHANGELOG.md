@@ -7,6 +7,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-09-07
+
+### Fixed
+
+- **The generated MCP config now names the node interpreter explicitly**, as
+  `{"command": "<node>", "args": ["<…>/themeseed-mcp"]}` rather than executing
+  the binary directly. The installed bin is a symlink to a `.js` file whose
+  `#!/usr/bin/env node` shebang resolves `node` against PATH, and an editor may
+  spawn the server with a PATH carrying no nvm/fnm/volta shim. The spawn then
+  died with `env: node: No such file or directory` before the server existed,
+  which surfaced only as an MCP entry stuck at "connecting" — with nothing
+  listening, reconnecting could never succeed, and the underlying error was
+  never shown. The CLI worked throughout, because a shell has node on PATH.
+  An already-written config keeps its old shape until the service is
+  reinstalled: `themeseed uninstall --tool <id>` then `themeseed install`.
+
+## [0.2.0] — 2026-08-19
+
 ### Added
 
 - `themeseed images` configures stock, AI and local image providers at any time,
@@ -33,18 +51,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Theme analysis no longer runs on every seed.** It costs a round trip and
   now happens only when `studyTheme` is set, or when `analyze_theme` /
   `themeseed analyze` is called directly.
-
-### Fixed
-
-- **The generated MCP config now names the node interpreter explicitly**, as
-  `{"command": "<node>", "args": ["<…>/themeseed-mcp"]}` rather than executing
-  the binary directly. The installed bin is a symlink to a `.js` file whose
-  `#!/usr/bin/env node` shebang resolves `node` against PATH, and an editor may
-  spawn the server with a PATH carrying no nvm/fnm/volta shim. The spawn then
-  died with `env: node: No such file or directory` before the server existed,
-  which surfaced only as an MCP entry stuck at "connecting" — with nothing
-  listening, reconnecting could never succeed, and the underlying error was
-  never shown. The CLI worked throughout, because a shell has node on PATH.
 
 ## [0.1.1] — 2026-08-14
 
@@ -137,6 +143,8 @@ First release. Ghost support, complete CLI, MCP server.
 - Ghost's image card silently renders `alt=""` when given `altText`; the property it honours is
   `alt`.
 
-[Unreleased]: https://github.com/ThemeAnax/themeseed/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ThemeAnax/themeseed/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/ThemeAnax/themeseed/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/ThemeAnax/themeseed/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/ThemeAnax/themeseed/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ThemeAnax/themeseed/releases/tag/v0.1.0
