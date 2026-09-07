@@ -7,6 +7,42 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-09-07
+
+### Added
+
+- **`topic` is now optional on `generate_posts`.** When it is omitted the user is
+  asked directly, via MCP elicitation, rather than the calling model inventing a
+  subject nobody chose. An empty answer — or a host that does not implement
+  elicitation — falls back to a random subject from a deck of ordinary
+  publication topics. `themeseed seed` accepts a blank prompt the same way.
+
+### Changed
+
+- **Every post now gets a body image**, not just two in three. Galleries and
+  video embeds still rotate across a run, and each is still used only where the
+  theme can style it. The old rotation handed every third post a video _instead
+  of_ an image, so a three-post run — the smallest useful preview, and the one
+  most likely to be judged on — published a post with no image at all.
+
+### Fixed
+
+- **Provider keys added while the MCP server is running are now picked up.**
+  `~/.themeseed/.env` was read once at startup, but the server outlives the shell
+  that launched it: a key written by `themeseed images` mid-session stayed
+  invisible until the editor restarted. `auto` then resolved to `none` and posts
+  published with no images while a working Unsplash key sat in the file. The file
+  is re-read per seed run, and a key commented out since the last read is
+  withdrawn. Variables exported in the user's own shell still win.
+- **Theme analysis no longer concludes a theme hides feature images because the
+  post it sampled had none.** Ghost emits `og:image` on every post, falling back
+  to the publication cover when a post has no feature image of its own; reading
+  that as "this post has a hero the theme refuses to render" marked the theme as
+  hero-less. The failure was self-reinforcing — one seed run without feature
+  images poisoned the next analysis, which then suppressed feature images on
+  every later run. Analysis now prefers a sample post that actually has a feature
+  image, and otherwise declines to answer rather than guessing.
+
 ## [0.2.1] — 2026-09-07
 
 ### Fixed
