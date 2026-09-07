@@ -255,19 +255,34 @@ export async function uninstallFromTarget(
 /**
  * How a tool should launch the server.
  *
- * `npx -y` is the default because it works whether or not the package is
- * installed globally, and picks up updates without the user re-running
- * `themeseed install`. A globally-installed binary is used when one is found,
- * since that starts faster and works offline.
+ * A globally-installed binary is preferred: it starts instantly and works
+ * offline. It is launched as an argument to `node` rather than executed
+ * directly, because the installed bin is a symlink to a `.js` file whose
+ * `#!/usr/bin/env node` shebang resolves `node` against PATH. An editor may
+ * spawn the server with a PATH that carries no nvm/fnm/volta shim — the
+ * spawn then dies with `env: node: No such file or directory` before the
+ * server exists, which surfaces only as a permanently "connecting" MCP entry
+ * that no amount of reconnecting can fix. Naming the interpreter explicitly
+ * removes PATH from the equation.
+ *
+ * `npx -y` is the last resort, for when the package is not installed at all.
+ * It re-resolves the package from the registry on *every* launch; against an
+ * authenticated private registry that round trip is slow enough to exceed an
+ * editor's MCP startup timeout, so it is a fallback and never the preference.
  */
 export function serverEntryFor(options: {
   globalBinary?: string;
+  /** Interpreter to launch the binary with. Defaults to the running node. */
+  nodePath?: string;
   registry?: string;
   packageName?: string;
   version?: string;
 }): ServerEntry {
   if (options.globalBinary) {
-    return { command: options.globalBinary, args: [] };
+    return {
+      command: options.nodePath ?? process.execPath,
+      args: [options.globalBinary],
+    };
   }
   const spec = `${options.packageName ?? '@indianic/themeseed'}${options.version ? `@${options.version}` : ''}`;
   const entry: ServerEntry = {

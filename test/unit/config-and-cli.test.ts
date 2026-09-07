@@ -311,10 +311,31 @@ describe('editor registration', () => {
   });
 
   it('prefers a global binary over npx when one exists', () => {
-    expect(serverEntryFor({ globalBinary: '/usr/local/bin/themeseed-mcp' })).toEqual({
-      command: '/usr/local/bin/themeseed-mcp',
-      args: [],
+    const entry = serverEntryFor({ globalBinary: '/usr/local/bin/themeseed-mcp' });
+    expect(entry.command).not.toBe('npx');
+    expect(entry.args).toEqual(['/usr/local/bin/themeseed-mcp']);
+  });
+
+  // The bin is a symlink to a .js with a `#!/usr/bin/env node` shebang, so
+  // executing it directly needs `node` on the PATH the *editor* spawns with.
+  // Under nvm that PATH frequently has no node, and the failure is invisible:
+  // the entry sits at "connecting" forever with nothing to reconnect to.
+  it('launches the global binary through node, not its shebang', () => {
+    expect(
+      serverEntryFor({
+        globalBinary: '/usr/local/bin/themeseed-mcp',
+        nodePath: '/opt/node/bin/node',
+      })
+    ).toEqual({
+      command: '/opt/node/bin/node',
+      args: ['/usr/local/bin/themeseed-mcp'],
     });
+  });
+
+  it('defaults the interpreter to the running node', () => {
+    expect(serverEntryFor({ globalBinary: '/usr/local/bin/themeseed-mcp' }).command).toBe(
+      process.execPath
+    );
   });
 
   it('falls back to npx with the registry pinned', () => {
