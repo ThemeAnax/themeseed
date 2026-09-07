@@ -138,16 +138,16 @@ to plain line output when stdout is not a TTY, so piping and CI logs stay readab
 
 ### Setup
 
-| Command                             | What it does                                                         |
-| ----------------------------------- | -------------------------------------------------------------------- |
+| Command                             | What it does                                                                                   |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
 | `themeseed init`                    | First-run setup: write config files, register the MCP server, pick image providers, add a site |
-| `themeseed images [--list]`         | Configure where post images come from, at any time                   |
-| `themeseed install [-t <id>…] [-a]` | Register the MCP server with an editor, without the full init flow   |
-| `themeseed uninstall [-t <id>…]`    | Remove the MCP server from editor configuration                      |
-| `themeseed mcp-config`              | Print the JSON snippet for manual configuration                      |
-| `themeseed upgrade [--check]`       | Check the registry for a newer version and install it                |
-| `themeseed --version` / `-v`        | Print the installed version                                          |
-| `themeseed --help` / `-h`           | Show help (also `themeseed help <command>`)                          |
+| `themeseed images [--list]`         | Configure where post images come from, at any time                                             |
+| `themeseed install [-t <id>…] [-a]` | Register the MCP server with an editor, without the full init flow                             |
+| `themeseed uninstall [-t <id>…]`    | Remove the MCP server from editor configuration                                                |
+| `themeseed mcp-config`              | Print the JSON snippet for manual configuration                                                |
+| `themeseed upgrade [--check]`       | Check the registry for a newer version and install it                                          |
+| `themeseed --version` / `-v`        | Print the installed version                                                                    |
+| `themeseed --help` / `-h`           | Show help (also `themeseed help <command>`)                                                    |
 
 ### Sites
 
@@ -173,17 +173,17 @@ history and in `ps` output.
 
 `seed` options:
 
-| Flag                          | Default    | Meaning                                      |
-| ----------------------------- | ---------- | -------------------------------------------- |
-| `-t, --topic <topic>`         | prompted   | What the publication is about                |
-| `-c, --count <n>`             | `12`       | How many posts to create                     |
-| `-i, --image-source <source>` | `auto`     | `auto`, `local`, `stock`, `ai` or `none`     |
-| `--study-theme`               | off        | Read the active theme and shape content to it |
-| `--draft`                     | off        | Create drafts instead of published posts     |
-| `--author <name>`             | —          | Author to attribute posts to                 |
-| `--no-video`                  | off        | Skip YouTube lookups (faster, fully offline) |
-| `--seed <n>`                  | topic hash | Seed the generator for reproducible output   |
-| `-y, --yes`                   | off        | Skip the confirmation prompt                 |
+| Flag                          | Default    | Meaning                                                     |
+| ----------------------------- | ---------- | ----------------------------------------------------------- |
+| `-t, --topic <topic>`         | prompted   | What the publication is about. Blank picks a random subject |
+| `-c, --count <n>`             | `12`       | How many posts to create                                    |
+| `-i, --image-source <source>` | `auto`     | `auto`, `local`, `stock`, `ai` or `none`                    |
+| `--study-theme`               | off        | Read the active theme and shape content to it               |
+| `--draft`                     | off        | Create drafts instead of published posts                    |
+| `--author <name>`             | —          | Author to attribute posts to                                |
+| `--no-video`                  | off        | Skip YouTube lookups (faster, fully offline)                |
+| `--seed <n>`                  | topic hash | Seed the generator for reproducible output                  |
+| `-y, --yes`                   | off        | Skip the confirmation prompt                                |
 
 ## MCP tools
 
@@ -204,15 +204,15 @@ Run `themeseed install` to register the server, or add it by hand:
 VS Code nests servers under `servers` rather than `mcpServers`; Zed calls them
 `context_servers`. `themeseed install` handles each format for you.
 
-| Tool             | Parameters                                                                                   | What it does                                                     |
-| ---------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `analyze_theme`  | `site?`                                                                                      | Reports theme capabilities, with evidence and a confidence score |
-| `generate_posts` | `site?`, `topic`, `count`, `imageSource`, `status`, `titles?`, `authorName?`, `includeVideo` | Analyzes, generates, sources images, publishes                   |
-| `list_seeded`    | `site?`                                                                                      | Lists everything themeseed created                               |
-| `wipe_seeded`    | `site?`, `confirm`                                                                           | Deletes it. Defaults to a dry run — `confirm: true` to proceed   |
-| `add_site`       | `slug`, `platform`, `url`, `credentials`, `themesDir?`                                       | Registers a site, verifying credentials first                    |
-| `list_sites`     | —                                                                                            | Lists sites. Never returns credentials                           |
-| `remove_site`    | `slug`                                                                                       | Forgets a site                                                   |
+| Tool             | Parameters                                                                                                  | What it does                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `analyze_theme`  | `site?`                                                                                                     | Reports theme capabilities, with evidence and a confidence score                 |
+| `generate_posts` | `site?`, `topic?`, `count`, `imageSource`, `status`, `titles?`, `authorName?`, `includeVideo`, `studyTheme` | Generates, sources images, publishes. Omit `topic` and the user is asked for one |
+| `list_seeded`    | `site?`                                                                                                     | Lists everything themeseed created                                               |
+| `wipe_seeded`    | `site?`, `confirm`                                                                                          | Deletes it. Defaults to a dry run — `confirm: true` to proceed                   |
+| `add_site`       | `slug`, `platform`, `url`, `credentials`, `themesDir?`                                                      | Registers a site, verifying credentials first                                    |
+| `list_sites`     | —                                                                                                           | Lists sites. Never returns credentials                                           |
+| `remove_site`    | `slug`                                                                                                      | Forgets a site                                                                   |
 
 **Tip:** pass your own headlines to `generate_posts` via `titles`. The built-in engine writes
 serviceable copy, but a model that knows the client's voice writes better copy — this lets it
@@ -402,11 +402,11 @@ the content generator, image sources, CLI or MCP tools needs to change. See
 
 Everything lives in `~/.themeseed/`, never inside a repository:
 
-| File                 | What it holds                                                            |
-| -------------------- | ------------------------------------------------------------------------ |
-| `sites.json`         | The sites you seed, with credentials. Written by `themeseed add-site`     |
-| `.env`               | Image and AI provider keys. Written by `themeseed init` and `images`      |
-| `sites.example.json` | A documented template for `sites.json`, with every field explained        |
+| File                 | What it holds                                                         |
+| -------------------- | --------------------------------------------------------------------- |
+| `sites.json`         | The sites you seed, with credentials. Written by `themeseed add-site` |
+| `.env`               | Image and AI provider keys. Written by `themeseed init` and `images`  |
+| `sites.example.json` | A documented template for `sites.json`, with every field explained    |
 
 `themeseed init` creates all three. Every setting appears in `.env` already, commented out, so
 you can fill it in with an editor instead of a prompt — themeseed never overwrites that file.
@@ -503,4 +503,5 @@ Three decisions are deliberately **not** settled in code. See
 MIT — see [LICENSE](LICENSE). Provisional pending the decision above.
 
 ## Validated
+
 [![M8ven Score](https://m8ven.ai/badge/mcp/themeanax-themeseed-tizj0o)](https://m8ven.ai/mcp/themeanax-themeseed-tizj0o)

@@ -13,8 +13,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
+import { loadUserEnv } from '../config/env.js';
 import { addSite, listSitesSafe, removeSite, resolveSite } from '../config/sites.js';
-import { describeError } from '../core/errors.js';
+import { randomTopic } from '../content/topics.js';
+import { describeError, ThemeseedError } from '../core/errors.js';
+import { logger } from '../core/logger.js';
 import { seedSite } from '../core/seed.js';
 import { IMPLEMENTED_PLATFORMS, PLATFORMS, type Platform } from '../core/types.js';
 import { createProvider } from '../providers/registry.js';
@@ -28,11 +31,12 @@ export function createThemeseedServer(version: string): McpServer {
       instructions:
         'themeseed fills a CMS with realistic demo content so a theme can be previewed with ' +
         'real-looking articles, images, galleries and video embeds. Call generate_posts directly; ' +
-        'it needs no setup call first. Call analyze_theme only when the user asks about the theme, ' +
-        "and set generate_posts.studyTheme when they want content shaped to the theme's design. " +
-        'Images are optional: with no provider key configured, posts publish without them. ' +
-        'Everything it creates is tagged #themeseed and can be removed with wipe_seeded. ' +
-        'Ghost is supported today.',
+        'it needs no setup call first. Pass `topic` when the user named a subject; omit it and ' +
+        'the user is asked, so do not invent one. Call analyze_theme only when the user asks ' +
+        'about the theme, and set generate_posts.studyTheme when they want content shaped to the ' +
+        "theme's design. Every post gets a feature image and a body image when an image provider " +
+        'is configured; with no key set, posts publish without them. Everything it creates is ' +
+        'tagged #themeseed and can be removed with wipe_seeded. Ghost is supported today.',
     }
   );
 
@@ -198,11 +202,13 @@ function registerContentTools(server: McpServer): void {
       title: 'Generate and publish demo posts',
       description:
         'Generates posts, sources images, and publishes them. Set studyTheme to read the ' +
-        "active theme first and include only cards it can display; otherwise generic " +
-        'defaults are used and no theme is read. Images are optional and resolve from ' +
-        'whichever provider keys are configured. Every post is tagged #themeseed so ' +
-        'wipe_seeded can remove exactly this content later. Supply `titles` to use your ' +
-        'own headlines instead of generated ones.',
+        'active theme first and include only cards it can display; otherwise generic ' +
+        'defaults are used and no theme is read. Every post gets a feature image and a ' +
+        'body image; galleries and video embeds rotate across the run, and each is used ' +
+        'only where the theme can style it. Images resolve from whichever provider keys ' +
+        'are configured. Every post is tagged #themeseed so wipe_seeded can remove exactly ' +
+        'this content later. Supply `titles` to use your own headlines instead of ' +
+        'generated ones.',
       inputSchema: {
         site: z
           .string()
@@ -210,7 +216,12 @@ function registerContentTools(server: McpServer): void {
           .describe('Site slug. Defaults to the configured default site.'),
         topic: z
           .string()
-          .describe('Subject of the publication, e.g. "SaaS productivity blog".'),
+          .optional()
+          .describe(
+            'Subject of the publication, e.g. "SaaS productivity blog". Optional: ' +
+              'when omitted the user is asked directly, and a random demo subject is ' +
+              'used if they have no preference. Pass it whenever the user named one.'
+          ),
         count: z
           .number()
           .int()
@@ -255,10 +266,17 @@ function registerContentTools(server: McpServer): void {
       },
     },
     async (args) => {
+      // Re-read ~/.themeseed/.env. This server outlives the shell that started
+      // it, so a key added by `themeseed images` mid-session was invisible
+      // until the editor restarted — and the only symptom was images quietly
+      // going missing.
+      loadUserEnv();
+
       const { slug, site } = await resolveSite(args.site);
+      const topic = args.topic?.trim() || (await askForTopic(server));
       const report = await seedSite({
         site,
-        topic: args.topic,
+        topic,
         count: args.count,
         imageSource: args.imageSource,
         status: args.status,
@@ -269,7 +287,7 @@ function registerContentTools(server: McpServer): void {
       });
 
       const lines = [
-        `Created ${report.created} of ${args.count} posts on "${slug}"${
+        `Created ${report.created} of ${args.count} posts about "${topic}" on "${slug}"${
           args.studyTheme ? ` (theme: ${report.capabilities.themeName})` : ''
         }.`,
         `  feature images:  ${report.generation.withFeatureImage}`,
@@ -287,6 +305,7 @@ function registerContentTools(server: McpServer): void {
 
       return text(lines.join('\n'), {
         site: slug,
+        topic,
         theme: report.capabilities.themeName,
         created: report.created,
         failed: report.failed,
@@ -387,6 +406,52 @@ function registerContentTools(server: McpServer): void {
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Asks the user what to seed about, when the caller did not say.
+ *
+ * The CLI has always prompted for this; the MCP tool used to make `topic`
+ * required, which pushed the model into inventing a subject the user never
+ * chose. Elicitation puts the same question to the same person.
+ *
+ * Not every host implements elicitation, and a tool that hard-fails on an
+ * optional nicety is worse than one that picks a sensible demo subject — so
+ * anything short of an explicit cancel falls through to a random topic.
+ */
+async function askForTopic(server: McpServer): Promise<string> {
+  try {
+    const result = await server.server.elicitInput({
+      message:
+        'What should the demo posts be about? Leave it blank for a random subject — ' +
+        'any realistic copy previews a theme equally well.',
+      requestedSchema: {
+        type: 'object',
+        properties: {
+          topic: {
+            type: 'string',
+            title: 'Topic',
+            description:
+              'Subject of the publication, e.g. "SaaS productivity blog". Blank picks one at random.',
+          },
+        },
+      },
+    });
+
+    if (result.action === 'cancel') {
+      throw new ThemeseedError('No topic was chosen, so nothing was seeded', {
+        code: 'TOPIC_REQUIRED',
+        hint: 'Call generate_posts again with an explicit `topic`.',
+      });
+    }
+
+    const value = result.content?.['topic'];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  } catch (err) {
+    if (err instanceof ThemeseedError) throw err;
+    logger.debug('host would not elicit a topic; falling back to a random one:', err);
+  }
+  return randomTopic();
+}
 
 function text(message: string, structured?: unknown) {
   return {

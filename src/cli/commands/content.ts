@@ -9,6 +9,7 @@ import * as p from '@clack/prompts';
 import pc from 'picocolors';
 
 import { resolveSite } from '../../config/sites.js';
+import { randomTopic } from '../../content/topics.js';
 import { describeError } from '../../core/errors.js';
 import { seedSite } from '../../core/seed.js';
 import type { PublishStatus, RequestedImageSource } from '../../core/types.js';
@@ -130,11 +131,13 @@ export async function seedCommand(
     assertInteractive('A topic', 'Pass --topic "your subject".');
     const value = await p.text({
       message: 'What is this publication about?',
-      placeholder: 'SaaS productivity blog',
-      validate: (input) => (input ? undefined : 'Required.'),
+      placeholder: 'SaaS productivity blog — or leave blank for a random subject',
     });
     if (p.isCancel(value)) cancelled();
-    topic = value as string;
+    // Blank is a real answer, not a mistake: previewing a theme needs realistic
+    // copy, not copy about anything in particular. The MCP tool treats an empty
+    // elicitation the same way.
+    topic = (value as string)?.trim() || randomTopic();
   }
 
   const count = flags.count ?? 12;
