@@ -34,6 +34,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   now happens only when `studyTheme` is set, or when `analyze_theme` /
   `themeseed analyze` is called directly.
 
+### Fixed
+
+- **The generated MCP config now names the node interpreter explicitly**, as
+  `{"command": "<node>", "args": ["<…>/themeseed-mcp"]}` rather than executing
+  the binary directly. The installed bin is a symlink to a `.js` file whose
+  `#!/usr/bin/env node` shebang resolves `node` against PATH, and an editor may
+  spawn the server with a PATH carrying no nvm/fnm/volta shim. The spawn then
+  died with `env: node: No such file or directory` before the server existed,
+  which surfaced only as an MCP entry stuck at "connecting" — with nothing
+  listening, reconnecting could never succeed, and the underlying error was
+  never shown. The CLI worked throughout, because a shell has node on PATH.
+
 ## [0.1.1] — 2026-08-14
 
 ### Added
