@@ -47,7 +47,7 @@ export async function analyzeGhostTheme(
         siteUrl,
         themeName,
         ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
-        ...(await samplePostUrl(client)),
+        ...(await samplePost(client)),
       })
     );
   }
@@ -92,12 +92,34 @@ async function resolveActiveTheme(client: GhostClient): Promise<string> {
   return 'casper';
 }
 
-/** A real published post gives the rendered strategy something to measure. */
-async function samplePostUrl(client: GhostClient): Promise<{ samplePostUrl?: string }> {
+/**
+ * A real published post gives the rendered strategy something to measure.
+ *
+ * Which post is not arbitrary. "Does this theme render a hero?" can only be
+ * answered by a post that *has* a feature image, so one is preferred here and
+ * the answer is flagged for the strategy. Taking simply the newest post made
+ * the analysis self-poisoning: seed a site with image-less posts, and the next
+ * analysis reads one of them, concludes the theme shows no feature image, and
+ * every later run then skips feature images — which produces more image-less
+ * posts. Observed on a real Ghost site; the theme supported heroes throughout.
+ */
+async function samplePost(
+  client: GhostClient
+): Promise<{ samplePostUrl?: string; sampleHasFeatureImage?: boolean }> {
   try {
-    const posts = await client.listPosts({ limit: 1, filter: 'status:published' });
-    const url = posts[0]?.url;
-    return url ? { samplePostUrl: url } : {};
+    const withHero = await client.listPosts({
+      limit: 1,
+      filter: 'status:published+feature_image:-null',
+    });
+    const heroUrl = withHero[0]?.url;
+    if (heroUrl) return { samplePostUrl: heroUrl, sampleHasFeatureImage: true };
+
+    const anyPost = await client.listPosts({ limit: 1, filter: 'status:published' });
+    const url = anyPost[0]?.url;
+    if (!url) return {};
+    // Every published post lacks a feature image, so the hero question cannot
+    // be answered from rendered output at all. Say so rather than guess.
+    return { samplePostUrl: url, sampleHasFeatureImage: false };
   } catch {
     return {};
   }

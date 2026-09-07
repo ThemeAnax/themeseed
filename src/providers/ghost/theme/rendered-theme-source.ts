@@ -29,6 +29,12 @@ export interface RenderedThemeSourceOptions {
   themeName: string;
   /** A published post URL to inspect. Falls back to a link found on the home page. */
   samplePostUrl?: string;
+  /**
+   * Whether that post is known to carry a feature image. Undefined means the
+   * caller could not say — the page itself is then the only evidence, and it
+   * is read conservatively.
+   */
+  sampleHasFeatureImage?: boolean;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 }
@@ -65,7 +71,15 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
     const postHtml = postUrl ? await this.get(postUrl) : null;
     if (postHtml) {
       evidence.push(`inspected post page ${postUrl}`);
-      this.applyPostSignals(postHtml, css ?? '', capabilities, evidence);
+      // The home page's own og:image is the site-wide cover. A post page that
+      // repeats it is a post with no feature image of its own.
+      this.applyPostSignals(
+        postHtml,
+        css ?? '',
+        capabilities,
+        evidence,
+        this.ogImage(home)
+      );
     } else {
       evidence.push(
         'no published post available to inspect; post-level signals unmeasured'
@@ -193,22 +207,55 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
     );
   }
 
+  /** The og:image URL a page declares, if any. */
+  private ogImage(html: string): string | undefined {
+    const head = html.slice(0, html.indexOf('</head>') + 7);
+    return /property=["']og:image["'][^>]*content=["']([^"']+)["']/i.exec(head)?.[1];
+  }
+
+  /**
+   * Whether an og:image is plausibly the post's own feature image rather than
+   * the publication cover Ghost substitutes when a post has none.
+   *
+   * Two tells, either of which is decisive: the default cover is served from
+   * `static.ghost.org`, and any cover — default or custom — is the same URL the
+   * home page advertises. Neither is conclusive alone (a site could host its
+   * cover itself; a home page could coincidentally feature the sampled post),
+   * so this only ever downgrades to "cannot tell", never to a false negative
+   * about the theme.
+   */
+  private looksLikePostImage(ogImage?: string, siteOgImage?: string): boolean {
+    if (!ogImage) return false;
+    if (/(^|\/\/)static\.ghost\.org\//i.test(ogImage)) return false;
+    if (/publication-cover\.\w+$/i.test(ogImage.split('?')[0] ?? '')) return false;
+    if (siteOgImage && ogImage === siteOgImage) return false;
+    return true;
+  }
+
   private applyPostSignals(
     html: string,
     css: string,
     capabilities: Partial<MeasurableCapabilities>,
-    evidence: string[]
+    evidence: string[],
+    siteOgImage?: string
   ): void {
-    const head = html.slice(0, html.indexOf('</head>') + 7);
-    const body = html.slice(head.length);
+    const body = html.slice(html.indexOf('</head>') + 7);
 
-    // og:image is set from the feature image, so its presence in <head> says
-    // the post *has* one; a matching <img> in <body> says the theme shows it.
-    const ogImage = /property=["']og:image["'][^>]*content=["']([^"']+)["']/i.exec(
-      head
-    )?.[1];
+    // og:image *usually* carries the post's feature image, and a matching <img>
+    // in <body> then says the theme actually renders it. The trap: when a post
+    // has no feature image Ghost still emits og:image, falling back to the
+    // publication cover (`static.ghost.org/.../publication-cover.jpg` on a
+    // default install). Reading that as "the post has a hero the theme refuses
+    // to show" turns every image-less post into proof the theme cannot display
+    // heroes at all. So a conclusion is drawn only from a post known to have
+    // one — or, failing that, from an og:image that is demonstrably the post's
+    // own rather than a site-wide fallback.
+    const ogImage = this.ogImage(html);
+    const hasHero =
+      this.options.sampleHasFeatureImage ?? this.looksLikePostImage(ogImage, siteOgImage);
     let heroStem = '';
-    if (ogImage) {
+
+    if (ogImage && hasHero) {
       const filename = ogImage.split('/').pop()?.split('?')[0] ?? '';
       heroStem = filename.replace(/\.\w+$/, '');
       const shown = Boolean(heroStem) && body.includes(heroStem);
@@ -217,6 +264,13 @@ export class RenderedThemeSource implements ThemeAnalysisStrategy {
         shown
           ? 'feature image appears in the rendered post body'
           : 'post has a feature image but this page does not render it'
+      );
+    } else {
+      // Leaving the field unset lets the merge fall through to the default
+      // (feature images supported), which is both the conservative choice and
+      // the right one for the overwhelming majority of themes.
+      evidence.push(
+        'sample post has no feature image, so hero support could not be measured — assuming the default'
       );
     }
 
