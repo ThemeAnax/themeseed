@@ -116,7 +116,11 @@ export {
   providersByCategory,
 } from './providers.js';
 export type { ImageProviderInfo, ProviderCategory, ProviderEnv } from './providers.js';
-export { selectStockProvider, StockImageSource } from './stock-source.js';
+export {
+  selectStockProvider,
+  selectStockProviders,
+  StockImageSource,
+} from './stock-source.js';
 export type { StockProvider, StockProviderName } from './stock-source.js';
 export { extensionFor, isValidImage, mimeTypeFor, probeImage } from './inspect.js';
 export type { ImageFormat, ImageInfo } from './inspect.js';

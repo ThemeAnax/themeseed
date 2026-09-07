@@ -40,47 +40,105 @@ export interface StockImageSourceOptions {
 export class StockImageSource implements ImageSource {
   readonly kind = 'stock' as const;
 
-  private readonly provider: StockProvider;
+  /** Every configured adapter, in the order they will be tried. */
+  private readonly providers: StockProvider[];
 
   constructor(options: StockImageSourceOptions = {}) {
-    this.provider = selectStockProvider(options);
+    this.providers = selectStockProviders(options);
   }
 
-  /** Which adapter this instance resolved to. Surfaced in tool output. */
+  /** The adapter tried first. Surfaced in tool output. */
   get providerName(): StockProviderName {
-    return this.provider.name;
+    return this.providers[0]!.name;
+  }
+
+  /** Every adapter in the chain, first to last. */
+  get providerNames(): StockProviderName[] {
+    return this.providers.map((provider) => provider.name);
   }
 
   async isAvailable(): Promise<boolean> {
-    return this.provider.isConfigured();
+    return this.providers.some((provider) => provider.isConfigured());
   }
 
   async unavailableReason(): Promise<string> {
-    return this.provider.isConfigured() ? '' : this.provider.configurationHint();
+    if (await this.isAvailable()) return '';
+    return this.providers[0]!.configurationHint();
   }
 
+  /**
+   * Tries each configured adapter until one returns images.
+   *
+   * A free stock tier is a quota, not a guarantee: Unsplash's demo tier allows
+   * 50 requests an hour, and a seed run of twenty posts asks for more than
+   * that. Before this, the first adapter's 403 ended the matter and the run
+   * published the rest of its posts with no images at all — the failure only
+   * ever reached stderr, so a run that lost every image still reported success.
+   * With a second key configured, the run now simply continues on that one.
+   *
+   * The last adapter's failure is rethrown rather than swallowed, so an
+   * exhausted chain still surfaces a real error to the caller.
+   */
   async fetch(request: ImageRequest, count: number): Promise<ImageRef[]> {
-    if (!this.provider.isConfigured()) {
+    const usable = this.providers.filter((provider) => provider.isConfigured());
+
+    if (usable.length === 0) {
       throw new ThemeseedError(
-        `Stock provider "${this.provider.name}" is not configured`,
+        `Stock provider "${this.providers[0]!.name}" is not configured`,
         {
           code: 'STOCK_NOT_CONFIGURED',
-          hint: this.provider.configurationHint(),
+          hint: this.providers[0]!.configurationHint(),
         }
       );
     }
-    return this.provider.search(request, count);
+
+    let lastError: unknown;
+    for (const [index, provider] of usable.entries()) {
+      try {
+        const images = await provider.search(request, count);
+        if (images.length > 0) {
+          if (index > 0) {
+            logger.info(
+              `stock images served by "${provider.name}" after "${usable[index - 1]!.name}" returned none`
+            );
+          }
+          return images;
+        }
+        lastError = new ThemeseedError(
+          `Stock provider "${provider.name}" returned no images`,
+          { code: 'STOCK_NO_RESULTS' }
+        );
+      } catch (err) {
+        lastError = err;
+        logger.warn(`stock provider "${provider.name}" failed:`, err);
+      }
+
+      const next = usable[index + 1];
+      if (next) logger.debug(`falling back to stock provider "${next.name}"`);
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new ThemeseedError('Every configured stock provider failed', {
+          code: 'STOCK_ALL_FAILED',
+        });
   }
 }
 
 /**
- * Picks the adapter: an explicit choice, else whichever key is present, else
- * the keyless fallback. Never silently prefers a keyed provider whose key is
- * missing — that produced confusing "0 images" runs.
+ * Builds the ordered chain of adapters to try.
+ *
+ * An explicit choice comes first and the other keyed adapters follow it, so
+ * naming a provider expresses a preference rather than disabling the spare key
+ * the user also configured. Picsum only ever appears alone: it cannot search,
+ * so mixing it into a chain would answer a query about yoga with a photograph
+ * of nothing in particular and call the run a success. No key at all is the
+ * one case where unrelated photography beats no photography, because the
+ * alternative is a theme preview with empty image slots.
  */
-export function selectStockProvider(
+export function selectStockProviders(
   options: StockImageSourceOptions = {}
-): StockProvider {
+): StockProvider[] {
   const unsplashKey = options.unsplashAccessKey ?? process.env.UNSPLASH_ACCESS_KEY;
   const pexelsKey = options.pexelsApiKey ?? process.env.PEXELS_API_KEY;
   const requested =
@@ -98,14 +156,31 @@ export function selectStockProvider(
     }
   };
 
-  if (requested) return build(requested);
-  if (unsplashKey) return build('unsplash');
-  if (pexelsKey) return build('pexels');
+  // Picsum needs no key, so it would otherwise "succeed" ahead of a keyed
+  // provider and quietly replace searched photography with random photography.
+  if (requested === 'picsum') return [build('picsum')];
+
+  const keyed: StockProviderName[] = [];
+  if (unsplashKey) keyed.push('unsplash');
+  if (pexelsKey) keyed.push('pexels');
+
+  if (requested) {
+    const ordered = [requested, ...keyed.filter((name) => name !== requested)];
+    return ordered.map(build);
+  }
+  if (keyed.length > 0) return keyed.map(build);
 
   logger.debug(
     'no stock API key configured; falling back to Lorem Picsum (results ignore the query)'
   );
-  return build('picsum');
+  return [build('picsum')];
+}
+
+/** The adapter that would be tried first. Kept for callers wanting just one. */
+export function selectStockProvider(
+  options: StockImageSourceOptions = {}
+): StockProvider {
+  return selectStockProviders(options)[0]!;
 }
 
 // ---------------------------------------------------------------------------
