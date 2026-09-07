@@ -204,15 +204,16 @@ Run `themeseed install` to register the server, or add it by hand:
 VS Code nests servers under `servers` rather than `mcpServers`; Zed calls them
 `context_servers`. `themeseed install` handles each format for you.
 
-| Tool             | Parameters                                                                                                  | What it does                                                                     |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `analyze_theme`  | `site?`                                                                                                     | Reports theme capabilities, with evidence and a confidence score                 |
-| `generate_posts` | `site?`, `topic?`, `count`, `imageSource`, `status`, `titles?`, `authorName?`, `includeVideo`, `studyTheme` | Generates, sources images, publishes. Omit `topic` and the user is asked for one |
-| `list_seeded`    | `site?`                                                                                                     | Lists everything themeseed created                                               |
-| `wipe_seeded`    | `site?`, `confirm`                                                                                          | Deletes it. Defaults to a dry run — `confirm: true` to proceed                   |
-| `add_site`       | `slug`, `platform`, `url`, `credentials`, `themesDir?`                                                      | Registers a site, verifying credentials first                                    |
-| `list_sites`     | —                                                                                                           | Lists sites. Never returns credentials                                           |
-| `remove_site`    | `slug`                                                                                                      | Forgets a site                                                                   |
+| Tool             | Parameters                                                                                                                    | What it does                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `analyze_theme`  | `site?`                                                                                                                       | Reports theme capabilities, with evidence and a confidence score                 |
+| `generate_posts` | `site?`, `topic?`, `count`, `imageSource`, `status`, `titles?`, `authorName?`, `includeVideo`, `studyTheme`                   | Generates, sources images, publishes. Omit `topic` and the user is asked for one |
+| `update_post`    | `id`, `site?`, `title?`, `excerpt?`, `status?`, `featureImage`, `addBodyImage`, `imageQuery?`, `imageSource`, `allowUnseeded` | Edits one existing post — attach, replace or remove its images                   |
+| `list_seeded`    | `site?`                                                                                                                       | Lists everything themeseed created                                               |
+| `wipe_seeded`    | `site?`, `confirm`                                                                                                            | Deletes it. Defaults to a dry run — `confirm: true` to proceed                   |
+| `add_site`       | `slug`, `platform`, `url`, `credentials`, `themesDir?`                                                                        | Registers a site, verifying credentials first                                    |
+| `list_sites`     | —                                                                                                                             | Lists sites. Never returns credentials                                           |
+| `remove_site`    | `slug`                                                                                                                        | Forgets a site                                                                   |
 
 **Tip:** pass your own headlines to `generate_posts` via `titles`. The built-in engine writes
 serviceable copy, but a model that knows the client's voice writes better copy — this lets it

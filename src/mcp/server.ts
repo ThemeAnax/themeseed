@@ -19,6 +19,7 @@ import { randomTopic } from '../content/topics.js';
 import { describeError, ThemeseedError } from '../core/errors.js';
 import { logger } from '../core/logger.js';
 import { seedSite } from '../core/seed.js';
+import { updatePost } from '../core/update.js';
 import { IMPLEMENTED_PLATFORMS, PLATFORMS, type Platform } from '../core/types.js';
 import { createProvider } from '../providers/registry.js';
 
@@ -36,7 +37,9 @@ export function createThemeseedServer(version: string): McpServer {
         'about the theme, and set generate_posts.studyTheme when they want content shaped to the ' +
         "theme's design. Every post gets a feature image and a body image when an image provider " +
         'is configured; with no key set, posts publish without them. Everything it creates is ' +
-        'tagged #themeseed and can be removed with wipe_seeded. Ghost is supported today.',
+        'tagged #themeseed and can be removed with wipe_seeded. To fix a post that already ' +
+        'exists — a missing hero, an unwanted one — use update_post rather than wiping and ' +
+        'seeding again. Ghost is supported today.',
     }
   );
 
@@ -295,6 +298,9 @@ function registerContentTools(server: McpServer): void {
         `  galleries:       ${report.generation.withGallery}${report.generation.skipped.gallery ? ` (skipped — ${report.generation.skipped.gallery})` : ''}`,
         `  video embeds:    ${report.generation.withVideo}${report.generation.skipped.video ? ` (skipped — ${report.generation.skipped.video})` : ''}`,
       ];
+      if (report.generation.skipped.images) {
+        lines.push(`  image problem:   ${report.generation.skipped.images}`);
+      }
       if (report.failed > 0) {
         lines.push(`  failed:          ${report.failed}`);
         for (const result of report.results.filter((r) => r.error)) {
@@ -316,6 +322,115 @@ function registerContentTools(server: McpServer): void {
           url: r.url,
           status: r.status,
         })),
+      });
+    }
+  );
+
+  server.registerTool(
+    'update_post',
+    {
+      title: 'Update an existing post',
+      description:
+        'Edits one post that already exists, changing only what you name. Use it to ' +
+        'attach a feature image to a post that has none, remove a feature image, add a ' +
+        'body image, or change the title, excerpt or status — without deleting and ' +
+        're-seeding. Get ids from list_seeded. By default it refuses to touch a post ' +
+        'that is not tagged #themeseed, so it cannot overwrite a real article.',
+      inputSchema: {
+        site: z
+          .string()
+          .optional()
+          .describe('Site slug. Defaults to the configured default site.'),
+        id: z.string().describe('Post id, as reported by list_seeded.'),
+        title: z.string().optional().describe('New title. Omit to leave it alone.'),
+        excerpt: z.string().optional().describe('New excerpt. Omit to leave it alone.'),
+        status: z
+          .enum(['draft', 'published'])
+          .optional()
+          .describe('Publish or unpublish. Omit to leave it alone.'),
+        featureImage: z
+          .enum(['keep', 'remove', 'replace'])
+          .default('keep')
+          .describe(
+            'keep = leave the hero as it is; remove = delete it; replace = source a new ' +
+              'one from the configured image provider.'
+          ),
+        addBodyImage: z
+          .boolean()
+          .default(false)
+          .describe(
+            'Splice one image into the body after the first paragraph, leaving the ' +
+              'existing prose untouched.'
+          ),
+        imageQuery: z
+          .string()
+          .optional()
+          .describe('What to search for. Defaults to the post title.'),
+        imageSource: z
+          .enum(['auto', 'local', 'stock', 'ai', 'none'])
+          .default('auto')
+          .describe(
+            'Where a replacement image comes from. Same meaning as in generate_posts.'
+          ),
+        allowUnseeded: z
+          .boolean()
+          .default(false)
+          .describe(
+            'Permit editing a post themeseed did not create. Leave false unless the user ' +
+              'has explicitly asked to edit their own content.'
+          ),
+      },
+    },
+    async (args) => {
+      loadUserEnv();
+
+      const { slug, site } = await resolveSite(args.site);
+      const report = await updatePost({
+        site,
+        id: args.id,
+        featureImage: args.featureImage,
+        addBodyImage: args.addBodyImage,
+        imageSource: args.imageSource,
+        allowUnseeded: args.allowUnseeded,
+        ...(args.title !== undefined ? { title: args.title } : {}),
+        ...(args.excerpt !== undefined ? { excerpt: args.excerpt } : {}),
+        ...(args.status !== undefined ? { status: args.status } : {}),
+        ...(args.imageQuery !== undefined ? { imageQuery: args.imageQuery } : {}),
+      });
+
+      const { result } = report;
+      if (result.error) {
+        return text(`Could not update ${args.id} on "${slug}": ${result.error}`, {
+          site: slug,
+          id: args.id,
+          updated: false,
+          error: result.error,
+        });
+      }
+
+      const lines = [`Updated "${result.title}" on "${slug}".`];
+      if (args.featureImage === 'remove') lines.push('  feature image:  removed');
+      else if (args.featureImage === 'replace')
+        lines.push(
+          `  feature image:  ${report.featureImageAttached ? 'replaced' : 'NOT replaced'}`
+        );
+      if (args.addBodyImage)
+        lines.push(
+          `  body image:     ${report.bodyImageAttached ? 'added' : 'NOT added'}`
+        );
+      if (report.imageError) lines.push(`  image problem:  ${report.imageError}`);
+      if (result.url) lines.push('', result.url);
+
+      return text(lines.join('\n'), {
+        site: slug,
+        id: result.id,
+        title: result.title,
+        url: result.url,
+        status: result.status,
+        updated: true,
+        featureImageAttached: report.featureImageAttached,
+        bodyImageAttached: report.bodyImageAttached,
+        ...(report.imageError ? { imageError: report.imageError } : {}),
       });
     }
   );

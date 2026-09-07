@@ -20,6 +20,7 @@ import {
   analyzeCommand,
   listCommand,
   seedCommand,
+  updateCommand,
   wipeCommand,
 } from './commands/content.js';
 import { imagesCommand } from './commands/images.js';
@@ -184,6 +185,26 @@ program
   )
   .option('-y, --yes', 'Do not prompt for confirmation')
   .action((site, options) => seedCommand(site, options));
+
+program
+  .command('update <id> [site]')
+  .description('Edit one existing post — attach, replace or remove its images')
+  .option('--title <title>', 'New title')
+  .option('--excerpt <excerpt>', 'New excerpt')
+  .option('--status <status>', 'draft or published')
+  .option(
+    '--feature-image <action>',
+    'keep | remove | replace — replace sources a new hero from the image provider',
+    'keep'
+  )
+  .option('--add-body-image', 'Insert one image into the body, leaving the prose alone')
+  .option('--image-query <query>', 'What to search for. Defaults to the post title')
+  .option('--image-source <source>', 'auto | local | stock | ai | none', 'auto')
+  .option(
+    '--allow-unseeded',
+    'Permit editing a post themeseed did not create (refused by default)'
+  )
+  .action((id, site, options) => updateCommand(id, site, options));
 
 program
   .command('list [site]')

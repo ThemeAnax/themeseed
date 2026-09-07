@@ -12,6 +12,7 @@ import { resolveSite } from '../../config/sites.js';
 import { randomTopic } from '../../content/topics.js';
 import { describeError } from '../../core/errors.js';
 import { seedSite } from '../../core/seed.js';
+import { updatePost, type FeatureImageAction } from '../../core/update.js';
 import type { PublishStatus, RequestedImageSource } from '../../core/types.js';
 import { createProvider } from '../../providers/registry.js';
 import {
@@ -197,6 +198,11 @@ export async function seedCommand(
       `  video embeds     ${report.generation.withVideo}${report.generation.skipped.video ? pc.dim(` — skipped, ${report.generation.skipped.video}`) : ''}`
     );
 
+    if (report.generation.skipped.images) {
+      console.log('');
+      warn(`images: ${report.generation.skipped.images}`);
+    }
+
     if (report.failed > 0) {
       console.log('');
       warn(`${report.failed} post(s) failed:`);
@@ -212,6 +218,71 @@ export async function seedCommand(
     spinner.stop(pc.red('Failed'));
     fail(describeError(err));
     process.exitCode = 1;
+  }
+}
+
+export interface UpdateFlags {
+  title?: string;
+  excerpt?: string;
+  status?: string;
+  featureImage?: string;
+  addBodyImage?: boolean;
+  imageQuery?: string;
+  imageSource?: string;
+  allowUnseeded?: boolean;
+}
+
+export async function updateCommand(
+  id: string,
+  slug: string | undefined,
+  flags: UpdateFlags = {}
+): Promise<void> {
+  const { slug: resolved, site } = await resolveSite(slug);
+
+  const featureImage = (flags.featureImage as FeatureImageAction) ?? 'keep';
+  const spinner = makeSpinner();
+  spinner.start(`Updating ${id} on "${resolved}"`);
+
+  try {
+    const report = await updatePost({
+      site,
+      id,
+      featureImage,
+      addBodyImage: Boolean(flags.addBodyImage),
+      allowUnseeded: Boolean(flags.allowUnseeded),
+      imageSource: (flags.imageSource as RequestedImageSource) ?? 'auto',
+      ...(flags.title !== undefined ? { title: flags.title } : {}),
+      ...(flags.excerpt !== undefined ? { excerpt: flags.excerpt } : {}),
+      ...(flags.status !== undefined ? { status: flags.status as PublishStatus } : {}),
+      ...(flags.imageQuery !== undefined ? { imageQuery: flags.imageQuery } : {}),
+    });
+
+    if (report.result.error) {
+      spinner.stop(`Could not update ${id}`);
+      fail(report.result.error);
+      return;
+    }
+
+    spinner.stop(`Updated "${report.result.title}"`);
+    console.log('');
+    if (featureImage === 'remove') console.log('  feature image    removed');
+    else if (featureImage === 'replace')
+      console.log(
+        `  feature image    ${report.featureImageAttached ? 'replaced' : pc.yellow('not replaced')}`
+      );
+    if (flags.addBodyImage)
+      console.log(
+        `  body image       ${report.bodyImageAttached ? 'added' : pc.yellow('not added')}`
+      );
+    if (report.result.url) console.log(`  url              ${report.result.url}`);
+
+    if (report.imageError) {
+      console.log('');
+      warn(`images: ${report.imageError}`);
+    }
+  } catch (err) {
+    spinner.stop('Update failed');
+    fail(describeError(err));
   }
 }
 
