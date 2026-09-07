@@ -12,7 +12,7 @@
  * one, or the file grows a duplicate every time the wizard runs.
  */
 
-import { promises as fs } from 'node:fs';
+import { promises as fs, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import dotenv from 'dotenv';
@@ -25,9 +25,52 @@ export function envPath(): string {
   return path.join(configDir(), '.env');
 }
 
-/** Loads the file into process.env. Existing variables win. */
+/**
+ * What this process last injected from the file, keyed by variable.
+ *
+ * Load-bearing for the reload below: it is the only way to tell a value that
+ * came from the file (ours to update, or to withdraw) from one the user
+ * exported in their shell (never ours to touch). The *value* is recorded, not
+ * merely the name, because a variable we set earlier can still be overwritten
+ * by someone else afterwards — and once it holds a value we did not write, it
+ * is no longer ours.
+ */
+const injected = new Map<string, string>();
+
+/**
+ * Loads the file into process.env. Variables from the real environment win.
+ *
+ * Safe — and intended — to call more than once. The CLI is a fresh process per
+ * command so it never needed that, but the MCP server runs for the length of an
+ * editor session: keys added by `themeseed images` after it started were
+ * invisible to it, `auto` resolved to `none`, and posts published without
+ * images while a perfectly good Unsplash key sat in the file. Re-reading per
+ * seed run costs one small file read and removes a failure whose only symptom
+ * is silently worse output.
+ */
 export function loadUserEnv(): void {
-  dotenv.config({ path: envPath(), quiet: true });
+  const parsed = dotenv.parse(readEnvSync());
+
+  for (const [key, raw] of Object.entries(parsed)) {
+    const value = raw.trim();
+    if (!value) continue;
+    // A variable holding anything we did not write came from the user's shell,
+    // and outranks the file. One still holding our own last value does not:
+    // refreshing a rotated key is the whole point of re-reading.
+    const current = process.env[key];
+    if (current !== undefined && current !== injected.get(key)) continue;
+    process.env[key] = value;
+    injected.set(key, value);
+  }
+
+  // A key commented out since the last read (`themeseed images --remove`) must
+  // stop working here too, or a removed provider keeps being used until the
+  // editor is restarted.
+  for (const [key, ours] of injected) {
+    if (parsed[key]?.trim()) continue;
+    if (process.env[key] === ours) delete process.env[key];
+    injected.delete(key);
+  }
 }
 
 /**
@@ -87,6 +130,16 @@ export async function setEnvValues(
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
+
+/** Sync twin of `readOrEmpty`, for the load path that runs before any await. */
+function readEnvSync(): string {
+  try {
+    return readFileSync(envPath(), 'utf8');
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return '';
+    throw new ConfigError(`Could not read ${envPath()}`, { cause: err });
+  }
+}
 
 async function readOrEmpty(): Promise<string> {
   try {
@@ -178,7 +231,7 @@ function buildTemplate(): string {
   lines.push(
     section('Content engine'),
     '# How post prose is written: "template" (default, offline, deterministic)',
-    "# or \"anthropic\" (better prose, needs a key). An MCP host's own model is",
+    '# or "anthropic" (better prose, needs a key). An MCP host\'s own model is',
     '# used when one is available, whatever this says.',
     '# THEMESEED_CONTENT_ENGINE=',
     '# ANTHROPIC_API_KEY=',

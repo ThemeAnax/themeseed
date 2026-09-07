@@ -158,4 +158,48 @@ describe('loadUserEnv', () => {
   it('does nothing and does not throw when the file is absent', () => {
     expect(() => loadUserEnv()).not.toThrow();
   });
+
+  // The MCP server outlives the shell that launched it. Before this, a key
+  // added by `themeseed images` mid-session stayed invisible until the editor
+  // restarted, so `auto` resolved to `none` and posts published with no images.
+  it('picks up a key added to the file after the first load', async () => {
+    loadUserEnv();
+    expect(process.env.UNSPLASH_ACCESS_KEY).toBeUndefined();
+
+    await setEnvValues({ UNSPLASH_ACCESS_KEY: 'added-later' });
+    loadUserEnv();
+
+    expect(process.env.UNSPLASH_ACCESS_KEY).toBe('added-later');
+  });
+
+  it('picks up a rotated key on a later load', async () => {
+    await setEnvValues({ PEXELS_API_KEY: 'first' });
+    loadUserEnv();
+    await setEnvValues({ PEXELS_API_KEY: 'second' });
+    loadUserEnv();
+
+    expect(process.env.PEXELS_API_KEY).toBe('second');
+  });
+
+  it('withdraws a key that has since been commented out', async () => {
+    await setEnvValues({ PEXELS_API_KEY: 'temporary' });
+    loadUserEnv();
+    expect(process.env.PEXELS_API_KEY).toBe('temporary');
+
+    await setEnvValues({ PEXELS_API_KEY: null });
+    loadUserEnv();
+
+    expect(process.env.PEXELS_API_KEY).toBeUndefined();
+  });
+
+  it('leaves a shell export alone even after it has loaded that key itself', async () => {
+    // Reloading must not turn "the file wins once" into "the file wins always":
+    // whoever exported the variable after the first load still means it.
+    await setEnvValues({ UNSPLASH_ACCESS_KEY: 'from-file' });
+    loadUserEnv();
+    process.env.UNSPLASH_ACCESS_KEY = 'from-shell';
+    loadUserEnv();
+
+    expect(process.env.UNSPLASH_ACCESS_KEY).toBe('from-shell');
+  });
 });
