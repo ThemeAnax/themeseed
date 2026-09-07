@@ -123,9 +123,16 @@ export async function generateSeedContent(
     // Which posts get which enrichment is decided by position, not chance, so
     // a run of 15 posts reliably exercises every card the theme supports —
     // that is what makes this useful for previewing a theme.
+    //
+    // Galleries and embeds rotate because they are the cards worth sampling
+    // across a run. A body image does not: it is what an ordinary article
+    // looks like, and a post without one previews the theme's typography
+    // rather than its layout. The rotation used to hand the third post a video
+    // *instead of* an image, so a three-post run published one post with no
+    // image at all — the smallest run being the one most likely to be judged
+    // on. Every post now carries one.
     const wantsGallery = capabilities.supportsGallery && index % 3 === 1;
     const wantsVideo = capabilities.supportsVideoEmbed && index % 3 === 2;
-    const wantsInlineImage = index % 3 === 0 || (!wantsGallery && !wantsVideo);
 
     const enriched = await enrichBlocks({
       blocks,
@@ -136,7 +143,6 @@ export async function generateSeedContent(
       imageSource,
       wantsGallery,
       wantsVideo,
-      wantsInlineImage,
       videoFinder,
       stats,
     });
@@ -187,7 +193,6 @@ interface EnrichArgs {
   imageSource: ImageSource;
   wantsGallery: boolean;
   wantsVideo: boolean;
-  wantsInlineImage: boolean;
   videoFinder: YouTubeVideoFinder | null;
   stats: GenerateSummary['stats'];
 }
@@ -200,7 +205,7 @@ async function enrichBlocks(args: EnrichArgs): Promise<ContentBlock[]> {
   // heading, so media never separates a heading from the text it introduces.
   const anchors = findInsertionPoints(blocks);
 
-  if (args.wantsInlineImage && anchors.length > 0) {
+  if (anchors.length > 0) {
     const image = await firstImage(args.imageSource, {
       query: `${args.profile}: ${args.title}`,
       minWidth: 1400,

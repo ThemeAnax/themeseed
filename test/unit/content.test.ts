@@ -169,6 +169,41 @@ describe('generateSeedContent', () => {
     }
   });
 
+  // The rotation used to hand every third post a video *instead of* a body
+  // image, so the smallest useful run — three posts — published one with no
+  // image at all.
+  it('gives every post a body image, including the one that gets the video', async () => {
+    const { posts, stats } = await generateSeedContent({
+      topic: 'sports news',
+      count: 3,
+      capabilities: capabilities(),
+      imageSource: new FakeImageSource(),
+      videoFinder: null,
+      seed: 3,
+    });
+
+    expect(stats.withInlineImage).toBe(3);
+    for (const post of posts) {
+      expect(post.blocks.some((block) => block.type === 'image')).toBe(true);
+    }
+  });
+
+  it('still rotates galleries and embeds across a run', async () => {
+    const { stats } = await generateSeedContent({
+      topic: 'sports news',
+      count: 6,
+      capabilities: capabilities(),
+      imageSource: new FakeImageSource(),
+      videoFinder: null,
+      seed: 3,
+    });
+
+    // Two of six positions land on a gallery; an unconditional body image must
+    // not have flattened that variety away.
+    expect(stats.withGallery).toBe(2);
+    expect(stats.withInlineImage).toBe(6);
+  });
+
   it('omits galleries when the theme has no gallery styles', async () => {
     const { posts, stats } = await generateSeedContent({
       topic: 'x',
