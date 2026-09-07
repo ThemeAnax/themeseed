@@ -12,6 +12,7 @@ import {
   type SeedContent,
   type SeedResult,
   type ThemeCapabilities,
+  type UpdateContent,
   type WipeSummary,
 } from '../../core/types.js';
 import type {
@@ -19,9 +20,10 @@ import type {
   CreateContentOptions,
   SiteConfig,
   SiteInfo,
+  UpdateContentOptions,
 } from '../provider.js';
 import { GhostClient } from './client.js';
-import { publishPosts, toSeedResult } from './posts.js';
+import { publishPosts, updatePosts, toSeedResult } from './posts.js';
 import { analyzeGhostTheme } from './theme/index.js';
 
 /**
@@ -101,6 +103,19 @@ export class GhostProvider implements CmsProvider {
     options: CreateContentOptions = {}
   ): Promise<SeedResult[]> {
     return publishPosts(this.client, items, {
+      ...(options.onProgress ? { onProgress: options.onProgress } : {}),
+    });
+  }
+
+  async updateContent(
+    items: UpdateContent[],
+    options: UpdateContentOptions = {}
+  ): Promise<SeedResult[]> {
+    return updatePosts(this.client, items, {
+      seedTagSlug: SEED_TAG_SLUG,
+      ...(options.allowUnseeded !== undefined
+        ? { allowUnseeded: options.allowUnseeded }
+        : {}),
       ...(options.onProgress ? { onProgress: options.onProgress } : {}),
     });
   }

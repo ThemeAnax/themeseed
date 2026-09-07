@@ -22,6 +22,7 @@ import type {
   SeedContent,
   SeedResult,
   ThemeCapabilities,
+  UpdateContent,
   WipeSummary,
 } from '../core/types.js';
 import type { ImageSource } from '../images/source.js';
@@ -43,6 +44,19 @@ export interface CreateContentOptions {
   imageSource?: ImageSource;
   /** Called after each item so long runs can report progress. */
   onProgress?: (done: number, total: number, current: SeedResult) => void;
+}
+
+export interface UpdateContentOptions extends CreateContentOptions {
+  /**
+   * Permit editing posts this tool did not create.
+   *
+   * Off by default. `SEED_TAG` is what separates demo content from a real
+   * publication's work, and an id is easy to mistype or copy from the wrong
+   * list; overwriting somebody's actual article is a smaller disaster than
+   * deleting it only by degree. Implementations must re-check the tag on the
+   * fetched record — not on the caller's say-so — before writing.
+   */
+  allowUnseeded?: boolean;
 }
 
 export interface CmsProvider {
@@ -73,6 +87,18 @@ export interface CmsProvider {
   createContent(
     items: SeedContent[],
     options?: CreateContentOptions
+  ): Promise<SeedResult[]>;
+
+  /**
+   * Change posts that already exist, leaving unmentioned fields as they are.
+   *
+   * Same failure contract as `createContent`: never throw for a single bad
+   * item, record it in that item's `SeedResult.error` and carry on. Must
+   * refuse to touch a post lacking `SEED_TAG` unless `allowUnseeded` is set.
+   */
+  updateContent(
+    items: UpdateContent[],
+    options?: UpdateContentOptions
   ): Promise<SeedResult[]>;
 
   /** Everything previously created by themeseed on this site. */

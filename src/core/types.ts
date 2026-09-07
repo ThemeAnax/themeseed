@@ -220,6 +220,29 @@ export interface SeedContent {
   authorName?: string;
 }
 
+/**
+ * A change to one post that already exists.
+ *
+ * Every field is optional and *absent means leave alone*, because an update
+ * addresses a live post rather than describing one from scratch: a caller
+ * fixing a missing hero must not blank the excerpt by not mentioning it. The
+ * one field that needs three states is `featureImage`, which distinguishes
+ * "leave it" (absent) from "remove it" (null) from "use this" (a ref).
+ */
+export interface UpdateContent {
+  /** CMS-assigned id, as returned by `listSeeded` or `createContent`. */
+  id: string;
+  title?: string;
+  excerpt?: string;
+  /** Replaces the post body wholesale when given. */
+  blocks?: ContentBlock[];
+  /** Absent leaves the hero alone; `null` removes it; a ref replaces it. */
+  featureImage?: ImageRef | null;
+  /** One image to splice into the existing body, leaving the prose untouched. */
+  insertImage?: ImageRef;
+  status?: PublishStatus;
+}
+
 /** What a provider did with one SeedContent item. */
 export interface SeedResult {
   /** CMS-assigned identifier. */

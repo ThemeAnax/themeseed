@@ -300,3 +300,53 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+/**
+ * Splices one image card into an existing Lexical document.
+ *
+ * Used by the update path to give an already-published post a body image
+ * without touching its prose. Rebuilding the document from blocks is not an
+ * option: Ghost stores Lexical, and there is no lossless way back to the
+ * neutral block model, so anything not represented there would be silently
+ * dropped. Editing the tree in place changes exactly one thing.
+ *
+ * The card lands after the first paragraph rather than at the top, matching
+ * where the generator places body images, so an updated post looks like one
+ * that was seeded with an image in the first place. A document with no
+ * paragraph — a stub, or something unexpected — gets the card appended, which
+ * is still valid rather than a failure.
+ */
+export function insertImageCard(
+  lexical: string,
+  hosted: HostedImage,
+  options: { alt?: string; caption?: string } = {}
+): string {
+  const doc = JSON.parse(lexical) as {
+    root?: { children?: unknown[] };
+  };
+  const children = doc.root?.children;
+  if (!Array.isArray(children)) {
+    throw new Error('post body is not a Lexical document with a root');
+  }
+
+  const card = {
+    type: 'image',
+    version: 1,
+    src: hosted.url,
+    width: hosted.width ?? null,
+    height: hosted.height ?? null,
+    title: '',
+    alt: options.alt ?? hosted.alt ?? '',
+    caption: options.caption ?? hosted.caption ?? '',
+    cardWidth: 'regular',
+    href: '',
+  };
+
+  const firstParagraph = children.findIndex(
+    (node) => (node as { type?: string } | null)?.type === 'paragraph'
+  );
+  const at = firstParagraph === -1 ? children.length : firstParagraph + 1;
+  children.splice(at, 0, card);
+
+  return JSON.stringify(doc);
+}

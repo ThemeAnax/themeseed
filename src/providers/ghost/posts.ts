@@ -18,10 +18,11 @@ import {
   type ImageRef,
   type SeedContent,
   type SeedResult,
+  type UpdateContent,
 } from '../../core/types.js';
 import { extensionFor, probeImage, type ImageFormat } from '../../images/inspect.js';
 import type { GhostClient } from './client.js';
-import { blocksToLexical, type HostedImage } from './lexical.js';
+import { blocksToLexical, insertImageCard, type HostedImage } from './lexical.js';
 import type { GhostPost } from './types.js';
 
 export interface PublishOptions {
@@ -58,6 +59,138 @@ export async function publishPosts(
   }
 
   return results;
+}
+
+export interface UpdateOptions extends PublishOptions {
+  /** Permit editing posts that do not carry the seed tag. Off by default. */
+  allowUnseeded?: boolean;
+  seedTagSlug: string;
+}
+
+/**
+ * Applies edits to posts that already exist.
+ *
+ * Mirrors `publishPosts`: one failed item is recorded and the rest proceed.
+ */
+export async function updatePosts(
+  client: GhostClient,
+  items: UpdateContent[],
+  options: UpdateOptions
+): Promise<SeedResult[]> {
+  const results: SeedResult[] = [];
+  const uploadCache = new Map<string, HostedImage>();
+
+  for (const [index, item] of items.entries()) {
+    let result: SeedResult;
+    try {
+      result = await updateOne(client, item, uploadCache, options);
+    } catch (err) {
+      logger.warn(`failed to update post ${item.id}:`, err);
+      result = {
+        id: item.id,
+        title: item.title ?? item.id,
+        status: item.status ?? 'published',
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+    results.push(result);
+    options.onProgress?.(index + 1, items.length, result);
+  }
+
+  return results;
+}
+
+async function updateOne(
+  client: GhostClient,
+  item: UpdateContent,
+  cache: Map<string, HostedImage>,
+  options: UpdateOptions
+): Promise<SeedResult> {
+  const existing = await client.getPost(item.id);
+
+  // Re-check the tag on the record Ghost actually returned, never on the
+  // caller's claim. An id copied from the wrong list would otherwise overwrite
+  // a real article, and there is no undo for that.
+  const seeded = existing.tags?.some(
+    (tag) => tag.slug === options.seedTagSlug || tag.name === SEED_TAG
+  );
+  if (!seeded && !options.allowUnseeded) {
+    throw new Error(
+      `post "${existing.title}" does not carry ${SEED_TAG}; ` +
+        'themeseed did not create it. Pass allowUnseeded to edit it anyway.'
+    );
+  }
+
+  const payload: Record<string, unknown> = {};
+  if (item.title !== undefined) payload['title'] = item.title;
+  if (item.excerpt !== undefined)
+    payload['custom_excerpt'] = truncateExcerpt(item.excerpt);
+  if (item.status !== undefined) payload['status'] = item.status;
+
+  // Ghost clears a feature image when the field is sent as null, which is why
+  // the neutral model distinguishes null from absent.
+  if (item.featureImage === null) {
+    payload['feature_image'] = null;
+    payload['feature_image_alt'] = null;
+    payload['feature_image_caption'] = null;
+  } else if (item.featureImage) {
+    const hosted = await hostImage(client, item.featureImage, cache, options);
+    payload['feature_image'] = hosted.url;
+    payload['feature_image_alt'] = truncateAlt(
+      item.featureImage.alt ?? hosted.alt ?? item.title ?? existing.title
+    );
+    if (item.featureImage.caption)
+      payload['feature_image_caption'] = item.featureImage.caption;
+  }
+
+  if (item.blocks) {
+    const hosted = new Map<string, HostedImage>();
+    for (const ref of collectImageRefs({ blocks: item.blocks })) {
+      try {
+        hosted.set(imageKey(ref), await hostImage(client, ref, cache, options));
+      } catch (err) {
+        logger.warn(`skipping image ${ref.location}:`, err);
+      }
+    }
+    payload['lexical'] = blocksToLexical(item.blocks, (ref) => hosted.get(imageKey(ref)));
+  } else if (item.insertImage) {
+    if (!existing.lexical) {
+      throw new Error('post has no Lexical body to insert an image into');
+    }
+    const hosted = await hostImage(client, item.insertImage, cache, options);
+    payload['lexical'] = insertImageCard(existing.lexical, hosted, {
+      alt: item.insertImage.alt ?? item.title ?? existing.title,
+      ...(item.insertImage.caption ? { caption: item.insertImage.caption } : {}),
+    });
+  }
+
+  if (Object.keys(payload).length === 0) {
+    // Nothing to do is not an error, but pretending an edit happened would be.
+    return toSeedResult(existing);
+  }
+
+  const updated = await withRetry(
+    () => client.updatePost(item.id, payload, existing.updated_at ?? ''),
+    options.maxRetries ?? 2,
+    `update post "${existing.title}"`
+  );
+
+  return toSeedResult(updated);
+}
+
+/** Uploads an image ref, reusing anything already hosted in this run. */
+async function hostImage(
+  client: GhostClient,
+  ref: ImageRef,
+  cache: Map<string, HostedImage>,
+  options: PublishOptions
+): Promise<HostedImage> {
+  const key = imageKey(ref);
+  const cached = cache.get(key);
+  if (cached) return cached;
+  const uploaded = await uploadImageRef(client, ref, options.maxRetries ?? 2);
+  cache.set(key, uploaded);
+  return uploaded;
 }
 
 async function publishOne(
@@ -128,7 +261,9 @@ async function publishOne(
 // images
 // ---------------------------------------------------------------------------
 
-function collectImageRefs(item: SeedContent): ImageRef[] {
+function collectImageRefs(
+  item: Pick<SeedContent, 'blocks'> & { featureImage?: ImageRef }
+): ImageRef[] {
   const refs: ImageRef[] = [];
   if (item.featureImage) refs.push(item.featureImage);
   for (const block of item.blocks) {

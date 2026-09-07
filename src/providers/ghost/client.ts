@@ -167,6 +167,40 @@ export class GhostClient {
     return data.posts ?? [];
   }
 
+  async getPost(id: string): Promise<GhostPost> {
+    const data = await this.request<{ posts: GhostPost[] }>(
+      'GET',
+      `/posts/${encodeURIComponent(id)}/`,
+      { query: { include: 'tags' } }
+    );
+    const post = data.posts?.[0];
+    if (!post) throw new ProviderError(`Ghost has no post with id ${id}`);
+    return post;
+  }
+
+  /**
+   * Ghost requires `updated_at` on every edit and rejects a stale one with a
+   * 409. That is optimistic locking, not ceremony: it is what stops this tool
+   * overwriting an edit somebody made in Ghost Admin thirty seconds ago. The
+   * caller passes the value it read, so the check covers the whole
+   * read-modify-write rather than just the request.
+   */
+  async updatePost(
+    id: string,
+    post: Record<string, unknown>,
+    updatedAt: string
+  ): Promise<GhostPost> {
+    const data = await this.request<{ posts: GhostPost[] }>(
+      'PUT',
+      `/posts/${encodeURIComponent(id)}/`,
+      { body: { posts: [{ ...post, updated_at: updatedAt }] } }
+    );
+    const updated = data.posts?.[0];
+    if (!updated)
+      throw new ProviderError('Ghost accepted the update but returned no record');
+    return updated;
+  }
+
   async createPost(post: Record<string, unknown>): Promise<GhostPost> {
     // `source=html` would make Ghost convert HTML for us, but we build Lexical
     // directly so that cards (gallery, embed, bookmark) survive intact — the

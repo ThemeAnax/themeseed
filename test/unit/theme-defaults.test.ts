@@ -53,6 +53,9 @@ function fakeProvider(): CmsProvider {
       analyzeCalls += 1;
       return measured;
     },
+    async updateContent() {
+      return [];
+    },
     async createContent(items: SeedContent[]): Promise<SeedResult[]> {
       return items.map((item, index) => ({
         id: `fake-${index}`,
