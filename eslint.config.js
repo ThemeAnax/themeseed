@@ -4,7 +4,10 @@ import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'coverage/**', 'node_modules/**'],
+    // `plugin/` holds the generated MCP bundle shipped to Claude Code plugin
+    // users. It is build output that happens to live outside dist/, so it is
+    // linted and formatted no more than dist/ is.
+    ignores: ['dist/**', 'plugin/**', 'coverage/**', 'node_modules/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

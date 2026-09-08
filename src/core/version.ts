@@ -16,8 +16,11 @@ export async function readVersion(): Promise<string> {
   if (cached) return cached;
 
   const here = path.dirname(fileURLToPath(import.meta.url));
-  // Works from both `dist/core/` and `src/core/` (tsx during development).
+  // Works from `dist/core/` and `src/core/` (tsx during development), and from
+  // `plugin/` where the Claude Code plugin's single bundled file sits one level
+  // below the repository root it was cloned with.
   const candidates = [
+    path.resolve(here, '..', 'package.json'),
     path.resolve(here, '..', '..', 'package.json'),
     path.resolve(here, '..', '..', '..', 'package.json'),
   ];

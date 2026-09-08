@@ -1,6 +1,6 @@
 {
   "name": "@indianic/themeseed",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Seed realistic demo content into any CMS so you can preview a theme with real-looking articles, images, galleries and video — instead of an empty install. MCP server + CLI. Ghost supported today; WordPress, Joomla, Drupal and Magento planned.",
   "keywords": [
     "mcp",
@@ -58,7 +58,8 @@
     "test:all": "vitest run",
     "test:loop": "tsx scripts/test-loop.ts",
     "verify": "npm run typecheck && npm run lint && npm run test",
-    "prepack": "npm run clean && npm run build"
+    "prepack": "npm run clean && npm run build && npm run build:plugin",
+    "build:plugin": "node scripts/build-plugin-bundle.mjs"
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",
@@ -71,6 +72,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/node": "^22.10.0",
+    "esbuild": "^0.28.2",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.6",

@@ -1,0 +1,8 @@
+# Build output. `plugin/` carries the generated MCP bundle that Claude Code
+# plugin users run; reformatting a 1.2 MB generated file achieves nothing and
+# makes every rebuild look like a diff.
+dist/
+plugin/
+coverage/
+node_modules/
+package-lock.json
