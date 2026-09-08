@@ -7,6 +7,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-09-08
+
+### Added
+
+- **themeseed installs as a Claude Code plugin**, with no npm account and no
+  registry configuration:
+
+  ```
+  /plugin marketplace add ThemeAnax/themeseed
+  /plugin install themeseed@themeseed
+  ```
+
+  The plugin is served from the public GitHub repository and carries a prebuilt,
+  dependency-inlined copy of the MCP server at `plugin/themeseed-mcp.mjs`. Claude
+  Code runs a plugin by cloning the repo and executing what it finds — it does
+  not run `npm install` — and the npm package sits on a private registry most
+  people cannot read, so shipping the server ready-to-run is what makes the
+  plugin installable by anyone at all. It carries no credentials: the Ghost
+  Admin API key and any image-provider keys remain the user's own.
+
+- **A `/themeseed` command**, which checks whether a site and image providers are
+  configured, walks a first-time user through connecting them, and then seeds.
+
+### Changed
+
+- `readVersion` also looks one directory up from the module that calls it, so the
+  bundled plugin — a single file sitting in `plugin/` beside the repository's
+  `package.json` — reports its real version instead of `0.0.0-unknown`.
+- `prepack` rebuilds the plugin bundle, so a published release cannot carry a
+  stale one. A unit test fails if the plugin manifests drift from the package
+  version.
+
 ## [0.4.0] — 2026-09-07
 
 ### Added

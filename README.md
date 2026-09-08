@@ -53,6 +53,30 @@ thing, because it reads the theme before it writes anything.
 
 ## Install
 
+### Claude Code plugin (no npm account needed)
+
+The quickest route, and the only one that needs nothing from IndiaNIC's registry.
+In Claude Code:
+
+```
+/plugin marketplace add ThemeAnax/themeseed
+/plugin install themeseed@themeseed
+```
+
+That is it — restart Claude Code and the eight themeseed tools are available,
+along with a `/themeseed` command that walks you through connecting a site.
+
+The plugin ships a prebuilt, dependency-free copy of the MCP server at
+`plugin/themeseed-mcp.mjs`, so there is nothing to install and no registry to
+authenticate against. It needs Node 20+ on your PATH, which Claude Code already
+requires. You still supply your own Ghost Admin API key and, optionally, your own
+image-provider keys — the plugin ships no credentials.
+
+The bundled server gives you the MCP tools. For the `themeseed` CLI (`seed`,
+`analyze`, `wipe`, `update`), install the npm package as below.
+
+### npm package (CLI + MCP server)
+
 themeseed is published to IndiaNIC's private registry. Point the `@indianic` scope at it once:
 
 ```bash
@@ -74,8 +98,9 @@ npx @indianic/themeseed init
 
 Node 20 or newer is required.
 
-> **Registry note.** The public-npm / public-GitHub story is still undecided — see
-> [Open questions](#open-questions). Today this package exists only on `npm.indianic.in`.
+> **Registry note.** The npm package exists only on `npm.indianic.in` and needs an
+> account there. The Claude Code plugin above does not — it is served from the
+> public GitHub repository. See [Open questions](#open-questions).
 
 ## Quick start
 
@@ -467,6 +492,23 @@ Two rules hold the whole thing together:
    a provider-only change rather than a rewrite.
 
 ## Development
+
+### The Claude Code plugin
+
+`plugin/themeseed-mcp.mjs` is a committed build artifact — the only one in the
+repository. It has to be, because Claude Code installs a plugin by cloning this
+repo and running what it finds: there is no install step, and the npm package is
+on a registry most plugin users cannot read.
+
+Rebuild it whenever the server changes, and always before tagging a release:
+
+```bash
+npm run build:plugin
+```
+
+`prepack` runs it too, so `npm publish` cannot ship a release whose plugin bundle
+is stale. `test/unit/plugin-manifest.test.ts` fails if the version in
+`.claude-plugin/plugin.json` or `marketplace.json` drifts from `package.json`.
 
 ```bash
 npm install
