@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "themeseed": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/plugin/themeseed-mcp.mjs"]
+    }
+  }
+}

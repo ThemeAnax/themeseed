@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "themeseed",
+  "owner": {
+    "name": "IndiaNIC Infotech",
+    "url": "https://github.com/ThemeAnax"
+  },
+  "metadata": {
+    "description": "themeseed — realistic demo content for CMS theme previews.",
+    "version": "0.5.0"
+  },
+  "plugins": [
+    {
+      "name": "themeseed",
+      "source": ".",
+      "description": "Seed a Ghost site with real-looking articles, feature images, galleries and verified video embeds so a theme can be judged on real content. Everything it creates is tagged #themeseed and removable in one call.",
+      "version": "0.5.0",
+      "author": { "name": "IndiaNIC Infotech" },
+      "license": "MIT",
+      "category": "content",
+      "tags": ["ghost", "cms", "theme-preview", "demo-content", "seeding"]
+    }
+  ]
+}
