@@ -17,7 +17,9 @@ import {
   type ContentBlockType,
   type ImageRef,
   type SeedContent,
+  type SeedPage,
   type SeedResult,
+  type SeedTag,
   type UpdateContent,
 } from '../../core/types.js';
 import { extensionFor, probeImage, type ImageFormat } from '../../images/inspect.js';
@@ -426,4 +428,112 @@ async function withRetry<T>(
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ---------------------------------------------------------------------------
+// Pages and tags
+// ---------------------------------------------------------------------------
+
+/**
+ * Publishes static pages.
+ *
+ * Ghost keeps pages in the posts table with `type: 'page'`, but the API will
+ * not accept `type` on `/posts/` — the endpoint decides, so this goes to
+ * `/pages/`.
+ *
+ * Same failure contract as `publishPosts`: one bad page is recorded and the
+ * rest continue.
+ */
+export async function publishPages(
+  client: GhostClient,
+  items: SeedPage[],
+  options: PublishOptions = {}
+): Promise<SeedResult[]> {
+  const results: SeedResult[] = [];
+  const uploadCache = new Map<string, HostedImage>();
+
+  for (const [index, item] of items.entries()) {
+    let result: SeedResult;
+    try {
+      const hosted = new Map<string, HostedImage>();
+      for (const ref of collectImageRefs(item)) {
+        try {
+          hosted.set(imageKey(ref), await hostImage(client, ref, uploadCache, options));
+        } catch (err) {
+          logger.warn(`image for page "${item.title}" could not be uploaded:`, err);
+        }
+      }
+      const resolve = (ref: ImageRef) => hosted.get(imageKey(ref));
+
+      // A supplied body is final markup; converting it into blocks and back
+      // could only change it, so it goes over as html and Ghost converts.
+      const bodyField = item.suppliedBody
+        ? { html: item.suppliedBody }
+        : { lexical: blocksToLexical(item.blocks, resolve) };
+
+      const created = await client.createPage({
+        title: item.title,
+        slug: item.slug,
+        ...bodyField,
+        status: item.status,
+        ...(item.excerpt ? { custom_excerpt: truncateExcerpt(item.excerpt) } : {}),
+        ...(item.featureImage && resolve(item.featureImage)
+          ? { feature_image: resolve(item.featureImage)!.url }
+          : {}),
+        // Pages carry the marker too, so a wipe finds everything it made.
+        tags: [{ name: SEED_TAG }],
+      });
+      result = toSeedResult(created, item);
+    } catch (err) {
+      logger.warn(`failed to create page "${item.title}":`, err);
+      result = {
+        id: `failed-page-${index}`,
+        title: item.title,
+        status: item.status,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+    results.push(result);
+    options.onProgress?.(index + 1, items.length, result);
+  }
+
+  return results;
+}
+
+/** Creates tags as entities so an archive page has something to render. */
+export async function publishTags(
+  client: GhostClient,
+  items: SeedTag[],
+  options: PublishOptions = {}
+): Promise<SeedResult[]> {
+  const results: SeedResult[] = [];
+
+  for (const [index, item] of items.entries()) {
+    let result: SeedResult;
+    try {
+      const created = await client.createTag({
+        name: item.name,
+        slug: item.slug,
+        ...(item.description ? { description: item.description } : {}),
+      });
+      result = {
+        id: created.id,
+        title: created.name ?? item.name,
+        slug: created.slug ?? item.slug,
+        status: 'published',
+      };
+    } catch (err) {
+      logger.warn(`failed to create tag "${item.name}":`, err);
+      result = {
+        id: `failed-tag-${index}`,
+        title: item.name,
+        status: 'published',
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+    results.push(result);
+    options.onProgress?.(index + 1, items.length, result);
+  }
+
+  return results;
 }

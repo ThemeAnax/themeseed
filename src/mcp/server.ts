@@ -18,6 +18,7 @@ import { addSite, listSitesSafe, removeSite, resolveSite } from '../config/sites
 import { randomTopic } from '../content/topics.js';
 import { describeError, ThemeseedError } from '../core/errors.js';
 import { logger } from '../core/logger.js';
+import { exportSite } from '../core/export.js';
 import { seedSite } from '../core/seed.js';
 import { updatePost } from '../core/update.js';
 import { IMPLEMENTED_PLATFORMS, PLATFORMS, type Platform } from '../core/types.js';
@@ -322,6 +323,118 @@ function registerContentTools(server: McpServer): void {
           url: r.url,
           status: r.status,
         })),
+      });
+    }
+  );
+
+  server.registerTool(
+    'export_content',
+    {
+      title: 'Export demo content as an importable file',
+      description:
+        'Generates the same content generate_posts would, but writes it to disk as a Ghost ' +
+        'import archive instead of publishing it live. Needs no site and no credentials. ' +
+        'The archive bundles its own images, so after importing, the site serves them from ' +
+        '/content/images/ rather than staying dependent on a stock CDN. Use this to ship ' +
+        'demo content inside a theme package; use generate_posts when you have a live site ' +
+        'to fill. Pass `pages` for static pages — set needsBody false where a theme template ' +
+        'renders the page itself, or suppliedBody to use markup you already have.',
+      inputSchema: {
+        topic: z
+          .string()
+          .optional()
+          .describe('Subject of the publication, e.g. "SaaS productivity blog".'),
+        outDir: z
+          .string()
+          .describe('Directory to write content-export.zip into. Created if missing.'),
+        count: z.number().int().min(1).max(50).default(12).describe('How many posts to create.'),
+        pages: z
+          .array(
+            z.object({
+              slug: z.string(),
+              title: z.string().optional(),
+              needsBody: z
+                .boolean()
+                .optional()
+                .describe(
+                  'False when a dedicated theme template renders this page, so a generated ' +
+                    'body would never be shown. Defaults to true.'
+                ),
+              suppliedBody: z
+                .string()
+                .optional()
+                .describe('Final markup to use verbatim instead of generating a body.'),
+            })
+          )
+          .optional()
+          .describe('Static pages to include, e.g. about, privacy-policy, style-guide.'),
+        navigation: z
+          .array(z.object({ label: z.string(), url: z.string() }))
+          .optional()
+          .describe('Primary menu. Imported as a site setting, so the theme header fills in.'),
+        secondaryNavigation: z
+          .array(z.object({ label: z.string(), url: z.string() }))
+          .optional()
+          .describe('Secondary menu, which most themes render in the footer.'),
+        imageSource: z
+          .enum(['auto', 'local', 'stock', 'ai', 'none'])
+          .default('auto')
+          .describe('Same meaning as in generate_posts. Images are bundled into the archive.'),
+        titles: z.array(z.string()).optional().describe('Your own post titles.'),
+        authorName: z.string().optional(),
+        includeVideo: z.boolean().default(true),
+      },
+    },
+    async (args) => {
+      loadUserEnv();
+
+      const topic = args.topic?.trim() || (await askForTopic(server));
+      const site =
+        args.navigation || args.secondaryNavigation
+          ? {
+              ...(args.navigation ? { navigation: args.navigation } : {}),
+              ...(args.secondaryNavigation
+                ? { secondaryNavigation: args.secondaryNavigation }
+                : {}),
+            }
+          : undefined;
+
+      const report = await exportSite({
+        platform: 'ghost',
+        topic,
+        count: args.count,
+        outDir: args.outDir,
+        imageSource: args.imageSource,
+        includeVideo: args.includeVideo,
+        ...(args.pages?.length ? { pages: args.pages } : {}),
+        ...(site ? { site } : {}),
+        ...(args.titles?.length ? { titles: args.titles } : {}),
+        ...(args.authorName ? { authorName: args.authorName } : {}),
+      });
+
+      const lines = [
+        `Wrote ${report.zipPath}`,
+        `  posts:   ${report.stats.posts}`,
+        `  pages:   ${report.stats.pages}`,
+        `  tags:    ${report.stats.tags}`,
+        `  authors: ${report.stats.authors}`,
+        `  images:  ${report.stats.images} bundled${
+          report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''
+        }`,
+      ];
+      for (const failure of report.failed) {
+        lines.push(`    - ${failure.location}: ${failure.error}`);
+      }
+      lines.push(
+        '',
+        'Import it in Ghost Admin -> Settings -> Import content. The images travel with it.'
+      );
+
+      return text(lines.join('\n'), {
+        zipPath: report.zipPath,
+        topic,
+        stats: report.stats,
+        failedImages: report.failed,
       });
     }
   );

@@ -19,7 +19,10 @@
 
 import type {
   Platform,
+  SeedAuthor,
   SeedContent,
+  SeedPage,
+  SeedTag,
   SeedResult,
   ThemeCapabilities,
   UpdateContent,
@@ -100,6 +103,28 @@ export interface CmsProvider {
     items: UpdateContent[],
     options?: UpdateContentOptions
   ): Promise<SeedResult[]>;
+
+  /**
+   * Create static pages. Optional: not every platform has a page concept
+   * distinct from a post, and a provider that lacks one must not be forced to
+   * fake it.
+   */
+  createPages?(items: SeedPage[], options?: CreateContentOptions): Promise<SeedResult[]>;
+
+  /**
+   * Create tags as entities — with the description and image a tag archive
+   * renders — rather than only as names attached to a post. Optional for the
+   * same reason.
+   */
+  createTags?(items: SeedTag[], options?: CreateContentOptions): Promise<SeedResult[]>;
+
+  /**
+   * Create author profiles. Optional, and Ghost deliberately does not
+   * implement it: its Admin API exposes `/users/` as Browse and Read only —
+   * a user is invited by email and must accept, which no unattended tool can
+   * complete. A platform whose API can create users should implement this.
+   */
+  createAuthors?(items: SeedAuthor[], options?: CreateContentOptions): Promise<SeedResult[]>;
 
   /** Everything previously created by themeseed on this site. */
   listSeeded(): Promise<SeedResult[]>;

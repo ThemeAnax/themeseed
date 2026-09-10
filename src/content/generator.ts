@@ -17,13 +17,32 @@ import type {
   ImageRef,
   ImageRequest,
   PublishStatus,
+  SeedAuthor,
   SeedContent,
+  SeedPage,
+  SeedTag,
   ThemeCapabilities,
 } from '../core/types.js';
 import { hashString } from '../images/png.js';
 import type { ImageSource } from '../images/source.js';
 import { profileTopic, TemplateContentEngine, type ContentEngine } from './engine.js';
 import { YouTubeVideoFinder } from './video.js';
+
+/**
+ * A page the caller wants, described rather than written.
+ *
+ * `needsBody` and `suppliedBody` are the caller's call because only it knows
+ * the theme: whether a dedicated template already renders this page, and
+ * whether the copy is something it holds in final form already.
+ */
+export interface PageRequest {
+  slug: string;
+  title?: string;
+  /** Default true. False when a template supplies the page's content. */
+  needsBody?: boolean;
+  /** Final markup to use verbatim; suppresses generation entirely. */
+  suppliedBody?: string;
+}
 
 export interface GenerateOptions {
   topic: string;
@@ -46,11 +65,20 @@ export interface GenerateOptions {
   authorName?: string;
   /** Spread publish dates back over this many days so archives look lived-in. */
   backdateDays?: number;
+  /** Static pages to write alongside the posts. */
+  pages?: PageRequest[];
   onProgress?: (done: number, total: number, title: string) => void;
 }
 
 export interface GenerateSummary {
   posts: SeedContent[];
+  /**
+   * Added alongside `posts` rather than nested under a new key: callers
+   * already read `summary.posts`, and moving it would break them for nothing.
+   */
+  pages?: SeedPage[];
+  tags?: SeedTag[];
+  authors?: SeedAuthor[];
   /** What was actually included, for reporting and verification. */
   stats: {
     withFeatureImage: number;
@@ -187,7 +215,108 @@ export async function generateSeedContent(
     options.onProgress?.(index + 1, titles.length, title);
   }
 
-  return { posts, stats };
+  const pages = await generatePages(options.pages ?? [], {
+    topic,
+    engine,
+    seed,
+    status,
+    targetWords: capabilities.expectedWordCount.target,
+  });
+
+  const tags = tagEntitiesFor(posts, profile.subject);
+  const authors = options.authorName ? [authorEntityFor(options.authorName, profile.subject)] : [];
+
+  return {
+    posts,
+    ...(pages.length ? { pages } : {}),
+    ...(tags.length ? { tags } : {}),
+    ...(authors.length ? { authors } : {}),
+    stats,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// pages, tags and authors
+// ---------------------------------------------------------------------------
+
+interface PageContext {
+  topic: string;
+  engine: ContentEngine;
+  seed: number;
+  status: PublishStatus;
+  targetWords: number;
+}
+
+/** "terms-of-use" -> "Terms Of Use", for a caller that gave only a slug. */
+function titleFromSlug(slug: string): string {
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((word) => capitalise(word))
+    .join(' ');
+}
+
+async function generatePages(
+  requests: PageRequest[],
+  context: PageContext
+): Promise<SeedPage[]> {
+  const pages: SeedPage[] = [];
+
+  for (const request of requests) {
+    const title = request.title ?? titleFromSlug(request.slug);
+    // A supplied body is final; a template-rendered page never shows one.
+    // Both skip generation, for different reasons.
+    const generate = !request.suppliedBody && request.needsBody !== false;
+    const blocks = generate
+      ? await context.engine.generateBody({
+          title,
+          topic: context.topic,
+          // Pages read shorter than articles — an About page the length of a
+          // feature is padding, and padding is what demo content is accused of.
+          targetWords: Math.round(context.targetWords * 0.6),
+          seed: context.seed ^ hashString(`page:${request.slug}`),
+        })
+      : [];
+
+    pages.push({
+      title,
+      slug: request.slug,
+      blocks,
+      status: context.status,
+      ...(request.needsBody !== undefined ? { needsBody: request.needsBody } : {}),
+      ...(request.suppliedBody ? { suppliedBody: request.suppliedBody } : {}),
+    });
+  }
+
+  return pages;
+}
+
+/**
+ * One entity per tag the posts actually reference.
+ *
+ * Generated from the posts rather than alongside them so the two can never
+ * disagree — a tag archive for a tag no post carries is an empty page.
+ */
+function tagEntitiesFor(posts: SeedContent[], subject: string): SeedTag[] {
+  const seen = new Map<string, SeedTag>();
+  for (const name of posts.flatMap((post) => post.tags)) {
+    const slug = slugify(name);
+    if (!slug || seen.has(slug)) continue;
+    seen.set(slug, {
+      name,
+      slug,
+      description: `Stories about ${name.toLowerCase()} from our coverage of ${subject}.`,
+    });
+  }
+  return [...seen.values()];
+}
+
+function authorEntityFor(name: string, subject: string): SeedAuthor {
+  return {
+    name,
+    slug: slugify(name),
+    bio: `${name} writes about ${subject}.`,
+  };
 }
 
 // ---------------------------------------------------------------------------

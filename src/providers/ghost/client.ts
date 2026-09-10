@@ -214,6 +214,21 @@ export class GhostClient {
     return created;
   }
 
+  /**
+   * Pages are posts on a separate endpoint. Ghost keeps them in the same
+   * table with `type: 'page'`, but the API refuses `type` on `/posts/` — the
+   * endpoint is what decides.
+   */
+  async createPage(page: Record<string, unknown>): Promise<GhostPost> {
+    const data = await this.request<{ pages: GhostPost[] }>('POST', '/pages/', {
+      body: { pages: [page] },
+    });
+    const created = data.pages?.[0];
+    if (!created)
+      throw new ProviderError('Ghost accepted the page but returned no record');
+    return created;
+  }
+
   async deletePost(id: string): Promise<void> {
     await this.request<void>('DELETE', `/posts/${encodeURIComponent(id)}/`);
   }
@@ -227,7 +242,12 @@ export class GhostClient {
     return data.tags ?? [];
   }
 
-  async createTag(tag: { name: string; description?: string }): Promise<GhostTag> {
+  async createTag(tag: {
+    name: string;
+    slug?: string;
+    description?: string;
+    feature_image?: string;
+  }): Promise<GhostTag> {
     const data = await this.request<{ tags: GhostTag[] }>('POST', '/tags/', {
       body: { tags: [tag] },
     });
