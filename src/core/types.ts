@@ -221,6 +221,101 @@ export interface SeedContent {
 }
 
 /**
+ * One static page — an "about", "contact" or "privacy policy".
+ *
+ * Separate from `SeedContent` because a page is not a post: it carries no tags,
+ * no author byline and no place in a chronological feed. Every CMS this project
+ * targets draws the same line.
+ */
+export interface SeedPage {
+  title: string;
+  slug: string;
+  blocks: ContentBlock[];
+  excerpt?: string;
+  featureImage?: ImageRef;
+  status: PublishStatus;
+  /**
+   * False when the CMS renders this page through a dedicated template that
+   * supplies its own content, so a generated body would never be shown — an
+   * "authors" page whose template lists the authors, for instance.
+   *
+   * Only the caller can answer this, because only the caller knows the theme.
+   * Defaults to true when unstated: a body a template ignores costs nothing,
+   * whereas a page rendered by the generic template with no body is blank.
+   */
+  needsBody?: boolean;
+  /**
+   * Body supplied by the caller, used verbatim instead of generating one.
+   *
+   * For content the caller already has in final form and does not want
+   * invented — a style guide, a legal notice. When present, `blocks` and
+   * `needsBody` are both ignored.
+   */
+  suppliedBody?: string;
+}
+
+/**
+ * A tag as an entity rather than a bare name.
+ *
+ * `SeedContent.tags` carries names only, which is all a post needs. A theme's
+ * tag archive usually wants more: a description under the heading, a hero
+ * image behind it. Those live here.
+ */
+export interface SeedTag {
+  name: string;
+  slug: string;
+  description?: string;
+  featureImage?: ImageRef;
+}
+
+/**
+ * An author as an entity rather than a bare name.
+ *
+ * `SeedContent.authorName` is enough to attribute a post. An author archive
+ * page needs the profile behind it.
+ */
+export interface SeedAuthor {
+  name: string;
+  slug: string;
+  bio?: string;
+  avatar?: ImageRef;
+}
+
+/** One entry in a site menu. */
+export interface NavItem {
+  label: string;
+  url: string;
+}
+
+/**
+ * Site-level configuration that belongs with the content rather than in it.
+ *
+ * Navigation is here because a theme's header and footer are shaped by the
+ * menu, and demo content without one leaves them empty — the site reads as
+ * broken rather than unconfigured. Every CMS this project targets stores menus
+ * as site settings rather than as content.
+ */
+export interface SeedSiteConfig {
+  navigation?: NavItem[];
+  secondaryNavigation?: NavItem[];
+}
+
+/**
+ * Everything one generation run produced.
+ *
+ * Providers that only handle posts can read `posts` and ignore the rest; the
+ * optional entity collections exist so a provider that can create pages,
+ * tags or author profiles has them available.
+ */
+export interface SeedBundle {
+  posts: SeedContent[];
+  pages?: SeedPage[];
+  tags?: SeedTag[];
+  authors?: SeedAuthor[];
+  site?: SeedSiteConfig;
+}
+
+/**
  * A change to one post that already exists.
  *
  * Every field is optional and *absent means leave alone*, because an update

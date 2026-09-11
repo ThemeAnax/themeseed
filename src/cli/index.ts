@@ -19,6 +19,7 @@ import { readVersion } from '../core/version.js';
 import {
   analyzeCommand,
   listCommand,
+  exportCommand,
   seedCommand,
   updateCommand,
   wipeCommand,
@@ -185,6 +186,38 @@ program
   )
   .option('-y, --yes', 'Do not prompt for confirmation')
   .action((site, options) => seedCommand(site, options));
+
+program
+  .command('export')
+  .description(
+    'Write demo content to an importable Ghost archive — no site or credentials needed'
+  )
+  .option('-t, --topic <topic>', 'What the publication is about')
+  .option(
+    '-c, --count <n>',
+    'How many posts to create',
+    (value) => Number.parseInt(value, 10),
+    12
+  )
+  .option('-o, --out <dir>', 'Where to write content-export.zip', './demo-content')
+  .option(
+    '-i, --image-source <source>',
+    'auto | local | stock | ai | none. Images are bundled into the archive',
+    'auto'
+  )
+  .option(
+    '--pages <list>',
+    'Comma-separated page slugs. Suffix ":no-body" where a theme template renders the page, ' +
+      'e.g. "about,privacy-policy,authors:no-body"'
+  )
+  .option('--draft', 'Mark the content as drafts')
+  .option('--author <name>', 'Author name to attribute posts to')
+  .option('--no-video', 'Skip YouTube lookups')
+  .option('--seed <n>', 'Seed the generator for reproducible output', (value) =>
+    Number.parseInt(value, 10)
+  )
+  .option('-y, --yes', 'Do not prompt for confirmation')
+  .action((options) => exportCommand(options));
 
 program
   .command('update <id> [site]')

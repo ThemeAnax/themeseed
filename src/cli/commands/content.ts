@@ -11,6 +11,7 @@ import pc from 'picocolors';
 import { resolveSite } from '../../config/sites.js';
 import { randomTopic } from '../../content/topics.js';
 import { describeError } from '../../core/errors.js';
+import { exportSite } from '../../core/export.js';
 import { seedSite } from '../../core/seed.js';
 import { updatePost, type FeatureImageAction } from '../../core/update.js';
 import type { PublishStatus, RequestedImageSource } from '../../core/types.js';
@@ -357,4 +358,100 @@ export async function wipeCommand(
 
 function truncate(text: string, max = 48): string {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
+}
+
+// ---------------------------------------------------------------------------
+// export
+// ---------------------------------------------------------------------------
+
+export interface ExportFlags {
+  topic?: string;
+  count?: number;
+  out?: string;
+  imageSource?: string;
+  draft?: boolean;
+  author?: string;
+  noVideo?: boolean;
+  seed?: number;
+  pages?: string;
+  yes?: boolean;
+}
+
+/**
+ * Writes demo content to a file rather than to a site.
+ *
+ * Takes no site argument on purpose: there is nothing to connect to. That is
+ * the whole point — a theme author packaging demo content has no Ghost of the
+ * customer's to publish into.
+ */
+export async function exportCommand(flags: ExportFlags = {}): Promise<void> {
+  const outDir = flags.out ?? './demo-content';
+
+  let topic = flags.topic;
+  if (!topic) {
+    assertInteractive('A topic', 'Pass --topic "your subject".');
+    const value = await p.text({
+      message: 'What is this publication about?',
+      placeholder: 'SaaS productivity blog — or leave blank for a random subject',
+    });
+    if (p.isCancel(value)) cancelled();
+    topic = (value as string)?.trim() || randomTopic();
+  }
+
+  const count = flags.count ?? 12;
+  // "about,privacy-policy,authors:no-body" — the suffix marks a page whose
+  // body a theme template supplies, so generating one would be wasted.
+  const pages = (flags.pages ?? '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const [slug, marker] = entry.split(':');
+      return {
+        slug: slug!,
+        ...(marker === 'no-body' ? { needsBody: false } : {}),
+      };
+    });
+
+  if (!flags.yes) {
+    p.log.info(
+      `${count} posts${pages.length ? ` and ${pages.length} pages` : ''} about "${topic}" -> ${outDir}`
+    );
+  }
+
+  const spinner = p.spinner();
+  spinner.start('Generating and writing the archive');
+
+  const report = await exportSite({
+    platform: 'ghost',
+    topic,
+    count,
+    outDir,
+    imageSource: (flags.imageSource as RequestedImageSource) ?? 'auto',
+    status: flags.draft ? 'draft' : 'published',
+    ...(pages.length ? { pages } : {}),
+    ...(flags.author ? { authorName: flags.author } : {}),
+    ...(flags.noVideo ? { includeVideo: false } : {}),
+    ...(flags.seed !== undefined ? { seed: flags.seed } : {}),
+    onProgress: (phase, done, total, detail) =>
+      spinner.message(`${phase} ${done}/${total} — ${detail}`),
+  });
+
+  spinner.stop(`Wrote ${report.zipPath}`);
+
+  p.log.success(
+    [
+      `posts   ${report.stats.posts}`,
+      `pages   ${report.stats.pages}`,
+      `tags    ${report.stats.tags}`,
+      `authors ${report.stats.authors}`,
+      `images  ${report.stats.images} bundled${
+        report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''
+      }`,
+    ].join('\n')
+  );
+
+  p.log.info(
+    'Import it in Ghost Admin → Settings → Import content. The images travel with it.'
+  );
 }

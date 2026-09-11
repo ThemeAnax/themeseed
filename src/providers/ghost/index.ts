@@ -10,6 +10,8 @@ import { logger } from '../../core/logger.js';
 import {
   SEED_TAG,
   type SeedContent,
+  type SeedPage,
+  type SeedTag,
   type SeedResult,
   type ThemeCapabilities,
   type UpdateContent,
@@ -23,7 +25,7 @@ import type {
   UpdateContentOptions,
 } from '../provider.js';
 import { GhostClient } from './client.js';
-import { publishPosts, updatePosts, toSeedResult } from './posts.js';
+import { publishPages, publishPosts, publishTags, updatePosts, toSeedResult } from './posts.js';
 import { analyzeGhostTheme } from './theme/index.js';
 
 /**
@@ -119,6 +121,37 @@ export class GhostProvider implements CmsProvider {
       ...(options.onProgress ? { onProgress: options.onProgress } : {}),
     });
   }
+
+  /**
+   * Ghost models a page as a post on its own endpoint. A supplied body goes
+   * over as html — it is already final markup, and round-tripping it through
+   * our block model could only change it.
+   */
+  async createPages(
+    items: SeedPage[],
+    options: CreateContentOptions = {}
+  ): Promise<SeedResult[]> {
+    return publishPages(this.client, items, {
+      ...(options.onProgress ? { onProgress: options.onProgress } : {}),
+    });
+  }
+
+  /** Tags as entities, so a tag archive has a description to render. */
+  async createTags(
+    items: SeedTag[],
+    options: CreateContentOptions = {}
+  ): Promise<SeedResult[]> {
+    return publishTags(this.client, items, {
+      ...(options.onProgress ? { onProgress: options.onProgress } : {}),
+    });
+  }
+
+  // `createAuthors` is deliberately absent. Ghost's Admin API exposes
+  // `/users/` as Browse and Read only: a user is invited by email and has to
+  // accept, which an unattended tool cannot complete. Declaring the method and
+  // having it quietly do nothing would be worse than not having it — the
+  // caller could not tell the difference. The file export is not bound by
+  // this, because Ghost's importer creates users from the archive.
 
   async listSeeded(): Promise<SeedResult[]> {
     const posts = await this.client.listPosts({ filter: SEED_FILTER, include: 'tags' });
