@@ -7,6 +7,65 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-09-11
+
+### Added
+
+- **Demo content can be written to a file instead of published live.** themeseed
+  could only reach a running CMS, which leaves out the case it is most often
+  wanted for: a theme author packaging demo content has no site to publish into.
+  There is also something a file can do that the API cannot — Ghost's importer
+  re-hosts images out of an `images/` directory in the archive, so a site
+  imported this way stops depending on whichever stock CDN the pictures came
+  from.
+
+  ```
+  themeseed export --topic "design journal" --count 15 --out ./demo-content
+  ```
+
+  and the matching `export_content` MCP tool. Neither needs a site or a
+  credential.
+
+- **Pages, tag descriptions and author bios.** The neutral model was post-only:
+  `tags` was a list of names and `authorName` a string, so a theme's tag archive
+  and author page had nothing to render. `SeedPage`, `SeedTag` and `SeedAuthor`
+  carry the rest. All three are platform-neutral concepts, so a future WordPress
+  or Drupal provider inherits them rather than having to invent them.
+
+  A page can say `needsBody: false` when a theme template renders it — an
+  "authors" page whose template lists the authors gains nothing from generated
+  prose — or carry `suppliedBody` when the caller already has the final markup.
+
+- **Navigation.** Menus import as Ghost settings, which is what stops a freshly
+  imported site rendering an empty header and footer.
+
+- `createPages` and `createTags` on the provider contract, both optional so a
+  platform is not forced to implement what it has no concept of.
+
+### Fixed
+
+- Exported content carries the `#themeseed` tag, so `wipe` can find it. Without
+  it an import could only be undone by hand, which is what rule 3 of the
+  provider contract exists to prevent.
+
+### Notes
+
+- **`createAuthors` is intentionally not implemented for Ghost.** Its Admin API
+  exposes `/users/` as Browse and Read only: a user is invited by email and must
+  accept, which no unattended tool can complete. A method that quietly did
+  nothing would be worse than none, because the caller could not tell. The file
+  path is unaffected — Ghost's _importer_ does create users.
+
+- **Importing cannot be automated either.** `POST /db/` returns 403 for an
+  integration token; Ghost grants `db` access only to `Administrator`,
+  `DB Backup Integration` and `Self-Serve Migration Integration`. The manual
+  "Import content" step is the only route, not a convenience.
+
+- `core/zip.ts` is a ZIP writer on Node's `zlib` rather than a dependency. This
+  package ships six runtime dependencies by design; the encoder is under a
+  hundred lines and its test extracts every archive with the system `unzip`,
+  including `unzip -t`, so it is checked against a real implementation.
+
 ## [0.5.0] — 2026-09-08
 
 ### Added
