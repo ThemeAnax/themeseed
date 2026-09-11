@@ -44,8 +44,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // node_modules/dotenv/lib/main.js
 var require_main = __commonJS({
   "node_modules/dotenv/lib/main.js"(exports, module) {
-    var fs8 = __require("fs");
-    var path8 = __require("path");
+    var fs9 = __require("fs");
+    var path9 = __require("path");
     var os4 = __require("os");
     var crypto2 = __require("crypto");
     var TIPS = [
@@ -176,7 +176,7 @@ var require_main = __commonJS({
       if (options && options.path && options.path.length > 0) {
         if (Array.isArray(options.path)) {
           for (const filepath of options.path) {
-            if (fs8.existsSync(filepath)) {
+            if (fs9.existsSync(filepath)) {
               possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
             }
           }
@@ -184,15 +184,15 @@ var require_main = __commonJS({
           possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
         }
       } else {
-        possibleVaultPath = path8.resolve(process.cwd(), ".env.vault");
+        possibleVaultPath = path9.resolve(process.cwd(), ".env.vault");
       }
-      if (fs8.existsSync(possibleVaultPath)) {
+      if (fs9.existsSync(possibleVaultPath)) {
         return possibleVaultPath;
       }
       return null;
     }
     function _resolveHome(envPath2) {
-      return envPath2[0] === "~" ? path8.join(os4.homedir(), envPath2.slice(1)) : envPath2;
+      return envPath2[0] === "~" ? path9.join(os4.homedir(), envPath2.slice(1)) : envPath2;
     }
     function _configVault(options) {
       const debug = parseBoolean(process.env.DOTENV_CONFIG_DEBUG || options && options.debug);
@@ -209,7 +209,7 @@ var require_main = __commonJS({
       return { parsed };
     }
     function configDotenv(options) {
-      const dotenvPath = path8.resolve(process.cwd(), ".env");
+      const dotenvPath = path9.resolve(process.cwd(), ".env");
       let encoding = "utf8";
       let processEnv = process.env;
       if (options && options.processEnv != null) {
@@ -237,13 +237,13 @@ var require_main = __commonJS({
       }
       let lastError;
       const parsedAll = {};
-      for (const path9 of optionPaths) {
+      for (const path10 of optionPaths) {
         try {
-          const parsed = DotenvModule.parse(fs8.readFileSync(path9, { encoding }));
+          const parsed = DotenvModule.parse(fs9.readFileSync(path10, { encoding }));
           DotenvModule.populate(parsedAll, parsed, options);
         } catch (e) {
           if (debug) {
-            _debug(`failed to load ${path9} ${e.message}`);
+            _debug(`failed to load ${path10} ${e.message}`);
           }
           lastError = e;
         }
@@ -256,7 +256,7 @@ var require_main = __commonJS({
         const shortPaths = [];
         for (const filePath of optionPaths) {
           try {
-            const relative = path8.relative(process.cwd(), filePath);
+            const relative = path9.relative(process.cwd(), filePath);
             shortPaths.push(relative);
           } catch (e) {
             if (debug) {
@@ -3556,8 +3556,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path8) {
-      let input = path8;
+    function removeDotSegments(path9) {
+      let input = path9;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3809,8 +3809,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path8, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path8 && path8 !== "/" ? path8 : void 0;
+        const [path9, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path9 && path9 !== "/" ? path9 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -7229,12 +7229,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs8, exportName) {
+    function addFormats(ajv, list, fs9, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs8[f]);
+        ajv.addFormat(f, fs9[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -8011,10 +8011,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path8) {
-  if (!path8)
+function getElementAtPath(obj, path9) {
+  if (!path9)
     return obj;
-  return path8.reduce((acc, key) => acc?.[key], obj);
+  return path9.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8423,11 +8423,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path8, issues) {
+function prefixIssues(path9, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path8);
+    iss.path.unshift(path9);
     return iss;
   });
 }
@@ -8574,16 +8574,16 @@ function flattenError(error51, mapper = (issue2) => issue2.message) {
 }
 function formatError(error51, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error52, path8 = []) => {
+  const processError = (error52, path9 = []) => {
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path9, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
       } else {
-        const fullpath = [...path8, ...issue2.path];
+        const fullpath = [...path9, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -8610,17 +8610,17 @@ function formatError(error51, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error51, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error52, path8 = []) => {
+  const processError = (error52, path9 = []) => {
     var _a3, _b;
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path9, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
       } else {
-        const fullpath = [...path8, ...issue2.path];
+        const fullpath = [...path9, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -8652,8 +8652,8 @@ function treeifyError(error51, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path8 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path8) {
+  const path9 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path9) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -21345,13 +21345,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path8 = ref.slice(1).split("/").filter(Boolean);
-  if (path8.length === 0) {
+  const path9 = ref.slice(1).split("/").filter(Boolean);
+  if (path9.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path8[0] === defsKey) {
-    const key = path8[1];
+  if (path9[0] === defsKey) {
+    const key = path9[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -24096,8 +24096,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path8, errorMaps, issueData } = params;
-  const fullPath = [...path8, ...issueData.path || []];
+  const { data, path: path9, errorMaps, issueData } = params;
+  const fullPath = [...path9, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -24212,11 +24212,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path8, key) {
+  constructor(parent, value, path9, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path8;
+    this._path = path9;
     this._key = key;
   }
   get path() {
@@ -27743,11 +27743,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path8) {
-  if (path8.length === 0) {
+function getDotPath(path9) {
+  if (path9.length === 0) {
     return "object root";
   }
-  return path8.reduce((acc, seg, index) => {
+  return path9.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -31690,6 +31690,801 @@ function randomTopic(seed) {
   return TOPICS[index] ?? TOPICS[0];
 }
 
+// src/images/png.ts
+import zlib from "node:zlib";
+function encodePng(width, height, pixelAt) {
+  const stride = width * 3 + 1;
+  const raw = Buffer.alloc(stride * height);
+  let offset = 0;
+  for (let y = 0; y < height; y++) {
+    raw[offset++] = 0;
+    for (let x = 0; x < width; x++) {
+      const { r, g, b } = pixelAt(x, y);
+      raw[offset++] = clamp(r);
+      raw[offset++] = clamp(g);
+      raw[offset++] = clamp(b);
+    }
+  }
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  ihdr[10] = 0;
+  ihdr[11] = 0;
+  ihdr[12] = 0;
+  const png = Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", zlib.deflateSync(raw, { level: 6 })),
+    chunk("IEND", Buffer.alloc(0))
+  ]);
+  return new Uint8Array(png);
+}
+function chunk(type, data) {
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.length);
+  const typed = Buffer.concat([Buffer.from(type, "ascii"), data]);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(typed) >>> 0);
+  return Buffer.concat([length, typed, crc]);
+}
+var crcTable = null;
+function crc32(buffer) {
+  if (!crcTable) {
+    crcTable = new Int32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c2 = n;
+      for (let k = 0; k < 8; k++) c2 = c2 & 1 ? 3988292384 ^ c2 >>> 1 : c2 >>> 1;
+      crcTable[n] = c2;
+    }
+  }
+  let c = -1;
+  for (let i = 0; i < buffer.length; i++) {
+    c = crcTable[(c ^ buffer[i]) & 255] ^ c >>> 8;
+  }
+  return c ^ -1;
+}
+function clamp(value) {
+  return value < 0 ? 0 : value > 255 ? 255 : Math.round(value);
+}
+function hashString(input) {
+  let hash2 = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    hash2 ^= input.charCodeAt(i);
+    hash2 = Math.imul(hash2, 16777619);
+  }
+  return hash2 >>> 0;
+}
+function seededRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = state + 1831565813 >>> 0;
+    let t = state;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// src/content/engine.ts
+var STOPWORDS = /* @__PURE__ */ new Set([
+  "a",
+  "an",
+  "the",
+  "and",
+  "or",
+  "for",
+  "of",
+  "to",
+  "in",
+  "on",
+  "with",
+  "about",
+  "blog",
+  "site",
+  "website",
+  "magazine",
+  "publication",
+  "newsletter"
+]);
+function profileTopic(topic) {
+  const cleaned = topic.trim().replace(/\s+/g, " ");
+  const words = cleaned.split(" ").filter(Boolean);
+  const terms = words.filter((word) => !STOPWORDS.has(word.toLowerCase()));
+  const firstClause = cleaned.split(/\s*(?:,|;| and | or | & |\/)\s*/i)[0] ?? cleaned;
+  const clauseTerms = firstClause.split(" ").filter((word) => !STOPWORDS.has(word.toLowerCase()));
+  const subject = (clauseTerms.length ? clauseTerms : terms.length ? terms : words).slice(0, 3).join(" ") || cleaned || "the subject";
+  return {
+    raw: cleaned,
+    subject,
+    terms: terms.map((term) => term.toLowerCase()),
+    qualifier: subject
+  };
+}
+var ANGLES = ["guide", "listicle", "opinion", "case-study", "explainer"];
+var TITLE_FRAMES = {
+  guide: [
+    "A practical guide to {subject}",
+    "Getting started with {subject}, properly",
+    "How to think about {subject}",
+    "The {subject} playbook we actually use",
+    "Setting up {subject} without the guesswork"
+  ],
+  listicle: [
+    "{n} things nobody tells you about {subject}",
+    "{n} {subject} habits worth stealing",
+    "{n} mistakes that quietly derail {subject}",
+    "{n} small changes that improve {subject}"
+  ],
+  opinion: [
+    "Why {subject} is harder than it looks",
+    "{subject} has a measurement problem",
+    "Against the usual advice on {subject}",
+    "The case for doing less with {subject}",
+    "We were wrong about {subject}"
+  ],
+  "case-study": [
+    "What six months of {subject} taught us",
+    "Rebuilding our approach to {subject}",
+    "A post-mortem on our {subject} rollout",
+    "How one team fixed {subject}"
+  ],
+  explainer: [
+    "{subject}, explained without the jargon",
+    "What {subject} actually means",
+    "The anatomy of good {subject}",
+    "A short history of {subject}",
+    "{subject}: the parts that matter"
+  ]
+};
+var SECTION_HEADINGS = {
+  guide: [
+    "Start with the constraints",
+    "The setup",
+    "Where teams go wrong",
+    "Making it stick",
+    "A worked example",
+    "Choosing what to measure",
+    "The first month",
+    "When to change course",
+    "Handing it over"
+  ],
+  listicle: [
+    "Begin with the obvious one",
+    "The one people skip",
+    "The expensive mistake",
+    "The habit that compounds",
+    "What to do first",
+    "The one that only matters at scale",
+    "The advice worth ignoring",
+    "The quiet win",
+    "Where to start on Monday"
+  ],
+  opinion: [
+    "The received wisdom",
+    "What the data actually shows",
+    "A different reading",
+    "The objection worth taking seriously",
+    "Where this leaves us",
+    "How we got here",
+    "The incentive problem",
+    "What would change our mind",
+    "A more modest claim"
+  ],
+  "case-study": [
+    "The situation",
+    "What we tried first",
+    "What changed",
+    "The numbers",
+    "What we would do differently",
+    "The part that surprised us",
+    "What it cost",
+    "How we knew it was working",
+    "Where it still breaks"
+  ],
+  explainer: [
+    "The short version",
+    "How it works",
+    "Why it is confusing",
+    "The edge cases",
+    "Putting it together",
+    "A common misreading",
+    "The vocabulary problem",
+    "What it is not",
+    "Where to go deeper"
+  ]
+};
+var OPENERS = [
+  "Most teams arrive at {subject} the same way: something breaks, and the fix becomes a habit.",
+  "There is no shortage of advice about {subject}. There is a shortage of advice that survives contact with a real week.",
+  "Ask ten people to define {subject} and you will get ten answers, most of them describing a symptom rather than the thing itself.",
+  "{Subject} is one of those topics where the obvious answer is right about sixty per cent of the time, which is exactly often enough to be dangerous.",
+  "The interesting thing about {subject} is how rarely the hard part is the part everyone prepares for.",
+  "We spent a quarter trying to get {subject} right, and the useful lessons were not the ones we expected."
+];
+var CLAIMS = [
+  "The first thing to establish is what you are actually optimising for.",
+  "It helps to separate the decision from the execution.",
+  "The compounding effects matter far more than the individual wins.",
+  "Measurement is usually where this falls apart.",
+  "Consider the failure mode rather than the success case.",
+  "Most of the difficulty lives at the boundaries, not in the middle.",
+  "There is a version of {subject} that is mostly ritual.",
+  "The default answer is right often enough to be dangerous.",
+  "Scope is the variable everyone adjusts last and should adjust first.",
+  "Speed and reversibility are the trade-off worth naming out loud.",
+  "The tooling question is downstream of the constraint question.",
+  "What looks like a process problem is frequently an ownership problem.",
+  "Consistency is worth more than any individual improvement to {subject}.",
+  "The expensive mistakes here are rarely the technical ones.",
+  "Feedback loops shorter than the planning cycle change everything.",
+  "Nobody gets credit for the work that did not need doing.",
+  "The second-order effects arrive about a quarter after the first-order ones.",
+  "Documentation is a symptom: you write it where the design is unclear.",
+  'A shared definition of "done" removes more friction than any tool.',
+  "The interesting constraint is almost never the one in the brief."
+];
+var ELABORATIONS = [
+  "{Subject} rewards clarity here more than almost anywhere else, because the wrong target produces work that looks productive and moves nothing.",
+  "The decision is usually cheap and reversible; the execution is where the cost lives, and that is where the argument should have happened.",
+  "A small improvement applied consistently beats a dramatic one applied once, which is unsatisfying advice precisely because it is correct.",
+  "The things that are easy to count are rarely the things that matter, and once a number reaches a dashboard it starts shaping behaviour whether or not it deserves to.",
+  "Success has many causes and teaches very little; failure tends to have one, and it is usually obvious in hindsight.",
+  "Handoffs between people who each hold a coherent local picture and no shared one produce most of the pain later attributed to tooling.",
+  "It is comfortable, it is legible to management, and it is close to worthless once you measure what it actually changes.",
+  "Being right sixty per cent of the time builds exactly the kind of confidence that makes the other forty per cent expensive.",
+  "Cutting scope early is cheap and slightly embarrassing; cutting it late is expensive and deeply embarrassing.",
+  "Teams that pick both end up with neither, and usually discover this at the point where reversing would have mattered.",
+  "Choosing infrastructure before agreeing what it is for is how organisations end up maintaining a system nobody wanted.",
+  "When responsibility is spread across a group, the work that falls between the named parts is the work that does not happen.",
+  "A team that changes approach every quarter pays a coordination tax that routinely exceeds whatever the change was meant to fix.",
+  "They are decisions made quickly, defended slowly, and built upon for six months before anyone recalculates.",
+  "If you learn on Friday what you assumed on Monday, the assumption never has time to become an architecture.",
+  "Subtraction is structurally underrated: the meeting that stopped happening leaves no artefact to point at in a review.",
+  "The first quarter shows the intended effect; the second shows what the intended effect displaced.",
+  "Where a design is obvious the prose is short, so the length of an explanation is a reasonable proxy for where to look next.",
+  "Most disagreements that present as strategic turn out, on inspection, to be two people using one word for two things.",
+  "The stated constraint is usually a proxy for a real one nobody wants to say aloud, and optimising the proxy is wasted effort."
+];
+var EXAMPLES = [
+  "A useful test: if this disappeared tomorrow, how long before anyone noticed?",
+  "One team we spoke to cut their review stage entirely and found throughput unchanged, which told them something the metrics had not.",
+  "Try writing the constraint on one line before opening a vendor comparison; the line is usually harder than the comparison.",
+  "The version of this that works fits on an index card. The version that fails needs an onboarding session.",
+  "Ask what would have to be true for the opposite approach to be correct, and see whether anyone can answer.",
+  "We ran both approaches in parallel for six weeks. The difference was smaller than the cost of the debate about it.",
+  "In practice the answer showed up in the calendar before it showed up in the dashboard.",
+  "The clearest signal was that people stopped asking where things were.",
+  "Set a date at which you will stop, and write down in advance what would make you stop earlier.",
+  "When we mapped it out, four of the seven steps existed only to compensate for the second one."
+];
+var CAVEATS = [
+  "That said, none of this generalises cleanly across team sizes.",
+  "The counter-argument deserves a hearing, and it is stronger than its usual proponents make it sound.",
+  "This is easier to write than to hold to when a deadline appears.",
+  "There are organisations where the opposite is true, and they are not obviously worse off.",
+  "The evidence here is thinner than anyone quoting it tends to admit.",
+  "It is worth saying that we have not run this long enough to be confident.",
+  "Reasonable people land elsewhere on this, usually because their constraints differ more than the vocabulary suggests.",
+  "The caveat is that all of this assumes the underlying goal is settled, which is frequently the actual problem."
+];
+var CLOSERS = [
+  "None of this generalises perfectly. Take the parts that map onto your constraints and discard the rest \u2014 that is what the framing is for.",
+  "The short version: decide what you are optimising for, write it down, and revisit it when the answer stops feeling obvious.",
+  "If there is one thing worth carrying away, it is that the expensive mistakes in {subject} are almost never technical ones.",
+  "We will revisit this once we have another two quarters of data. The current answer feels right, which is exactly when it is worth checking."
+];
+var QUOTES = [
+  "The bottleneck is never where you think it is \u2014 that is what makes it a bottleneck.",
+  "Every process is perfectly designed to get the results it gets.",
+  "You can have it fast, or you can have it reversible. Pick before you start, not after.",
+  "The cost of a bad decision is rarely the decision. It is the six months of building on top of it.",
+  "Simplicity is not the absence of work. It is the result of it."
+];
+var LIST_INTROS = [
+  "A few things worth checking before you commit:",
+  "The checklist we ended up with:",
+  "What we look for now:"
+];
+var LIST_ITEMS = [
+  "Write the constraint down before choosing a tool",
+  'Agree on what "done" means, in writing, before starting',
+  "Name one person accountable \u2014 not a group",
+  "Decide in advance what would make you stop",
+  "Keep the feedback loop shorter than the planning cycle",
+  "Prefer the reversible option when the evidence is thin",
+  "Review the numbers monthly; change the targets rarely"
+];
+var TemplateContentEngine = class {
+  name = "template";
+  async generateTitles(topic, count, seed) {
+    const profile = profileTopic(topic);
+    const random = seededRandom(seed);
+    const titles = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (let index = 0; titles.length < count && index < count * 8; index++) {
+      const angle = ANGLES[index % ANGLES.length];
+      const frames = TITLE_FRAMES[angle];
+      const frame = frames[Math.floor(random() * frames.length)];
+      const title = sentenceCase(
+        fill(frame, profile, { n: 3 + Math.floor(random() * 6) })
+      );
+      if (seen.has(title.toLowerCase())) continue;
+      seen.add(title.toLowerCase());
+      titles.push(title);
+    }
+    let suffix = 2;
+    while (titles.length < count) {
+      const base = titles[titles.length % Math.max(1, titles.length)] ?? profile.subject;
+      titles.push(`${base} (part ${suffix++})`);
+    }
+    return titles.slice(0, count);
+  }
+  async generateExcerpt(title, topic, seed) {
+    const profile = profileTopic(topic);
+    const random = seededRandom(seed ^ 2654435769);
+    const frame = OPENERS[Math.floor(random() * OPENERS.length)];
+    const sentence = fill(frame, profile, {});
+    return sentence.length > 280 ? `${sentence.slice(0, 277).trimEnd()}\u2026` : sentence;
+  }
+  async generateBody(request) {
+    const profile = profileTopic(request.topic);
+    const random = seededRandom(request.seed);
+    const angle = ANGLES[Math.floor(random() * ANGLES.length)];
+    const blocks = [];
+    let words = 0;
+    const countWords = (text2) => text2.split(/\s+/).filter(Boolean).length;
+    const push = (block, text2) => {
+      blocks.push(block);
+      words += countWords(text2);
+    };
+    const opener = fill(pick2(OPENERS, random), profile, {});
+    push({ type: "paragraph", text: opener }, opener);
+    const headings = shuffle(SECTION_HEADINGS[angle], random);
+    const claims = new Deck(CLAIMS, random);
+    const elaborations = new Deck(ELABORATIONS, random);
+    const examples = new Deck(EXAMPLES, random);
+    const caveats = new Deck(CAVEATS, random);
+    let quoteUsed = false;
+    let listUsed = false;
+    let headingIndex = 0;
+    while (words < request.targetWords && headingIndex < headings.length * 2) {
+      const heading = headings[headingIndex % headings.length];
+      headingIndex += 1;
+      push({ type: "heading", level: 2, text: heading }, heading);
+      const paragraphsInSection = 2 + Math.floor(random() * 2);
+      for (let i = 0; i < paragraphsInSection && words < request.targetWords; i++) {
+        const sentences = [
+          fill(claims.next(), profile, {}),
+          fill(elaborations.next(), profile, {})
+        ];
+        const roll = random();
+        if (roll > 0.62) sentences.push(fill(examples.next(), profile, {}));
+        else if (roll > 0.34) sentences.push(fill(caveats.next(), profile, {}));
+        const text2 = sentences.join(" ");
+        push({ type: "paragraph", text: text2 }, text2);
+      }
+      if (!quoteUsed && words > request.targetWords * 0.35 && random() > 0.4) {
+        quoteUsed = true;
+        const quote = pick2(QUOTES, random);
+        push(
+          { type: "quote", text: quote, attribution: "Overheard in a retrospective" },
+          quote
+        );
+      }
+      if (!listUsed && words > request.targetWords * 0.5 && random() > 0.45) {
+        listUsed = true;
+        const intro = pick2(LIST_INTROS, random);
+        push({ type: "paragraph", text: intro }, intro);
+        const items = shuffle(LIST_ITEMS, random).slice(0, 3 + Math.floor(random() * 3));
+        push({ type: "list", ordered: random() > 0.5, items }, items.join(" "));
+      }
+    }
+    const closer = fill(pick2(CLOSERS, random), profile, {});
+    push({ type: "paragraph", text: closer }, closer);
+    return blocks;
+  }
+};
+function fill(frame, profile, vars) {
+  return frame.replace(/\{subject\}/g, profile.subject).replace(/\{Subject\}/g, capitalise(profile.subject)).replace(/\{n\}/g, String(vars.n ?? 5));
+}
+function capitalise(text2) {
+  return text2.charAt(0).toUpperCase() + text2.slice(1);
+}
+function sentenceCase(text2) {
+  if (!text2) return text2;
+  const first = text2.charAt(0);
+  return /[a-z]/.test(first) ? first.toUpperCase() + text2.slice(1) : text2;
+}
+function pick2(items, random) {
+  return items[Math.floor(random() * items.length)];
+}
+var Deck = class {
+  constructor(items, random) {
+    this.items = items;
+    this.random = random;
+    this.remaining = shuffle(items, random);
+  }
+  items;
+  random;
+  remaining;
+  next() {
+    if (this.remaining.length === 0) this.remaining = shuffle(this.items, this.random);
+    return this.remaining.pop();
+  }
+};
+function shuffle(items, random) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// src/content/video.ts
+var YouTubeVideoFinder = class {
+  doFetch;
+  timeoutMs;
+  maxCandidates;
+  /** Ids already handed out, so a run does not embed the same video twice. */
+  used = /* @__PURE__ */ new Set();
+  constructor(options = {}) {
+    this.doFetch = options.fetchImpl ?? fetch;
+    this.timeoutMs = options.timeoutMs ?? 15e3;
+    this.maxCandidates = options.maxCandidates ?? 6;
+  }
+  /** Returns a verified video block, or null when nothing could be confirmed. */
+  async find(query) {
+    let ids;
+    try {
+      ids = await this.search(query);
+    } catch (err) {
+      logger.debug(`YouTube search failed for "${query}":`, err);
+      return null;
+    }
+    for (const id of ids.slice(0, this.maxCandidates)) {
+      if (this.used.has(id)) continue;
+      const url2 = `https://www.youtube.com/watch?v=${id}`;
+      const metadata = await this.verify(url2);
+      if (!metadata) continue;
+      this.used.add(id);
+      return {
+        type: "video",
+        url: url2,
+        provider: "youtube",
+        ...metadata.title ? { title: metadata.title } : {},
+        ...metadata.author_name ? { authorName: metadata.author_name } : {},
+        ...metadata.thumbnail_url ? { thumbnailUrl: metadata.thumbnail_url } : {}
+      };
+    }
+    logger.debug(`no embeddable YouTube video confirmed for "${query}"`);
+    return null;
+  }
+  /**
+   * Scrapes video ids out of the public results page. YouTube serves its
+   * results as a JSON blob inside the HTML; `"videoId":"..."` is the stable
+   * part of that payload across its many layout changes.
+   */
+  async search(query) {
+    const url2 = new URL("https://www.youtube.com/results");
+    url2.searchParams.set("search_query", query);
+    url2.searchParams.set("sp", "EgIQAQ%3D%3D");
+    const html = await this.text(url2.toString(), {
+      // Without a browser-like UA YouTube serves a consent interstitial with
+      // no results in it.
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36",
+      "Accept-Language": "en-US,en;q=0.9"
+    });
+    const ids = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const match of html.matchAll(/"videoId":"([\w-]{11})"/g)) {
+      const id = match[1];
+      if (seen.has(id)) continue;
+      seen.add(id);
+      ids.push(id);
+    }
+    return ids;
+  }
+  /**
+   * oEmbed is the verification step. A 404 means the video does not exist; a
+   * 401 means the owner disabled embedding. Either way it must not be used.
+   */
+  async verify(watchUrl) {
+    const url2 = new URL("https://www.youtube.com/oembed");
+    url2.searchParams.set("url", watchUrl);
+    url2.searchParams.set("format", "json");
+    try {
+      const body = await this.text(url2.toString(), {});
+      const data = JSON.parse(body);
+      return data.title ? data : null;
+    } catch {
+      return null;
+    }
+  }
+  async text(url2, headers) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    try {
+      const response = await this.doFetch(url2, { headers, signal: controller.signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status} for ${url2}`);
+      return await response.text();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+};
+
+// src/content/generator.ts
+var GALLERY_SIZE = 3;
+async function generateSeedContent(options) {
+  const {
+    topic,
+    count,
+    capabilities,
+    imageSource,
+    status = "published",
+    engine = new TemplateContentEngine(),
+    seed = hashString(topic),
+    backdateDays = 90
+  } = options;
+  const profile = profileTopic(topic);
+  const videoFinder = options.videoFinder === null ? null : options.videoFinder ?? (capabilities.supportsVideoEmbed ? new YouTubeVideoFinder() : null);
+  const titles = options.titles?.length ? options.titles.slice(0, count) : await engine.generateTitles(topic, count, seed);
+  const stats = {
+    withFeatureImage: 0,
+    withInlineImage: 0,
+    withGallery: 0,
+    withVideo: 0,
+    skipped: {}
+  };
+  if (!capabilities.supportsFeatureImage) {
+    stats.skipped.featureImage = "theme does not display a feature image";
+  }
+  if (!capabilities.supportsGallery) {
+    stats.skipped.gallery = "theme has no gallery card styles";
+  }
+  if (!capabilities.supportsVideoEmbed) {
+    stats.skipped.video = "theme has no embed card styles";
+  }
+  const posts = [];
+  for (const [index, title] of titles.entries()) {
+    const postSeed = seed ^ hashString(`${title}#${index}`);
+    const blocks = await engine.generateBody({
+      title,
+      topic,
+      targetWords: capabilities.expectedWordCount.target,
+      seed: postSeed
+    });
+    const wantsGallery = capabilities.supportsGallery && index % 3 === 1;
+    const wantsVideo = capabilities.supportsVideoEmbed && index % 3 === 2;
+    const enriched = await enrichBlocks({
+      blocks,
+      title,
+      topic,
+      profile: profile.subject,
+      capabilities,
+      imageSource,
+      wantsGallery,
+      wantsVideo,
+      videoFinder,
+      stats
+    });
+    let featureImage;
+    if (capabilities.supportsFeatureImage) {
+      featureImage = await firstImage(
+        imageSource,
+        {
+          query: `${title} \u2014 ${profile.subject}`,
+          ...capabilities.featureImageAspectRatio !== void 0 ? { aspectRatio: capabilities.featureImageAspectRatio } : {},
+          minWidth: 1600,
+          role: "feature"
+        },
+        stats
+      );
+      if (featureImage) stats.withFeatureImage += 1;
+    }
+    const excerpt = await engine.generateExcerpt(title, topic, postSeed);
+    posts.push({
+      title,
+      slug: slugify2(title),
+      excerpt,
+      blocks: enriched,
+      tags: tagsFor(profile.subject, topic, index),
+      ...featureImage ? { featureImage } : {},
+      status,
+      publishedAt: backdatedIso(index, titles.length, backdateDays),
+      ...options.authorName ? { authorName: options.authorName } : {}
+    });
+    options.onProgress?.(index + 1, titles.length, title);
+  }
+  const pages = await generatePages(options.pages ?? [], {
+    topic,
+    engine,
+    seed,
+    status,
+    targetWords: capabilities.expectedWordCount.target
+  });
+  const tags = tagEntitiesFor(posts, profile.subject);
+  const authors = options.authorName ? [authorEntityFor(options.authorName, profile.subject)] : [];
+  return {
+    posts,
+    ...pages.length ? { pages } : {},
+    ...tags.length ? { tags } : {},
+    ...authors.length ? { authors } : {},
+    stats
+  };
+}
+function titleFromSlug(slug) {
+  return slug.split("-").filter(Boolean).map((word) => capitalise2(word)).join(" ");
+}
+async function generatePages(requests, context) {
+  const pages = [];
+  for (const request of requests) {
+    const title = request.title ?? titleFromSlug(request.slug);
+    const generate = !request.suppliedBody && request.needsBody !== false;
+    const blocks = generate ? await context.engine.generateBody({
+      title,
+      topic: context.topic,
+      // Pages read shorter than articles — an About page the length of a
+      // feature is padding, and padding is what demo content is accused of.
+      targetWords: Math.round(context.targetWords * 0.6),
+      seed: context.seed ^ hashString(`page:${request.slug}`)
+    }) : [];
+    pages.push({
+      title,
+      slug: request.slug,
+      blocks,
+      status: context.status,
+      ...request.needsBody !== void 0 ? { needsBody: request.needsBody } : {},
+      ...request.suppliedBody ? { suppliedBody: request.suppliedBody } : {}
+    });
+  }
+  return pages;
+}
+function tagEntitiesFor(posts, subject) {
+  const seen = /* @__PURE__ */ new Map();
+  for (const name of posts.flatMap((post) => post.tags)) {
+    const slug = slugify2(name);
+    if (!slug || seen.has(slug)) continue;
+    seen.set(slug, {
+      name,
+      slug,
+      description: `Stories about ${name.toLowerCase()} from our coverage of ${subject}.`
+    });
+  }
+  return [...seen.values()];
+}
+function authorEntityFor(name, subject) {
+  return {
+    name,
+    slug: slugify2(name),
+    bio: `${name} writes about ${subject}.`
+  };
+}
+async function enrichBlocks(args) {
+  const blocks = [...args.blocks];
+  const insertions = [];
+  const anchors = findInsertionPoints(blocks);
+  if (anchors.length > 0) {
+    const image = await firstImage(
+      args.imageSource,
+      {
+        query: `${args.profile}: ${args.title}`,
+        minWidth: 1400,
+        role: "body",
+        ...args.capabilities.supportsWideImages ? {} : { aspectRatio: 1.5 }
+      },
+      args.stats
+    );
+    if (image) {
+      insertions.push({
+        at: anchors[0],
+        block: {
+          type: "image",
+          image,
+          alt: image.alt ?? args.title,
+          ...image.credit ? { caption: image.credit } : {}
+        }
+      });
+      args.stats.withInlineImage += 1;
+    }
+  }
+  if (args.wantsGallery && anchors.length > 0) {
+    const images = await manyImages(
+      args.imageSource,
+      { query: `${args.profile} \u2014 details`, minWidth: 1200, role: "gallery" },
+      GALLERY_SIZE,
+      args.stats
+    );
+    if (images.length >= 2) {
+      insertions.push({
+        at: anchors[Math.min(1, anchors.length - 1)],
+        block: {
+          type: "gallery",
+          images,
+          caption: `${capitalise2(args.profile)} in practice`
+        }
+      });
+      args.stats.withGallery += 1;
+    } else {
+      logger.debug(
+        `gallery skipped for "${args.title}": image source returned ${images.length}`
+      );
+    }
+  }
+  if (args.wantsVideo && args.videoFinder && anchors.length > 0) {
+    const video = await args.videoFinder.find(
+      `${args.profile} ${args.title}`.slice(0, 90)
+    );
+    if (video) {
+      insertions.push({ at: anchors[Math.min(1, anchors.length - 1)], block: video });
+      args.stats.withVideo += 1;
+    } else {
+      logger.debug(
+        `no verified video found for "${args.title}"; leaving the post without one`
+      );
+    }
+  }
+  for (const insertion of insertions.sort((a, b) => b.at - a.at)) {
+    blocks.splice(insertion.at, 0, insertion.block);
+  }
+  return blocks;
+}
+function findInsertionPoints(blocks) {
+  const points = [];
+  for (let i = 0; i < blocks.length; i++) {
+    if (blocks[i]?.type !== "heading") continue;
+    for (let j = i + 1; j < blocks.length; j++) {
+      if (blocks[j]?.type === "paragraph") {
+        points.push(j + 1);
+        break;
+      }
+    }
+  }
+  if (points.length === 0 && blocks.length > 1) points.push(1);
+  return points;
+}
+async function manyImages(source, request, count, stats) {
+  try {
+    return await source.fetch(request, count);
+  } catch (err) {
+    logger.warn(`image lookup failed for "${request.query}":`, err);
+    if (stats) {
+      stats.skipped.images ??= err instanceof Error ? err.message : String(err);
+    }
+    return [];
+  }
+}
+async function firstImage(source, request, stats) {
+  return (await manyImages(source, request, 1, stats))[0];
+}
+var EXTRA_TAGS = ["Notes", "Practice", "Field guide", "Opinion", "Teardown"];
+function tagsFor(subject, topic, index) {
+  const primary = capitalise2(subject.split(" ").slice(0, 2).join(" "));
+  const secondary = EXTRA_TAGS[index % EXTRA_TAGS.length];
+  const tags = [primary, secondary];
+  const topicWord = topic.split(/\s+/).find((word) => word.length > 4);
+  if (topicWord && !tags.some((tag) => tag.toLowerCase() === topicWord.toLowerCase())) {
+    tags.push(capitalise2(topicWord));
+  }
+  return [...new Set(tags)].slice(0, 3);
+}
+function slugify2(title) {
+  return title.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "post";
+}
+function backdatedIso(index, total, days) {
+  const spacing = total > 1 ? days / total : 1;
+  const jitter = index * 37 % 17 / 17;
+  const daysAgo = (index + jitter) * spacing;
+  const when = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1e3);
+  return when.toISOString();
+}
+function capitalise2(text2) {
+  return text2.charAt(0).toUpperCase() + text2.slice(1);
+}
+
 // src/images/ai-source.ts
 import { promises as fs4 } from "node:fs";
 import os2 from "node:os";
@@ -31809,83 +32604,6 @@ function ascii(bytes, offset, length) {
   let out = "";
   for (let i = 0; i < length; i++) out += String.fromCharCode(bytes[offset + i] ?? 0);
   return out;
-}
-
-// src/images/png.ts
-import zlib from "node:zlib";
-function encodePng(width, height, pixelAt) {
-  const stride = width * 3 + 1;
-  const raw = Buffer.alloc(stride * height);
-  let offset = 0;
-  for (let y = 0; y < height; y++) {
-    raw[offset++] = 0;
-    for (let x = 0; x < width; x++) {
-      const { r, g, b } = pixelAt(x, y);
-      raw[offset++] = clamp(r);
-      raw[offset++] = clamp(g);
-      raw[offset++] = clamp(b);
-    }
-  }
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(width, 0);
-  ihdr.writeUInt32BE(height, 4);
-  ihdr[8] = 8;
-  ihdr[9] = 2;
-  ihdr[10] = 0;
-  ihdr[11] = 0;
-  ihdr[12] = 0;
-  const png = Buffer.concat([
-    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
-    chunk("IHDR", ihdr),
-    chunk("IDAT", zlib.deflateSync(raw, { level: 6 })),
-    chunk("IEND", Buffer.alloc(0))
-  ]);
-  return new Uint8Array(png);
-}
-function chunk(type, data) {
-  const length = Buffer.alloc(4);
-  length.writeUInt32BE(data.length);
-  const typed = Buffer.concat([Buffer.from(type, "ascii"), data]);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(typed) >>> 0);
-  return Buffer.concat([length, typed, crc]);
-}
-var crcTable = null;
-function crc32(buffer) {
-  if (!crcTable) {
-    crcTable = new Int32Array(256);
-    for (let n = 0; n < 256; n++) {
-      let c2 = n;
-      for (let k = 0; k < 8; k++) c2 = c2 & 1 ? 3988292384 ^ c2 >>> 1 : c2 >>> 1;
-      crcTable[n] = c2;
-    }
-  }
-  let c = -1;
-  for (let i = 0; i < buffer.length; i++) {
-    c = crcTable[(c ^ buffer[i]) & 255] ^ c >>> 8;
-  }
-  return c ^ -1;
-}
-function clamp(value) {
-  return value < 0 ? 0 : value > 255 ? 255 : Math.round(value);
-}
-function hashString(input) {
-  let hash2 = 2166136261;
-  for (let i = 0; i < input.length; i++) {
-    hash2 ^= input.charCodeAt(i);
-    hash2 = Math.imul(hash2, 16777619);
-  }
-  return hash2 >>> 0;
-}
-function seededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = state + 1831565813 >>> 0;
-    let t = state;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
 }
 
 // src/images/source.ts
@@ -32797,928 +33515,117 @@ async function createRequestedImageSource(requested, options = {}, env = process
   return requested === "auto" ? createImageSource(kind, options) : createUsableImageSource(kind, options);
 }
 
-// src/content/engine.ts
-var STOPWORDS = /* @__PURE__ */ new Set([
-  "a",
-  "an",
-  "the",
-  "and",
-  "or",
-  "for",
-  "of",
-  "to",
-  "in",
-  "on",
-  "with",
-  "about",
-  "blog",
-  "site",
-  "website",
-  "magazine",
-  "publication",
-  "newsletter"
-]);
-function profileTopic(topic) {
-  const cleaned = topic.trim().replace(/\s+/g, " ");
-  const words = cleaned.split(" ").filter(Boolean);
-  const terms = words.filter((word) => !STOPWORDS.has(word.toLowerCase()));
-  const firstClause = cleaned.split(/\s*(?:,|;| and | or | & |\/)\s*/i)[0] ?? cleaned;
-  const clauseTerms = firstClause.split(" ").filter((word) => !STOPWORDS.has(word.toLowerCase()));
-  const subject = (clauseTerms.length ? clauseTerms : terms.length ? terms : words).slice(0, 3).join(" ") || cleaned || "the subject";
-  return {
-    raw: cleaned,
-    subject,
-    terms: terms.map((term) => term.toLowerCase()),
-    qualifier: subject
-  };
-}
-var ANGLES = ["guide", "listicle", "opinion", "case-study", "explainer"];
-var TITLE_FRAMES = {
-  guide: [
-    "A practical guide to {subject}",
-    "Getting started with {subject}, properly",
-    "How to think about {subject}",
-    "The {subject} playbook we actually use",
-    "Setting up {subject} without the guesswork"
-  ],
-  listicle: [
-    "{n} things nobody tells you about {subject}",
-    "{n} {subject} habits worth stealing",
-    "{n} mistakes that quietly derail {subject}",
-    "{n} small changes that improve {subject}"
-  ],
-  opinion: [
-    "Why {subject} is harder than it looks",
-    "{subject} has a measurement problem",
-    "Against the usual advice on {subject}",
-    "The case for doing less with {subject}",
-    "We were wrong about {subject}"
-  ],
-  "case-study": [
-    "What six months of {subject} taught us",
-    "Rebuilding our approach to {subject}",
-    "A post-mortem on our {subject} rollout",
-    "How one team fixed {subject}"
-  ],
-  explainer: [
-    "{subject}, explained without the jargon",
-    "What {subject} actually means",
-    "The anatomy of good {subject}",
-    "A short history of {subject}",
-    "{subject}: the parts that matter"
-  ]
-};
-var SECTION_HEADINGS = {
-  guide: [
-    "Start with the constraints",
-    "The setup",
-    "Where teams go wrong",
-    "Making it stick",
-    "A worked example",
-    "Choosing what to measure",
-    "The first month",
-    "When to change course",
-    "Handing it over"
-  ],
-  listicle: [
-    "Begin with the obvious one",
-    "The one people skip",
-    "The expensive mistake",
-    "The habit that compounds",
-    "What to do first",
-    "The one that only matters at scale",
-    "The advice worth ignoring",
-    "The quiet win",
-    "Where to start on Monday"
-  ],
-  opinion: [
-    "The received wisdom",
-    "What the data actually shows",
-    "A different reading",
-    "The objection worth taking seriously",
-    "Where this leaves us",
-    "How we got here",
-    "The incentive problem",
-    "What would change our mind",
-    "A more modest claim"
-  ],
-  "case-study": [
-    "The situation",
-    "What we tried first",
-    "What changed",
-    "The numbers",
-    "What we would do differently",
-    "The part that surprised us",
-    "What it cost",
-    "How we knew it was working",
-    "Where it still breaks"
-  ],
-  explainer: [
-    "The short version",
-    "How it works",
-    "Why it is confusing",
-    "The edge cases",
-    "Putting it together",
-    "A common misreading",
-    "The vocabulary problem",
-    "What it is not",
-    "Where to go deeper"
-  ]
-};
-var OPENERS = [
-  "Most teams arrive at {subject} the same way: something breaks, and the fix becomes a habit.",
-  "There is no shortage of advice about {subject}. There is a shortage of advice that survives contact with a real week.",
-  "Ask ten people to define {subject} and you will get ten answers, most of them describing a symptom rather than the thing itself.",
-  "{Subject} is one of those topics where the obvious answer is right about sixty per cent of the time, which is exactly often enough to be dangerous.",
-  "The interesting thing about {subject} is how rarely the hard part is the part everyone prepares for.",
-  "We spent a quarter trying to get {subject} right, and the useful lessons were not the ones we expected."
-];
-var CLAIMS = [
-  "The first thing to establish is what you are actually optimising for.",
-  "It helps to separate the decision from the execution.",
-  "The compounding effects matter far more than the individual wins.",
-  "Measurement is usually where this falls apart.",
-  "Consider the failure mode rather than the success case.",
-  "Most of the difficulty lives at the boundaries, not in the middle.",
-  "There is a version of {subject} that is mostly ritual.",
-  "The default answer is right often enough to be dangerous.",
-  "Scope is the variable everyone adjusts last and should adjust first.",
-  "Speed and reversibility are the trade-off worth naming out loud.",
-  "The tooling question is downstream of the constraint question.",
-  "What looks like a process problem is frequently an ownership problem.",
-  "Consistency is worth more than any individual improvement to {subject}.",
-  "The expensive mistakes here are rarely the technical ones.",
-  "Feedback loops shorter than the planning cycle change everything.",
-  "Nobody gets credit for the work that did not need doing.",
-  "The second-order effects arrive about a quarter after the first-order ones.",
-  "Documentation is a symptom: you write it where the design is unclear.",
-  'A shared definition of "done" removes more friction than any tool.',
-  "The interesting constraint is almost never the one in the brief."
-];
-var ELABORATIONS = [
-  "{Subject} rewards clarity here more than almost anywhere else, because the wrong target produces work that looks productive and moves nothing.",
-  "The decision is usually cheap and reversible; the execution is where the cost lives, and that is where the argument should have happened.",
-  "A small improvement applied consistently beats a dramatic one applied once, which is unsatisfying advice precisely because it is correct.",
-  "The things that are easy to count are rarely the things that matter, and once a number reaches a dashboard it starts shaping behaviour whether or not it deserves to.",
-  "Success has many causes and teaches very little; failure tends to have one, and it is usually obvious in hindsight.",
-  "Handoffs between people who each hold a coherent local picture and no shared one produce most of the pain later attributed to tooling.",
-  "It is comfortable, it is legible to management, and it is close to worthless once you measure what it actually changes.",
-  "Being right sixty per cent of the time builds exactly the kind of confidence that makes the other forty per cent expensive.",
-  "Cutting scope early is cheap and slightly embarrassing; cutting it late is expensive and deeply embarrassing.",
-  "Teams that pick both end up with neither, and usually discover this at the point where reversing would have mattered.",
-  "Choosing infrastructure before agreeing what it is for is how organisations end up maintaining a system nobody wanted.",
-  "When responsibility is spread across a group, the work that falls between the named parts is the work that does not happen.",
-  "A team that changes approach every quarter pays a coordination tax that routinely exceeds whatever the change was meant to fix.",
-  "They are decisions made quickly, defended slowly, and built upon for six months before anyone recalculates.",
-  "If you learn on Friday what you assumed on Monday, the assumption never has time to become an architecture.",
-  "Subtraction is structurally underrated: the meeting that stopped happening leaves no artefact to point at in a review.",
-  "The first quarter shows the intended effect; the second shows what the intended effect displaced.",
-  "Where a design is obvious the prose is short, so the length of an explanation is a reasonable proxy for where to look next.",
-  "Most disagreements that present as strategic turn out, on inspection, to be two people using one word for two things.",
-  "The stated constraint is usually a proxy for a real one nobody wants to say aloud, and optimising the proxy is wasted effort."
-];
-var EXAMPLES = [
-  "A useful test: if this disappeared tomorrow, how long before anyone noticed?",
-  "One team we spoke to cut their review stage entirely and found throughput unchanged, which told them something the metrics had not.",
-  "Try writing the constraint on one line before opening a vendor comparison; the line is usually harder than the comparison.",
-  "The version of this that works fits on an index card. The version that fails needs an onboarding session.",
-  "Ask what would have to be true for the opposite approach to be correct, and see whether anyone can answer.",
-  "We ran both approaches in parallel for six weeks. The difference was smaller than the cost of the debate about it.",
-  "In practice the answer showed up in the calendar before it showed up in the dashboard.",
-  "The clearest signal was that people stopped asking where things were.",
-  "Set a date at which you will stop, and write down in advance what would make you stop earlier.",
-  "When we mapped it out, four of the seven steps existed only to compensate for the second one."
-];
-var CAVEATS = [
-  "That said, none of this generalises cleanly across team sizes.",
-  "The counter-argument deserves a hearing, and it is stronger than its usual proponents make it sound.",
-  "This is easier to write than to hold to when a deadline appears.",
-  "There are organisations where the opposite is true, and they are not obviously worse off.",
-  "The evidence here is thinner than anyone quoting it tends to admit.",
-  "It is worth saying that we have not run this long enough to be confident.",
-  "Reasonable people land elsewhere on this, usually because their constraints differ more than the vocabulary suggests.",
-  "The caveat is that all of this assumes the underlying goal is settled, which is frequently the actual problem."
-];
-var CLOSERS = [
-  "None of this generalises perfectly. Take the parts that map onto your constraints and discard the rest \u2014 that is what the framing is for.",
-  "The short version: decide what you are optimising for, write it down, and revisit it when the answer stops feeling obvious.",
-  "If there is one thing worth carrying away, it is that the expensive mistakes in {subject} are almost never technical ones.",
-  "We will revisit this once we have another two quarters of data. The current answer feels right, which is exactly when it is worth checking."
-];
-var QUOTES = [
-  "The bottleneck is never where you think it is \u2014 that is what makes it a bottleneck.",
-  "Every process is perfectly designed to get the results it gets.",
-  "You can have it fast, or you can have it reversible. Pick before you start, not after.",
-  "The cost of a bad decision is rarely the decision. It is the six months of building on top of it.",
-  "Simplicity is not the absence of work. It is the result of it."
-];
-var LIST_INTROS = [
-  "A few things worth checking before you commit:",
-  "The checklist we ended up with:",
-  "What we look for now:"
-];
-var LIST_ITEMS = [
-  "Write the constraint down before choosing a tool",
-  'Agree on what "done" means, in writing, before starting',
-  "Name one person accountable \u2014 not a group",
-  "Decide in advance what would make you stop",
-  "Keep the feedback loop shorter than the planning cycle",
-  "Prefer the reversible option when the evidence is thin",
-  "Review the numbers monthly; change the targets rarely"
-];
-var TemplateContentEngine = class {
-  name = "template";
-  async generateTitles(topic, count, seed) {
-    const profile = profileTopic(topic);
-    const random = seededRandom(seed);
-    const titles = [];
-    const seen = /* @__PURE__ */ new Set();
-    for (let index = 0; titles.length < count && index < count * 8; index++) {
-      const angle = ANGLES[index % ANGLES.length];
-      const frames = TITLE_FRAMES[angle];
-      const frame = frames[Math.floor(random() * frames.length)];
-      const title = sentenceCase(
-        fill(frame, profile, { n: 3 + Math.floor(random() * 6) })
-      );
-      if (seen.has(title.toLowerCase())) continue;
-      seen.add(title.toLowerCase());
-      titles.push(title);
-    }
-    let suffix = 2;
-    while (titles.length < count) {
-      const base = titles[titles.length % Math.max(1, titles.length)] ?? profile.subject;
-      titles.push(`${base} (part ${suffix++})`);
-    }
-    return titles.slice(0, count);
-  }
-  async generateExcerpt(title, topic, seed) {
-    const profile = profileTopic(topic);
-    const random = seededRandom(seed ^ 2654435769);
-    const frame = OPENERS[Math.floor(random() * OPENERS.length)];
-    const sentence = fill(frame, profile, {});
-    return sentence.length > 280 ? `${sentence.slice(0, 277).trimEnd()}\u2026` : sentence;
-  }
-  async generateBody(request) {
-    const profile = profileTopic(request.topic);
-    const random = seededRandom(request.seed);
-    const angle = ANGLES[Math.floor(random() * ANGLES.length)];
-    const blocks = [];
-    let words = 0;
-    const countWords = (text2) => text2.split(/\s+/).filter(Boolean).length;
-    const push = (block, text2) => {
-      blocks.push(block);
-      words += countWords(text2);
-    };
-    const opener = fill(pick2(OPENERS, random), profile, {});
-    push({ type: "paragraph", text: opener }, opener);
-    const headings = shuffle(SECTION_HEADINGS[angle], random);
-    const claims = new Deck(CLAIMS, random);
-    const elaborations = new Deck(ELABORATIONS, random);
-    const examples = new Deck(EXAMPLES, random);
-    const caveats = new Deck(CAVEATS, random);
-    let quoteUsed = false;
-    let listUsed = false;
-    let headingIndex = 0;
-    while (words < request.targetWords && headingIndex < headings.length * 2) {
-      const heading = headings[headingIndex % headings.length];
-      headingIndex += 1;
-      push({ type: "heading", level: 2, text: heading }, heading);
-      const paragraphsInSection = 2 + Math.floor(random() * 2);
-      for (let i = 0; i < paragraphsInSection && words < request.targetWords; i++) {
-        const sentences = [
-          fill(claims.next(), profile, {}),
-          fill(elaborations.next(), profile, {})
-        ];
-        const roll = random();
-        if (roll > 0.62) sentences.push(fill(examples.next(), profile, {}));
-        else if (roll > 0.34) sentences.push(fill(caveats.next(), profile, {}));
-        const text2 = sentences.join(" ");
-        push({ type: "paragraph", text: text2 }, text2);
-      }
-      if (!quoteUsed && words > request.targetWords * 0.35 && random() > 0.4) {
-        quoteUsed = true;
-        const quote = pick2(QUOTES, random);
-        push(
-          { type: "quote", text: quote, attribution: "Overheard in a retrospective" },
-          quote
-        );
-      }
-      if (!listUsed && words > request.targetWords * 0.5 && random() > 0.45) {
-        listUsed = true;
-        const intro = pick2(LIST_INTROS, random);
-        push({ type: "paragraph", text: intro }, intro);
-        const items = shuffle(LIST_ITEMS, random).slice(0, 3 + Math.floor(random() * 3));
-        push({ type: "list", ordered: random() > 0.5, items }, items.join(" "));
-      }
-    }
-    const closer = fill(pick2(CLOSERS, random), profile, {});
-    push({ type: "paragraph", text: closer }, closer);
-    return blocks;
-  }
-};
-function fill(frame, profile, vars) {
-  return frame.replace(/\{subject\}/g, profile.subject).replace(/\{Subject\}/g, capitalise(profile.subject)).replace(/\{n\}/g, String(vars.n ?? 5));
-}
-function capitalise(text2) {
-  return text2.charAt(0).toUpperCase() + text2.slice(1);
-}
-function sentenceCase(text2) {
-  if (!text2) return text2;
-  const first = text2.charAt(0);
-  return /[a-z]/.test(first) ? first.toUpperCase() + text2.slice(1) : text2;
-}
-function pick2(items, random) {
-  return items[Math.floor(random() * items.length)];
-}
-var Deck = class {
-  constructor(items, random) {
-    this.items = items;
-    this.random = random;
-    this.remaining = shuffle(items, random);
-  }
-  items;
-  random;
-  remaining;
-  next() {
-    if (this.remaining.length === 0) this.remaining = shuffle(this.items, this.random);
-    return this.remaining.pop();
-  }
-};
-function shuffle(items, random) {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
-// src/content/video.ts
-var YouTubeVideoFinder = class {
-  doFetch;
-  timeoutMs;
-  maxCandidates;
-  /** Ids already handed out, so a run does not embed the same video twice. */
-  used = /* @__PURE__ */ new Set();
-  constructor(options = {}) {
-    this.doFetch = options.fetchImpl ?? fetch;
-    this.timeoutMs = options.timeoutMs ?? 15e3;
-    this.maxCandidates = options.maxCandidates ?? 6;
-  }
-  /** Returns a verified video block, or null when nothing could be confirmed. */
-  async find(query) {
-    let ids;
-    try {
-      ids = await this.search(query);
-    } catch (err) {
-      logger.debug(`YouTube search failed for "${query}":`, err);
-      return null;
-    }
-    for (const id of ids.slice(0, this.maxCandidates)) {
-      if (this.used.has(id)) continue;
-      const url2 = `https://www.youtube.com/watch?v=${id}`;
-      const metadata = await this.verify(url2);
-      if (!metadata) continue;
-      this.used.add(id);
-      return {
-        type: "video",
-        url: url2,
-        provider: "youtube",
-        ...metadata.title ? { title: metadata.title } : {},
-        ...metadata.author_name ? { authorName: metadata.author_name } : {},
-        ...metadata.thumbnail_url ? { thumbnailUrl: metadata.thumbnail_url } : {}
-      };
-    }
-    logger.debug(`no embeddable YouTube video confirmed for "${query}"`);
-    return null;
-  }
-  /**
-   * Scrapes video ids out of the public results page. YouTube serves its
-   * results as a JSON blob inside the HTML; `"videoId":"..."` is the stable
-   * part of that payload across its many layout changes.
-   */
-  async search(query) {
-    const url2 = new URL("https://www.youtube.com/results");
-    url2.searchParams.set("search_query", query);
-    url2.searchParams.set("sp", "EgIQAQ%3D%3D");
-    const html = await this.text(url2.toString(), {
-      // Without a browser-like UA YouTube serves a consent interstitial with
-      // no results in it.
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36",
-      "Accept-Language": "en-US,en;q=0.9"
-    });
-    const ids = [];
-    const seen = /* @__PURE__ */ new Set();
-    for (const match of html.matchAll(/"videoId":"([\w-]{11})"/g)) {
-      const id = match[1];
-      if (seen.has(id)) continue;
-      seen.add(id);
-      ids.push(id);
-    }
-    return ids;
-  }
-  /**
-   * oEmbed is the verification step. A 404 means the video does not exist; a
-   * 401 means the owner disabled embedding. Either way it must not be used.
-   */
-  async verify(watchUrl) {
-    const url2 = new URL("https://www.youtube.com/oembed");
-    url2.searchParams.set("url", watchUrl);
-    url2.searchParams.set("format", "json");
-    try {
-      const body = await this.text(url2.toString(), {});
-      const data = JSON.parse(body);
-      return data.title ? data : null;
-    } catch {
-      return null;
-    }
-  }
-  async text(url2, headers) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-    try {
-      const response = await this.doFetch(url2, { headers, signal: controller.signal });
-      if (!response.ok) throw new Error(`HTTP ${response.status} for ${url2}`);
-      return await response.text();
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-};
-
-// src/content/generator.ts
-var GALLERY_SIZE = 3;
-async function generateSeedContent(options) {
-  const {
-    topic,
-    count,
-    capabilities,
-    imageSource,
-    status = "published",
-    engine = new TemplateContentEngine(),
-    seed = hashString(topic),
-    backdateDays = 90
-  } = options;
-  const profile = profileTopic(topic);
-  const videoFinder = options.videoFinder === null ? null : options.videoFinder ?? (capabilities.supportsVideoEmbed ? new YouTubeVideoFinder() : null);
-  const titles = options.titles?.length ? options.titles.slice(0, count) : await engine.generateTitles(topic, count, seed);
-  const stats = {
-    withFeatureImage: 0,
-    withInlineImage: 0,
-    withGallery: 0,
-    withVideo: 0,
-    skipped: {}
-  };
-  if (!capabilities.supportsFeatureImage) {
-    stats.skipped.featureImage = "theme does not display a feature image";
-  }
-  if (!capabilities.supportsGallery) {
-    stats.skipped.gallery = "theme has no gallery card styles";
-  }
-  if (!capabilities.supportsVideoEmbed) {
-    stats.skipped.video = "theme has no embed card styles";
-  }
-  const posts = [];
-  for (const [index, title] of titles.entries()) {
-    const postSeed = seed ^ hashString(`${title}#${index}`);
-    const blocks = await engine.generateBody({
-      title,
-      topic,
-      targetWords: capabilities.expectedWordCount.target,
-      seed: postSeed
-    });
-    const wantsGallery = capabilities.supportsGallery && index % 3 === 1;
-    const wantsVideo = capabilities.supportsVideoEmbed && index % 3 === 2;
-    const enriched = await enrichBlocks({
-      blocks,
-      title,
-      topic,
-      profile: profile.subject,
-      capabilities,
-      imageSource,
-      wantsGallery,
-      wantsVideo,
-      videoFinder,
-      stats
-    });
-    let featureImage;
-    if (capabilities.supportsFeatureImage) {
-      featureImage = await firstImage(
-        imageSource,
-        {
-          query: `${title} \u2014 ${profile.subject}`,
-          ...capabilities.featureImageAspectRatio !== void 0 ? { aspectRatio: capabilities.featureImageAspectRatio } : {},
-          minWidth: 1600,
-          role: "feature"
-        },
-        stats
-      );
-      if (featureImage) stats.withFeatureImage += 1;
-    }
-    const excerpt = await engine.generateExcerpt(title, topic, postSeed);
-    posts.push({
-      title,
-      slug: slugify2(title),
-      excerpt,
-      blocks: enriched,
-      tags: tagsFor(profile.subject, topic, index),
-      ...featureImage ? { featureImage } : {},
-      status,
-      publishedAt: backdatedIso(index, titles.length, backdateDays),
-      ...options.authorName ? { authorName: options.authorName } : {}
-    });
-    options.onProgress?.(index + 1, titles.length, title);
-  }
-  return { posts, stats };
-}
-async function enrichBlocks(args) {
-  const blocks = [...args.blocks];
-  const insertions = [];
-  const anchors = findInsertionPoints(blocks);
-  if (anchors.length > 0) {
-    const image = await firstImage(
-      args.imageSource,
-      {
-        query: `${args.profile}: ${args.title}`,
-        minWidth: 1400,
-        role: "body",
-        ...args.capabilities.supportsWideImages ? {} : { aspectRatio: 1.5 }
-      },
-      args.stats
-    );
-    if (image) {
-      insertions.push({
-        at: anchors[0],
-        block: {
-          type: "image",
-          image,
-          alt: image.alt ?? args.title,
-          ...image.credit ? { caption: image.credit } : {}
-        }
-      });
-      args.stats.withInlineImage += 1;
-    }
-  }
-  if (args.wantsGallery && anchors.length > 0) {
-    const images = await manyImages(
-      args.imageSource,
-      { query: `${args.profile} \u2014 details`, minWidth: 1200, role: "gallery" },
-      GALLERY_SIZE,
-      args.stats
-    );
-    if (images.length >= 2) {
-      insertions.push({
-        at: anchors[Math.min(1, anchors.length - 1)],
-        block: {
-          type: "gallery",
-          images,
-          caption: `${capitalise2(args.profile)} in practice`
-        }
-      });
-      args.stats.withGallery += 1;
-    } else {
-      logger.debug(
-        `gallery skipped for "${args.title}": image source returned ${images.length}`
-      );
-    }
-  }
-  if (args.wantsVideo && args.videoFinder && anchors.length > 0) {
-    const video = await args.videoFinder.find(
-      `${args.profile} ${args.title}`.slice(0, 90)
-    );
-    if (video) {
-      insertions.push({ at: anchors[Math.min(1, anchors.length - 1)], block: video });
-      args.stats.withVideo += 1;
-    } else {
-      logger.debug(
-        `no verified video found for "${args.title}"; leaving the post without one`
-      );
-    }
-  }
-  for (const insertion of insertions.sort((a, b) => b.at - a.at)) {
-    blocks.splice(insertion.at, 0, insertion.block);
-  }
-  return blocks;
-}
-function findInsertionPoints(blocks) {
-  const points = [];
-  for (let i = 0; i < blocks.length; i++) {
-    if (blocks[i]?.type !== "heading") continue;
-    for (let j = i + 1; j < blocks.length; j++) {
-      if (blocks[j]?.type === "paragraph") {
-        points.push(j + 1);
-        break;
-      }
-    }
-  }
-  if (points.length === 0 && blocks.length > 1) points.push(1);
-  return points;
-}
-async function manyImages(source, request, count, stats) {
-  try {
-    return await source.fetch(request, count);
-  } catch (err) {
-    logger.warn(`image lookup failed for "${request.query}":`, err);
-    if (stats) {
-      stats.skipped.images ??= err instanceof Error ? err.message : String(err);
-    }
-    return [];
-  }
-}
-async function firstImage(source, request, stats) {
-  return (await manyImages(source, request, 1, stats))[0];
-}
-var EXTRA_TAGS = ["Notes", "Practice", "Field guide", "Opinion", "Teardown"];
-function tagsFor(subject, topic, index) {
-  const primary = capitalise2(subject.split(" ").slice(0, 2).join(" "));
-  const secondary = EXTRA_TAGS[index % EXTRA_TAGS.length];
-  const tags = [primary, secondary];
-  const topicWord = topic.split(/\s+/).find((word) => word.length > 4);
-  if (topicWord && !tags.some((tag) => tag.toLowerCase() === topicWord.toLowerCase())) {
-    tags.push(capitalise2(topicWord));
-  }
-  return [...new Set(tags)].slice(0, 3);
-}
-function slugify2(title) {
-  return title.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "post";
-}
-function backdatedIso(index, total, days) {
-  const spacing = total > 1 ? days / total : 1;
-  const jitter = index * 37 % 17 / 17;
-  const daysAgo = (index + jitter) * spacing;
-  const when = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1e3);
-  return when.toISOString();
-}
-function capitalise2(text2) {
-  return text2.charAt(0).toUpperCase() + text2.slice(1);
-}
-
-// src/providers/ghost/client.ts
-import crypto from "node:crypto";
-import { basename } from "node:path";
-var TOKEN_TTL_SECONDS = 300;
-var GhostClient = class {
-  baseUrl;
-  keyId;
-  keySecret;
-  acceptVersion;
-  doFetch;
-  timeoutMs;
-  constructor(options) {
-    this.baseUrl = options.url.replace(/\/+$/, "");
-    const { id, secret } = parseAdminApiKey(options.adminApiKey);
-    this.keyId = id;
-    this.keySecret = secret;
-    this.acceptVersion = options.acceptVersion ?? "v5.0";
-    this.doFetch = options.fetchImpl ?? fetch;
-    this.timeoutMs = options.requestTimeoutMs ?? 3e4;
-  }
-  /** Mints a fresh admin JWT. Exposed for tests; not part of the public API. */
-  createToken(now = Math.floor(Date.now() / 1e3)) {
-    const header = base64url3(
-      JSON.stringify({ alg: "HS256", typ: "JWT", kid: this.keyId })
-    );
-    const payload = base64url3(
-      JSON.stringify({ iat: now, exp: now + TOKEN_TTL_SECONDS, aud: "/admin/" })
-    );
-    const signature = crypto.createHmac("sha256", Buffer.from(this.keySecret, "hex")).update(`${header}.${payload}`).digest("base64url");
-    return `${header}.${payload}.${signature}`;
-  }
-  headers(extra = {}) {
-    return {
-      Authorization: `Ghost ${this.createToken()}`,
-      "Accept-Version": this.acceptVersion,
-      Accept: "application/json",
-      ...extra
-    };
-  }
-  async request(method, path8, init = {}) {
-    const url2 = new URL(`${this.baseUrl}/ghost/api/admin${path8}`);
-    for (const [key, value] of Object.entries(init.query ?? {})) {
-      if (value !== void 0) url2.searchParams.set(key, String(value));
-    }
-    const hasBody = init.body !== void 0;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-    let response;
-    try {
-      response = await this.doFetch(url2, {
-        method,
-        headers: this.headers(hasBody ? { "Content-Type": "application/json" } : {}),
-        ...hasBody ? { body: JSON.stringify(init.body) } : {},
-        signal: controller.signal
-      });
-    } catch (err) {
-      if (err.name === "AbortError") {
-        throw new ProviderError(
-          `Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path8}`,
-          {
-            code: "GHOST_TIMEOUT",
-            hint: "Is the site reachable and awake?"
-          }
-        );
-      }
-      throw new ProviderError(`Could not reach Ghost at ${this.baseUrl}`, {
-        code: "GHOST_UNREACHABLE",
-        hint: "Check the site URL and that the instance is running.",
-        cause: err
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-    return this.parse(response, `${method} ${path8}`);
-  }
-  async parse(response, context) {
-    const text2 = await response.text();
-    if (!response.ok) {
-      throw new ProviderError(ghostErrorMessage(text2, response.status, context), {
-        code: "GHOST_API_ERROR",
-        status: response.status,
-        hint: hintForStatus(response.status)
-      });
-    }
-    if (!text2) return void 0;
-    try {
-      return JSON.parse(text2);
-    } catch (err) {
-      throw new ProviderError(`Ghost returned a non-JSON response for ${context}`, {
-        code: "GHOST_BAD_RESPONSE",
-        cause: err
-      });
-    }
-  }
-  // -- endpoints ------------------------------------------------------------
-  async getSite() {
-    const data = await this.request("GET", "/site/");
-    return data.site;
-  }
-  /**
-   * Settings come back as a `{key, value}[]`; flattened to a map for callers.
-   * This is where `active_theme` lives — the Admin API's `/themes/` endpoint
-   * refuses API-token auth, so this is the only token-readable source for it.
-   */
-  async getSettings() {
-    const data = await this.request(
-      "GET",
-      "/settings/"
-    );
-    const map2 = {};
-    for (const entry of data.settings ?? []) map2[entry.key] = entry.value;
-    return map2;
-  }
-  async listPosts(query = {}) {
-    const data = await this.request("GET", "/posts/", {
-      query: { limit: "all", ...query }
-    });
-    return data.posts ?? [];
-  }
-  async getPost(id) {
-    const data = await this.request(
-      "GET",
-      `/posts/${encodeURIComponent(id)}/`,
-      { query: { include: "tags" } }
-    );
-    const post = data.posts?.[0];
-    if (!post) throw new ProviderError(`Ghost has no post with id ${id}`);
-    return post;
-  }
-  /**
-   * Ghost requires `updated_at` on every edit and rejects a stale one with a
-   * 409. That is optimistic locking, not ceremony: it is what stops this tool
-   * overwriting an edit somebody made in Ghost Admin thirty seconds ago. The
-   * caller passes the value it read, so the check covers the whole
-   * read-modify-write rather than just the request.
-   */
-  async updatePost(id, post, updatedAt) {
-    const data = await this.request(
-      "PUT",
-      `/posts/${encodeURIComponent(id)}/`,
-      { body: { posts: [{ ...post, updated_at: updatedAt }] } }
-    );
-    const updated = data.posts?.[0];
-    if (!updated)
-      throw new ProviderError("Ghost accepted the update but returned no record");
-    return updated;
-  }
-  async createPost(post) {
-    const data = await this.request("POST", "/posts/", {
-      body: { posts: [post] }
-    });
-    const created = data.posts?.[0];
-    if (!created)
-      throw new ProviderError("Ghost accepted the post but returned no record");
-    return created;
-  }
-  async deletePost(id) {
-    await this.request("DELETE", `/posts/${encodeURIComponent(id)}/`);
-  }
-  async listTags(query = {}) {
-    const data = await this.request("GET", "/tags/", {
-      query: { limit: "all", ...query }
-    });
-    return data.tags ?? [];
-  }
-  async createTag(tag) {
-    const data = await this.request("POST", "/tags/", {
-      body: { tags: [tag] }
-    });
-    const created = data.tags?.[0];
-    if (!created)
-      throw new ProviderError("Ghost accepted the tag but returned no record");
-    return created;
-  }
-  /**
-   * Uploads image bytes and returns the URL Ghost will serve them from.
-   * Uses the platform `FormData`/`Blob` so there is no multipart dependency.
-   */
-  async uploadImage(bytes, filename, contentType) {
-    const form = new FormData();
-    const copy = new Uint8Array(bytes.byteLength);
-    copy.set(bytes);
-    form.append("file", new Blob([copy], { type: contentType }), basename(filename));
-    form.append("purpose", "image");
-    form.append("ref", basename(filename));
-    const url2 = `${this.baseUrl}/ghost/api/admin/images/upload/`;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), Math.max(this.timeoutMs, 6e4));
-    let response;
-    try {
-      response = await this.doFetch(url2, {
-        method: "POST",
-        headers: this.headers(),
-        body: form,
-        signal: controller.signal
-      });
-    } catch (err) {
-      throw new ProviderError(`Image upload to Ghost failed for ${filename}`, {
-        code: "GHOST_UPLOAD_FAILED",
-        cause: err
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-    const data = await this.parse(
-      response,
-      "POST /images/upload/"
-    );
-    const image = data.images?.[0];
-    if (!image?.url)
-      throw new ProviderError(`Ghost returned no URL for uploaded image ${filename}`);
-    return image;
-  }
-};
-function parseAdminApiKey(key) {
-  const trimmed = (key ?? "").trim();
-  const parts = trimmed.split(":");
-  if (parts.length !== 2) {
-    throw new ProviderError('Ghost Admin API key is not in "<id>:<secret>" form', {
-      code: "GHOST_BAD_KEY",
-      hint: "Copy the Admin API key from Ghost Admin \u2192 Settings \u2192 Integrations \u2192 your integration. Note this is not the Content API key."
-    });
-  }
-  const [id, secret] = parts;
-  if (!/^[0-9a-f]+$/i.test(id) || !/^[0-9a-f]+$/i.test(secret)) {
-    throw new ProviderError("Ghost Admin API key must be hexadecimal", {
-      code: "GHOST_BAD_KEY",
-      hint: "The key looks malformed \u2014 re-copy it from Ghost Admin."
-    });
-  }
-  if (secret.length % 2 !== 0) {
-    throw new ProviderError("Ghost Admin API key secret has an odd length", {
-      code: "GHOST_BAD_KEY",
-      hint: "The secret half is truncated \u2014 re-copy the full key."
-    });
-  }
-  return { id, secret };
-}
-function base64url3(input) {
-  return Buffer.from(input, "utf8").toString("base64url");
-}
-function ghostErrorMessage(body, status, context) {
-  try {
-    const parsed = JSON.parse(body);
-    const first = parsed.errors?.[0];
-    if (first?.message) {
-      return first.context ? `Ghost ${status} on ${context}: ${first.message} (${first.context})` : `Ghost ${status} on ${context}: ${first.message}`;
-    }
-  } catch {
-  }
-  return `Ghost ${status} on ${context}: ${body.slice(0, 200) || "<empty body>"}`;
-}
-function hintForStatus(status) {
-  if (status === 401 || status === 403) {
-    return "The Admin API key was rejected. Confirm it is an Admin API key (not Content API), and that the integration still exists.";
-  }
-  if (status === 404)
-    return "Endpoint not found \u2014 check the site URL includes any subdirectory Ghost is mounted at.";
-  if (status === 422) return "Ghost rejected the payload as invalid.";
-  if (status >= 500) return "Ghost hit an internal error; check its own logs.";
-  return void 0;
-}
-
-// src/providers/ghost/posts.ts
+// src/providers/ghost/export.ts
 import { promises as fs6 } from "node:fs";
 import path6 from "node:path";
+
+// src/core/zip.ts
+import { deflateRawSync } from "node:zlib";
+var LOCAL_HEADER_SIG = 67324752;
+var CENTRAL_HEADER_SIG = 33639248;
+var END_OF_CENTRAL_SIG = 101010256;
+var METHOD_DEFLATE = 8;
+var METHOD_STORE = 0;
+var VERSION_NEEDED = 20;
+var FLAG_UTF8 = 2048;
+var CRC_TABLE = buildCrcTable();
+function buildCrcTable() {
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i += 1) {
+    let c = i;
+    for (let k = 0; k < 8; k += 1) {
+      c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+    }
+    table[i] = c >>> 0;
+  }
+  return table;
+}
+function crc322(bytes) {
+  let crc = 4294967295;
+  for (const byte of bytes) {
+    crc = CRC_TABLE[(crc ^ byte) & 255] ^ crc >>> 8;
+  }
+  return (crc ^ 4294967295) >>> 0;
+}
+function dosDateTime(date5) {
+  const year = Math.max(date5.getFullYear(), 1980);
+  return {
+    date: year - 1980 << 9 | date5.getMonth() + 1 << 5 | date5.getDate(),
+    time: date5.getHours() << 11 | date5.getMinutes() << 5 | date5.getSeconds() >> 1
+  };
+}
+function toBytes(value) {
+  return typeof value === "string" ? new Uint8Array(Buffer.from(value, "utf8")) : value;
+}
+function createZip(entries, now = /* @__PURE__ */ new Date()) {
+  const { date: date5, time: time3 } = dosDateTime(now);
+  const chunks = [];
+  const written = [];
+  let offset = 0;
+  for (const [name, value] of Object.entries(entries)) {
+    const bytes = toBytes(value);
+    const nameBytes = Buffer.from(name, "utf8");
+    const method = bytes.length === 0 ? METHOD_STORE : METHOD_DEFLATE;
+    const compressed = method === METHOD_STORE ? bytes : new Uint8Array(deflateRawSync(bytes));
+    const crc = crc322(bytes);
+    const header = Buffer.alloc(30);
+    header.writeUInt32LE(LOCAL_HEADER_SIG, 0);
+    header.writeUInt16LE(VERSION_NEEDED, 4);
+    header.writeUInt16LE(FLAG_UTF8, 6);
+    header.writeUInt16LE(method, 8);
+    header.writeUInt16LE(time3, 10);
+    header.writeUInt16LE(date5, 12);
+    header.writeUInt32LE(crc, 14);
+    header.writeUInt32LE(compressed.length, 18);
+    header.writeUInt32LE(bytes.length, 22);
+    header.writeUInt16LE(nameBytes.length, 26);
+    header.writeUInt16LE(0, 28);
+    chunks.push(header, nameBytes, Buffer.from(compressed));
+    written.push({
+      nameBytes,
+      crc,
+      method,
+      compressed,
+      uncompressedSize: bytes.length,
+      offset
+    });
+    offset += header.length + nameBytes.length + compressed.length;
+  }
+  const centralStart = offset;
+  for (const entry of written) {
+    const record2 = Buffer.alloc(46);
+    record2.writeUInt32LE(CENTRAL_HEADER_SIG, 0);
+    record2.writeUInt16LE(VERSION_NEEDED, 4);
+    record2.writeUInt16LE(VERSION_NEEDED, 6);
+    record2.writeUInt16LE(FLAG_UTF8, 8);
+    record2.writeUInt16LE(entry.method, 10);
+    record2.writeUInt16LE(time3, 12);
+    record2.writeUInt16LE(date5, 14);
+    record2.writeUInt32LE(entry.crc, 16);
+    record2.writeUInt32LE(entry.compressed.length, 20);
+    record2.writeUInt32LE(entry.uncompressedSize, 24);
+    record2.writeUInt16LE(entry.nameBytes.length, 28);
+    record2.writeUInt16LE(0, 30);
+    record2.writeUInt16LE(0, 32);
+    record2.writeUInt16LE(0, 34);
+    record2.writeUInt16LE(0, 36);
+    record2.writeUInt32LE(420 << 16, 38);
+    record2.writeUInt32LE(entry.offset, 42);
+    chunks.push(record2, entry.nameBytes);
+    offset += record2.length + entry.nameBytes.length;
+  }
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(END_OF_CENTRAL_SIG, 0);
+  end.writeUInt16LE(0, 4);
+  end.writeUInt16LE(0, 6);
+  end.writeUInt16LE(written.length, 8);
+  end.writeUInt16LE(written.length, 10);
+  end.writeUInt32LE(offset - centralStart, 12);
+  end.writeUInt32LE(centralStart, 16);
+  end.writeUInt16LE(0, 20);
+  chunks.push(end);
+  return Buffer.concat(chunks);
+}
 
 // src/providers/ghost/lexical.ts
 var GALLERY_IMAGES_PER_ROW = 3;
@@ -33956,7 +33863,691 @@ function insertImageCard(lexical, hosted, options = {}) {
   return JSON.stringify(doc);
 }
 
+// src/providers/ghost/export.ts
+var GHOST_EXPORT_VERSION = "5.0.0";
+var STAFF_ROLES = [
+  "Administrator",
+  "Editor",
+  "Author",
+  "Contributor",
+  "Owner"
+];
+var SEED_TAG_SLUG = "hash-themeseed";
+function idFactory() {
+  let n = 0;
+  return () => {
+    n += 1;
+    return n.toString(16).padStart(24, "0");
+  };
+}
+function iso(date5) {
+  return date5.toISOString().replace(/\.\d{3}Z$/, ".000Z");
+}
+var resolveNothing = () => void 0;
+function buildGhostArchive(bundle, options = {}) {
+  const nextId = idFactory();
+  const now = options.now ?? /* @__PURE__ */ new Date();
+  const stamp = iso(now);
+  const resolve = options.resolveImage ?? resolveNothing;
+  const hostedUrl = (ref) => ref ? resolve(ref)?.url ?? null : null;
+  const body = (item) => {
+    const supplied = "suppliedBody" in item ? item.suppliedBody : void 0;
+    return supplied ? { html: supplied } : { lexical: blocksToLexical(item.blocks, resolve) };
+  };
+  const tags = /* @__PURE__ */ new Map();
+  const users = /* @__PURE__ */ new Map();
+  const seedTagId = nextId();
+  tags.set(SEED_TAG_SLUG, {
+    id: seedTagId,
+    name: SEED_TAG,
+    slug: SEED_TAG_SLUG,
+    description: null,
+    feature_image: null,
+    visibility: "internal",
+    created_at: stamp,
+    updated_at: stamp
+  });
+  for (const tag of bundle.tags ?? []) {
+    tags.set(tag.slug, {
+      id: nextId(),
+      name: tag.name,
+      slug: tag.slug,
+      description: tag.description ?? null,
+      feature_image: hostedUrl(tag.featureImage),
+      visibility: "public",
+      created_at: stamp,
+      updated_at: stamp
+    });
+  }
+  for (const author of bundle.authors ?? []) {
+    users.set(author.slug, {
+      id: nextId(),
+      name: author.name,
+      slug: author.slug,
+      email: `${author.slug}@example.com`,
+      bio: author.bio ?? null,
+      profile_image: hostedUrl(author.avatar),
+      status: "active",
+      created_at: stamp,
+      updated_at: stamp
+    });
+  }
+  const tagFor = (name) => {
+    const slug = slugify2(name);
+    if (!tags.has(slug)) {
+      tags.set(slug, {
+        id: nextId(),
+        name,
+        slug,
+        description: null,
+        feature_image: null,
+        visibility: "public",
+        created_at: stamp,
+        updated_at: stamp
+      });
+    }
+    return tags.get(slug);
+  };
+  const userFor = (name) => {
+    const slug = slugify2(name);
+    if (!users.has(slug)) {
+      users.set(slug, {
+        id: nextId(),
+        name,
+        slug,
+        email: `${slug}@example.com`,
+        bio: null,
+        profile_image: null,
+        status: "active",
+        created_at: stamp,
+        updated_at: stamp
+      });
+    }
+    return users.get(slug);
+  };
+  const postsTags = [];
+  const postsAuthors = [];
+  const posts = [
+    ...bundle.posts.map((post, index) => {
+      const id = nextId();
+      post.tags.forEach(
+        (name, order) => postsTags.push({
+          id: nextId(),
+          post_id: id,
+          tag_id: tagFor(name)["id"],
+          sort_order: order
+        })
+      );
+      postsTags.push({
+        id: nextId(),
+        post_id: id,
+        tag_id: seedTagId,
+        sort_order: post.tags.length
+      });
+      if (post.authorName) {
+        postsAuthors.push({
+          id: nextId(),
+          post_id: id,
+          author_id: userFor(post.authorName)["id"],
+          sort_order: 0
+        });
+      }
+      return {
+        id,
+        title: post.title,
+        slug: post.slug ?? slugify2(post.title),
+        ...body(post),
+        feature_image: hostedUrl(post.featureImage),
+        ...post.excerpt ? { custom_excerpt: post.excerpt } : {},
+        // Themes build hero and "featured" sections from this flag, and a
+        // demo import with none leaves those sections empty — which reads as
+        // a broken theme rather than as unconfigured content. Every third
+        // post is chosen by position, not chance, so a short run still gets
+        // one.
+        featured: index % 3 === 0,
+        type: "post",
+        status: post.status,
+        visibility: "public",
+        created_at: stamp,
+        updated_at: stamp,
+        published_at: post.publishedAt ?? stamp
+      };
+    }),
+    ...(bundle.pages ?? []).map((page) => {
+      const id = nextId();
+      postsTags.push({ id: nextId(), post_id: id, tag_id: seedTagId, sort_order: 0 });
+      return {
+        id,
+        title: page.title,
+        slug: page.slug,
+        ...body(page),
+        feature_image: hostedUrl(page.featureImage),
+        ...page.excerpt ? { custom_excerpt: page.excerpt } : {},
+        // A page never belongs in a featured collection.
+        featured: false,
+        type: "page",
+        status: page.status,
+        visibility: "public",
+        created_at: stamp,
+        updated_at: stamp,
+        published_at: stamp
+      };
+    })
+  ];
+  const roles = STAFF_ROLES.map((name) => ({
+    id: nextId(),
+    name,
+    description: name,
+    created_at: stamp,
+    updated_at: stamp
+  }));
+  const authorRoleId = roles.find((r) => r.name === "Author").id;
+  const rolesUsers = [...users.values()].map((user) => ({
+    id: nextId(),
+    role_id: authorRoleId,
+    user_id: user["id"]
+  }));
+  const settings = [];
+  const setting = (key, value) => settings.push({
+    id: nextId(),
+    key,
+    value: JSON.stringify(value),
+    type: "site",
+    created_at: stamp,
+    updated_at: stamp
+  });
+  if (bundle.site?.navigation) setting("navigation", bundle.site.navigation);
+  if (bundle.site?.secondaryNavigation) {
+    setting("secondary_navigation", bundle.site.secondaryNavigation);
+  }
+  const content = {
+    db: [
+      {
+        meta: { exported_on: now.getTime(), version: GHOST_EXPORT_VERSION },
+        data: {
+          posts,
+          tags: [...tags.values()],
+          posts_tags: postsTags,
+          users: [...users.values()],
+          posts_authors: postsAuthors,
+          roles,
+          roles_users: rolesUsers,
+          // Omitted rather than empty: an empty settings table is a table
+          // Ghost still walks, and it reads as "configured with nothing".
+          ...settings.length ? { settings } : {}
+        }
+      }
+    ]
+  };
+  return { files: { "content.json": `${JSON.stringify(content, null, 2)}
+` } };
+}
+var IMAGE_ROOT = "images";
+async function defaultFetchBytes(ref) {
+  if (ref.kind === "file") return new Uint8Array(await fs6.readFile(ref.location));
+  const response = await fetch(ref.location, {
+    headers: { "User-Agent": "themeseed" },
+    signal: AbortSignal.timeout(45e3)
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${ref.location}`);
+  return new Uint8Array(await response.arrayBuffer());
+}
+function imageKey(ref) {
+  return `${ref.kind}:${ref.location}`;
+}
+function baseNameFor(ref) {
+  const raw = ref.kind === "file" ? path6.basename(ref.location) : new URL(ref.location).pathname.split("/").pop() ?? "image";
+  const stem = raw.replace(/\.\w+$/, "");
+  return (stem || "image").replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 60);
+}
+function allImageRefs(bundle) {
+  const refs = [];
+  const push = (ref) => {
+    if (ref) refs.push(ref);
+  };
+  const fromBlocks = (item) => {
+    for (const block of item.blocks) {
+      if (block.type === "image") push(block.image);
+      else if (block.type === "gallery") block.images.forEach(push);
+    }
+  };
+  for (const post of bundle.posts) {
+    push(post.featureImage);
+    fromBlocks(post);
+  }
+  for (const page of bundle.pages ?? []) {
+    push(page.featureImage);
+    fromBlocks(page);
+  }
+  for (const tag of bundle.tags ?? []) push(tag.featureImage);
+  for (const author of bundle.authors ?? []) push(author.avatar);
+  const seen = /* @__PURE__ */ new Set();
+  return refs.filter((ref) => {
+    const key = imageKey(ref);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+async function collectArchiveImages(bundle, options = {}) {
+  const fetchBytes = options.fetchBytes ?? defaultFetchBytes;
+  const now = options.now ?? /* @__PURE__ */ new Date();
+  const year = String(now.getUTCFullYear());
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const files = {};
+  const hosted = /* @__PURE__ */ new Map();
+  const failed = [];
+  const usedNames = /* @__PURE__ */ new Set();
+  for (const ref of allImageRefs(bundle)) {
+    try {
+      const bytes = await fetchBytes(ref);
+      const info = probeImage(bytes);
+      if (!info) throw new Error("not a recognisable image");
+      let name = `${baseNameFor(ref)}.${extensionFor(info.format)}`;
+      for (let n = 2; usedNames.has(name); n += 1) {
+        name = `${baseNameFor(ref)}-${n}.${extensionFor(info.format)}`;
+      }
+      usedNames.add(name);
+      files[`${IMAGE_ROOT}/${year}/${month}/${name}`] = bytes;
+      hosted.set(imageKey(ref), {
+        url: `/content/${IMAGE_ROOT}/${year}/${month}/${name}`,
+        ...info.width ? { width: info.width } : {},
+        ...info.height ? { height: info.height } : {},
+        ...ref.alt ? { alt: ref.alt } : {},
+        ...ref.caption ? { caption: ref.caption } : {},
+        fileName: name
+      });
+    } catch (err) {
+      const error51 = err instanceof Error ? err.message : String(err);
+      logger.warn(`could not bundle image ${ref.location}: ${error51}`);
+      failed.push({ location: ref.location, error: error51 });
+    }
+  }
+  return { files, resolve: (ref) => hosted.get(imageKey(ref)), failed };
+}
+var ARCHIVE_NAME = "content-export.zip";
+async function exportGhostArchive(bundle, options) {
+  const images = await collectArchiveImages(bundle, options);
+  const archive = buildGhostArchive(bundle, {
+    resolveImage: images.resolve,
+    ...options.now ? { now: options.now } : {}
+  });
+  await fs6.mkdir(options.outDir, { recursive: true });
+  const zipPath = path6.join(options.outDir, ARCHIVE_NAME);
+  await fs6.writeFile(zipPath, createZip({ ...archive.files, ...images.files }));
+  return {
+    zipPath,
+    stats: {
+      posts: bundle.posts.length,
+      pages: bundle.pages?.length ?? 0,
+      tags: bundle.tags?.length ?? 0,
+      authors: bundle.authors?.length ?? 0,
+      images: Object.keys(images.files).length,
+      failedImages: images.failed.length
+    },
+    failed: images.failed
+  };
+}
+
+// src/core/theme-defaults.ts
+function genericCapabilities(platform) {
+  return {
+    platform,
+    themeName: "unknown",
+    supportsFeatureImage: true,
+    featureImageAspectRatio: 1.5,
+    supportsGallery: false,
+    supportsVideoEmbed: false,
+    supportsBookmarkCard: false,
+    supportsCodeBlocks: true,
+    supportsWideImages: false,
+    displaysTags: true,
+    displaysAuthor: true,
+    displaysAuthorImage: false,
+    displaysExcerpt: true,
+    displaysReadingTime: false,
+    expectedWordCount: { min: 500, target: 850, max: 1200 },
+    confidence: 0,
+    evidence: [
+      "no theme analysis was requested \u2014 these are generic defaults, not measurements",
+      "run `themeseed seed --study-theme`, or `themeseed analyze`, to read the real theme"
+    ],
+    analyzedVia: ["defaults"]
+  };
+}
+
+// src/core/export.ts
+async function exportSite(request) {
+  if (request.platform !== "ghost") {
+    throw new ThemeseedError(`No file export implemented for platform "${request.platform}"`, {
+      code: "EXPORT_NOT_IMPLEMENTED",
+      hint: "Only ghost writes an import archive today. See CONTRIBUTING.md for adding one."
+    });
+  }
+  const capabilities = request.capabilities ?? genericCapabilities(request.platform);
+  const imageSource = await createRequestedImageSource(
+    request.imageSource ?? "auto",
+    request.imageSourceOptions ?? {}
+  );
+  const generation = await generateSeedContent({
+    topic: request.topic,
+    count: request.count,
+    capabilities,
+    imageSource,
+    status: request.status ?? "published",
+    ...request.pages?.length ? { pages: request.pages } : {},
+    ...request.titles?.length ? { titles: request.titles } : {},
+    ...request.seed !== void 0 ? { seed: request.seed } : {},
+    ...request.authorName ? { authorName: request.authorName } : {},
+    ...request.engine ? { engine: request.engine } : {},
+    ...request.includeVideo === false ? { videoFinder: null } : {},
+    onProgress: (done, total, title) => request.onProgress?.("generating", done, total, title)
+  });
+  request.onProgress?.("writing", 0, 1, "bundling images and writing the archive");
+  const result = await exportGhostArchive(
+    {
+      posts: generation.posts,
+      ...generation.pages ? { pages: generation.pages } : {},
+      ...generation.tags ? { tags: generation.tags } : {},
+      ...generation.authors ? { authors: generation.authors } : {},
+      ...request.site ? { site: request.site } : {}
+    },
+    { outDir: request.outDir }
+  );
+  request.onProgress?.("writing", 1, 1, result.zipPath);
+  if (result.stats.failedImages > 0) {
+    logger.warn(
+      `${result.stats.failedImages} image(s) could not be bundled; those posts import without them`
+    );
+  }
+  return {
+    zipPath: result.zipPath,
+    capabilities,
+    stats: result.stats,
+    failed: result.failed
+  };
+}
+
+// src/providers/ghost/client.ts
+import crypto from "node:crypto";
+import { basename } from "node:path";
+var TOKEN_TTL_SECONDS = 300;
+var GhostClient = class {
+  baseUrl;
+  keyId;
+  keySecret;
+  acceptVersion;
+  doFetch;
+  timeoutMs;
+  constructor(options) {
+    this.baseUrl = options.url.replace(/\/+$/, "");
+    const { id, secret } = parseAdminApiKey(options.adminApiKey);
+    this.keyId = id;
+    this.keySecret = secret;
+    this.acceptVersion = options.acceptVersion ?? "v5.0";
+    this.doFetch = options.fetchImpl ?? fetch;
+    this.timeoutMs = options.requestTimeoutMs ?? 3e4;
+  }
+  /** Mints a fresh admin JWT. Exposed for tests; not part of the public API. */
+  createToken(now = Math.floor(Date.now() / 1e3)) {
+    const header = base64url3(
+      JSON.stringify({ alg: "HS256", typ: "JWT", kid: this.keyId })
+    );
+    const payload = base64url3(
+      JSON.stringify({ iat: now, exp: now + TOKEN_TTL_SECONDS, aud: "/admin/" })
+    );
+    const signature = crypto.createHmac("sha256", Buffer.from(this.keySecret, "hex")).update(`${header}.${payload}`).digest("base64url");
+    return `${header}.${payload}.${signature}`;
+  }
+  headers(extra = {}) {
+    return {
+      Authorization: `Ghost ${this.createToken()}`,
+      "Accept-Version": this.acceptVersion,
+      Accept: "application/json",
+      ...extra
+    };
+  }
+  async request(method, path9, init = {}) {
+    const url2 = new URL(`${this.baseUrl}/ghost/api/admin${path9}`);
+    for (const [key, value] of Object.entries(init.query ?? {})) {
+      if (value !== void 0) url2.searchParams.set(key, String(value));
+    }
+    const hasBody = init.body !== void 0;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    let response;
+    try {
+      response = await this.doFetch(url2, {
+        method,
+        headers: this.headers(hasBody ? { "Content-Type": "application/json" } : {}),
+        ...hasBody ? { body: JSON.stringify(init.body) } : {},
+        signal: controller.signal
+      });
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw new ProviderError(
+          `Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path9}`,
+          {
+            code: "GHOST_TIMEOUT",
+            hint: "Is the site reachable and awake?"
+          }
+        );
+      }
+      throw new ProviderError(`Could not reach Ghost at ${this.baseUrl}`, {
+        code: "GHOST_UNREACHABLE",
+        hint: "Check the site URL and that the instance is running.",
+        cause: err
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+    return this.parse(response, `${method} ${path9}`);
+  }
+  async parse(response, context) {
+    const text2 = await response.text();
+    if (!response.ok) {
+      throw new ProviderError(ghostErrorMessage(text2, response.status, context), {
+        code: "GHOST_API_ERROR",
+        status: response.status,
+        hint: hintForStatus(response.status)
+      });
+    }
+    if (!text2) return void 0;
+    try {
+      return JSON.parse(text2);
+    } catch (err) {
+      throw new ProviderError(`Ghost returned a non-JSON response for ${context}`, {
+        code: "GHOST_BAD_RESPONSE",
+        cause: err
+      });
+    }
+  }
+  // -- endpoints ------------------------------------------------------------
+  async getSite() {
+    const data = await this.request("GET", "/site/");
+    return data.site;
+  }
+  /**
+   * Settings come back as a `{key, value}[]`; flattened to a map for callers.
+   * This is where `active_theme` lives — the Admin API's `/themes/` endpoint
+   * refuses API-token auth, so this is the only token-readable source for it.
+   */
+  async getSettings() {
+    const data = await this.request(
+      "GET",
+      "/settings/"
+    );
+    const map2 = {};
+    for (const entry of data.settings ?? []) map2[entry.key] = entry.value;
+    return map2;
+  }
+  async listPosts(query = {}) {
+    const data = await this.request("GET", "/posts/", {
+      query: { limit: "all", ...query }
+    });
+    return data.posts ?? [];
+  }
+  async getPost(id) {
+    const data = await this.request(
+      "GET",
+      `/posts/${encodeURIComponent(id)}/`,
+      { query: { include: "tags" } }
+    );
+    const post = data.posts?.[0];
+    if (!post) throw new ProviderError(`Ghost has no post with id ${id}`);
+    return post;
+  }
+  /**
+   * Ghost requires `updated_at` on every edit and rejects a stale one with a
+   * 409. That is optimistic locking, not ceremony: it is what stops this tool
+   * overwriting an edit somebody made in Ghost Admin thirty seconds ago. The
+   * caller passes the value it read, so the check covers the whole
+   * read-modify-write rather than just the request.
+   */
+  async updatePost(id, post, updatedAt) {
+    const data = await this.request(
+      "PUT",
+      `/posts/${encodeURIComponent(id)}/`,
+      { body: { posts: [{ ...post, updated_at: updatedAt }] } }
+    );
+    const updated = data.posts?.[0];
+    if (!updated)
+      throw new ProviderError("Ghost accepted the update but returned no record");
+    return updated;
+  }
+  async createPost(post) {
+    const data = await this.request("POST", "/posts/", {
+      body: { posts: [post] }
+    });
+    const created = data.posts?.[0];
+    if (!created)
+      throw new ProviderError("Ghost accepted the post but returned no record");
+    return created;
+  }
+  /**
+   * Pages are posts on a separate endpoint. Ghost keeps them in the same
+   * table with `type: 'page'`, but the API refuses `type` on `/posts/` — the
+   * endpoint is what decides.
+   */
+  async createPage(page) {
+    const data = await this.request("POST", "/pages/", {
+      body: { pages: [page] }
+    });
+    const created = data.pages?.[0];
+    if (!created)
+      throw new ProviderError("Ghost accepted the page but returned no record");
+    return created;
+  }
+  async deletePost(id) {
+    await this.request("DELETE", `/posts/${encodeURIComponent(id)}/`);
+  }
+  async listTags(query = {}) {
+    const data = await this.request("GET", "/tags/", {
+      query: { limit: "all", ...query }
+    });
+    return data.tags ?? [];
+  }
+  async createTag(tag) {
+    const data = await this.request("POST", "/tags/", {
+      body: { tags: [tag] }
+    });
+    const created = data.tags?.[0];
+    if (!created)
+      throw new ProviderError("Ghost accepted the tag but returned no record");
+    return created;
+  }
+  /**
+   * Uploads image bytes and returns the URL Ghost will serve them from.
+   * Uses the platform `FormData`/`Blob` so there is no multipart dependency.
+   */
+  async uploadImage(bytes, filename, contentType) {
+    const form = new FormData();
+    const copy = new Uint8Array(bytes.byteLength);
+    copy.set(bytes);
+    form.append("file", new Blob([copy], { type: contentType }), basename(filename));
+    form.append("purpose", "image");
+    form.append("ref", basename(filename));
+    const url2 = `${this.baseUrl}/ghost/api/admin/images/upload/`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), Math.max(this.timeoutMs, 6e4));
+    let response;
+    try {
+      response = await this.doFetch(url2, {
+        method: "POST",
+        headers: this.headers(),
+        body: form,
+        signal: controller.signal
+      });
+    } catch (err) {
+      throw new ProviderError(`Image upload to Ghost failed for ${filename}`, {
+        code: "GHOST_UPLOAD_FAILED",
+        cause: err
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+    const data = await this.parse(
+      response,
+      "POST /images/upload/"
+    );
+    const image = data.images?.[0];
+    if (!image?.url)
+      throw new ProviderError(`Ghost returned no URL for uploaded image ${filename}`);
+    return image;
+  }
+};
+function parseAdminApiKey(key) {
+  const trimmed = (key ?? "").trim();
+  const parts = trimmed.split(":");
+  if (parts.length !== 2) {
+    throw new ProviderError('Ghost Admin API key is not in "<id>:<secret>" form', {
+      code: "GHOST_BAD_KEY",
+      hint: "Copy the Admin API key from Ghost Admin \u2192 Settings \u2192 Integrations \u2192 your integration. Note this is not the Content API key."
+    });
+  }
+  const [id, secret] = parts;
+  if (!/^[0-9a-f]+$/i.test(id) || !/^[0-9a-f]+$/i.test(secret)) {
+    throw new ProviderError("Ghost Admin API key must be hexadecimal", {
+      code: "GHOST_BAD_KEY",
+      hint: "The key looks malformed \u2014 re-copy it from Ghost Admin."
+    });
+  }
+  if (secret.length % 2 !== 0) {
+    throw new ProviderError("Ghost Admin API key secret has an odd length", {
+      code: "GHOST_BAD_KEY",
+      hint: "The secret half is truncated \u2014 re-copy the full key."
+    });
+  }
+  return { id, secret };
+}
+function base64url3(input) {
+  return Buffer.from(input, "utf8").toString("base64url");
+}
+function ghostErrorMessage(body, status, context) {
+  try {
+    const parsed = JSON.parse(body);
+    const first = parsed.errors?.[0];
+    if (first?.message) {
+      return first.context ? `Ghost ${status} on ${context}: ${first.message} (${first.context})` : `Ghost ${status} on ${context}: ${first.message}`;
+    }
+  } catch {
+  }
+  return `Ghost ${status} on ${context}: ${body.slice(0, 200) || "<empty body>"}`;
+}
+function hintForStatus(status) {
+  if (status === 401 || status === 403) {
+    return "The Admin API key was rejected. Confirm it is an Admin API key (not Content API), and that the integration still exists.";
+  }
+  if (status === 404)
+    return "Endpoint not found \u2014 check the site URL includes any subdirectory Ghost is mounted at.";
+  if (status === 422) return "Ghost rejected the payload as invalid.";
+  if (status >= 500) return "Ghost hit an internal error; check its own logs.";
+  return void 0;
+}
+
 // src/providers/ghost/posts.ts
+import { promises as fs7 } from "node:fs";
+import path7 from "node:path";
 async function publishPosts(client, items, options = {}) {
   const results = [];
   const uploadCache = /* @__PURE__ */ new Map();
@@ -34031,12 +34622,12 @@ async function updateOne(client, item, cache, options) {
     const hosted = /* @__PURE__ */ new Map();
     for (const ref of collectImageRefs({ blocks: item.blocks })) {
       try {
-        hosted.set(imageKey(ref), await hostImage(client, ref, cache, options));
+        hosted.set(imageKey2(ref), await hostImage(client, ref, cache, options));
       } catch (err) {
         logger.warn(`skipping image ${ref.location}:`, err);
       }
     }
-    payload["lexical"] = blocksToLexical(item.blocks, (ref) => hosted.get(imageKey(ref)));
+    payload["lexical"] = blocksToLexical(item.blocks, (ref) => hosted.get(imageKey2(ref)));
   } else if (item.insertImage) {
     if (!existing.lexical) {
       throw new Error("post has no Lexical body to insert an image into");
@@ -34058,7 +34649,7 @@ async function updateOne(client, item, cache, options) {
   return toSeedResult(updated);
 }
 async function hostImage(client, ref, cache, options) {
-  const key = imageKey(ref);
+  const key = imageKey2(ref);
   const cached3 = cache.get(key);
   if (cached3) return cached3;
   const uploaded = await uploadImageRef(client, ref, options.maxRetries ?? 2);
@@ -34069,7 +34660,7 @@ async function publishOne(client, item, cache, options) {
   const refs = collectImageRefs(item);
   const hosted = /* @__PURE__ */ new Map();
   for (const ref of refs) {
-    const key = imageKey(ref);
+    const key = imageKey2(ref);
     const cached3 = cache.get(key);
     if (cached3) {
       hosted.set(key, cached3);
@@ -34083,7 +34674,7 @@ async function publishOne(client, item, cache, options) {
       logger.warn(`skipping image ${ref.location}:`, err);
     }
   }
-  const resolve = (ref) => hosted.get(imageKey(ref));
+  const resolve = (ref) => hosted.get(imageKey2(ref));
   const lexical = blocksToLexical(item.blocks, resolve);
   const featureImage = item.featureImage ? resolve(item.featureImage) : void 0;
   const payload = {
@@ -34123,13 +34714,13 @@ function collectImageRefs(item) {
   }
   const seen = /* @__PURE__ */ new Set();
   return refs.filter((ref) => {
-    const key = imageKey(ref);
+    const key = imageKey2(ref);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
-function imageKey(ref) {
+function imageKey2(ref) {
   return `${ref.kind}:${ref.location}`;
 }
 async function uploadImageRef(client, ref, maxRetries) {
@@ -34164,7 +34755,7 @@ async function uploadImageRef(client, ref, maxRetries) {
   };
 }
 async function readLocalImage(location) {
-  const buffer = await fs6.readFile(location);
+  const buffer = await fs7.readFile(location);
   return new Uint8Array(buffer);
 }
 async function downloadImage(url2) {
@@ -34182,7 +34773,7 @@ async function downloadImage(url2) {
   }
 }
 function filenameFor(ref, format) {
-  const base = ref.kind === "file" ? path6.basename(ref.location).replace(/\.\w+$/, "") : (new URL(ref.location).pathname.split("/").pop() ?? "image").replace(
+  const base = ref.kind === "file" ? path7.basename(ref.location).replace(/\.\w+$/, "") : (new URL(ref.location).pathname.split("/").pop() ?? "image").replace(
     /\.\w+$/,
     ""
   );
@@ -34234,11 +34825,82 @@ async function withRetry(operation, retries, label) {
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+async function publishPages(client, items, options = {}) {
+  const results = [];
+  const uploadCache = /* @__PURE__ */ new Map();
+  for (const [index, item] of items.entries()) {
+    let result;
+    try {
+      const hosted = /* @__PURE__ */ new Map();
+      for (const ref of collectImageRefs(item)) {
+        try {
+          hosted.set(imageKey2(ref), await hostImage(client, ref, uploadCache, options));
+        } catch (err) {
+          logger.warn(`image for page "${item.title}" could not be uploaded:`, err);
+        }
+      }
+      const resolve = (ref) => hosted.get(imageKey2(ref));
+      const bodyField = item.suppliedBody ? { html: item.suppliedBody } : { lexical: blocksToLexical(item.blocks, resolve) };
+      const created = await client.createPage({
+        title: item.title,
+        slug: item.slug,
+        ...bodyField,
+        status: item.status,
+        ...item.excerpt ? { custom_excerpt: truncateExcerpt(item.excerpt) } : {},
+        ...item.featureImage && resolve(item.featureImage) ? { feature_image: resolve(item.featureImage).url } : {},
+        // Pages carry the marker too, so a wipe finds everything it made.
+        tags: [{ name: SEED_TAG }]
+      });
+      result = toSeedResult(created, item);
+    } catch (err) {
+      logger.warn(`failed to create page "${item.title}":`, err);
+      result = {
+        id: `failed-page-${index}`,
+        title: item.title,
+        status: item.status,
+        error: err instanceof Error ? err.message : String(err)
+      };
+    }
+    results.push(result);
+    options.onProgress?.(index + 1, items.length, result);
+  }
+  return results;
+}
+async function publishTags(client, items, options = {}) {
+  const results = [];
+  for (const [index, item] of items.entries()) {
+    let result;
+    try {
+      const created = await client.createTag({
+        name: item.name,
+        slug: item.slug,
+        ...item.description ? { description: item.description } : {}
+      });
+      result = {
+        id: created.id,
+        title: created.name ?? item.name,
+        slug: created.slug ?? item.slug,
+        status: "published"
+      };
+    } catch (err) {
+      logger.warn(`failed to create tag "${item.name}":`, err);
+      result = {
+        id: `failed-tag-${index}`,
+        title: item.name,
+        status: "published",
+        error: err instanceof Error ? err.message : String(err)
+      };
+    }
+    results.push(result);
+    options.onProgress?.(index + 1, items.length, result);
+  }
+  return results;
+}
 
 // src/providers/ghost/theme/local-theme-source.ts
-import { promises as fs7 } from "node:fs";
+import { promises as fs8 } from "node:fs";
 import os3 from "node:os";
-import path7 from "node:path";
+import path8 from "node:path";
 
 // src/providers/ghost/theme/signals.ts
 function defaultCapabilities(themeName) {
@@ -34431,7 +35093,7 @@ var LocalThemeSource = class {
   // -- directory resolution -------------------------------------------------
   async resolveThemeDir() {
     for (const base of this.candidateThemeDirs()) {
-      const candidate = path7.join(base, this.options.themeName);
+      const candidate = path8.join(base, this.options.themeName);
       if (await isDirectory(candidate)) {
         return candidate;
       }
@@ -34448,16 +35110,16 @@ var LocalThemeSource = class {
     );
     return [
       ...explicit,
-      path7.join(process.cwd(), "content", "themes"),
-      path7.join(process.cwd(), "themes"),
+      path8.join(process.cwd(), "content", "themes"),
+      path8.join(process.cwd(), "themes"),
       "/var/lib/ghost/content/themes",
-      path7.join(home, "ghost", "content", "themes")
+      path8.join(home, "ghost", "content", "themes")
     ];
   }
   // -- readers --------------------------------------------------------------
   async readPackage(dir, evidence, capabilities) {
     try {
-      const raw = await fs7.readFile(path7.join(dir, "package.json"), "utf8");
+      const raw = await fs8.readFile(path8.join(dir, "package.json"), "utf8");
       const pkg = JSON.parse(raw);
       if (pkg.version) capabilities.themeVersion = pkg.version;
       if (pkg.description) capabilities.description = pkg.description;
@@ -34481,13 +35143,13 @@ var LocalThemeSource = class {
     for (const file2 of files) {
       let text2;
       try {
-        text2 = await fs7.readFile(file2, "utf8");
+        text2 = await fs8.readFile(file2, "utf8");
       } catch {
         continue;
       }
       combined += `
 ${text2}`;
-      const base = path7.basename(file2);
+      const base = path8.basename(file2);
       if (base === "post.hbs") post = text2;
       if (base === "index.hbs") index = text2;
     }
@@ -34500,7 +35162,7 @@ ${text2}`;
       if (/cards(\.min)?\.css$/.test(file2)) continue;
       try {
         css += `
-${await fs7.readFile(file2, "utf8")}`;
+${await fs8.readFile(file2, "utf8")}`;
       } catch {
         continue;
       }
@@ -34598,7 +35260,7 @@ function cardAssetsEnabled(value) {
 }
 async function isDirectory(target) {
   try {
-    return (await fs7.stat(target)).isDirectory();
+    return (await fs8.stat(target)).isDirectory();
   } catch {
     return false;
   }
@@ -34609,13 +35271,13 @@ async function collectFiles(root, extension, maxDepth) {
     if (depth > maxDepth) return;
     let entries;
     try {
-      entries = await fs7.readdir(dir, { withFileTypes: true });
+      entries = await fs8.readdir(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const entry of entries) {
       if (entry.name.startsWith(".") || entry.name === "node_modules") continue;
-      const full = path7.join(dir, entry.name);
+      const full = path8.join(dir, entry.name);
       if (entry.isDirectory()) await walk(full, depth + 1);
       else if (entry.isFile() && entry.name.endsWith(extension)) found.push(full);
     }
@@ -34917,8 +35579,8 @@ async function samplePost(client) {
 }
 
 // src/providers/ghost/index.ts
-var SEED_TAG_SLUG = "hash-themeseed";
-var SEED_FILTER = `tag:${SEED_TAG_SLUG}`;
+var SEED_TAG_SLUG2 = "hash-themeseed";
+var SEED_FILTER = `tag:${SEED_TAG_SLUG2}`;
 var GhostProvider = class {
   platform = "ghost";
   client;
@@ -34975,11 +35637,33 @@ var GhostProvider = class {
   }
   async updateContent(items, options = {}) {
     return updatePosts(this.client, items, {
-      seedTagSlug: SEED_TAG_SLUG,
+      seedTagSlug: SEED_TAG_SLUG2,
       ...options.allowUnseeded !== void 0 ? { allowUnseeded: options.allowUnseeded } : {},
       ...options.onProgress ? { onProgress: options.onProgress } : {}
     });
   }
+  /**
+   * Ghost models a page as a post on its own endpoint. A supplied body goes
+   * over as html — it is already final markup, and round-tripping it through
+   * our block model could only change it.
+   */
+  async createPages(items, options = {}) {
+    return publishPages(this.client, items, {
+      ...options.onProgress ? { onProgress: options.onProgress } : {}
+    });
+  }
+  /** Tags as entities, so a tag archive has a description to render. */
+  async createTags(items, options = {}) {
+    return publishTags(this.client, items, {
+      ...options.onProgress ? { onProgress: options.onProgress } : {}
+    });
+  }
+  // `createAuthors` is deliberately absent. Ghost's Admin API exposes
+  // `/users/` as Browse and Read only: a user is invited by email and has to
+  // accept, which an unattended tool cannot complete. Declaring the method and
+  // having it quietly do nothing would be worse than not having it — the
+  // caller could not tell the difference. The file export is not bound by
+  // this, because Ghost's importer creates users from the archive.
   async listSeeded() {
     const posts = await this.client.listPosts({ filter: SEED_FILTER, include: "tags" });
     return posts.map((post) => toSeedResult(post));
@@ -34987,7 +35671,7 @@ var GhostProvider = class {
   async wipeSeeded() {
     const posts = await this.client.listPosts({ filter: SEED_FILTER, include: "tags" });
     const confirmed = posts.filter(
-      (post) => post.tags?.some((tag) => tag.slug === SEED_TAG_SLUG || tag.name === SEED_TAG)
+      (post) => post.tags?.some((tag) => tag.slug === SEED_TAG_SLUG2 || tag.name === SEED_TAG)
     );
     const skipped = posts.length - confirmed.length;
     if (skipped > 0) {
@@ -35031,33 +35715,6 @@ function createProvider(site) {
   return factory(site);
 }
 registerProvider("ghost", createGhostProvider);
-
-// src/core/theme-defaults.ts
-function genericCapabilities(platform) {
-  return {
-    platform,
-    themeName: "unknown",
-    supportsFeatureImage: true,
-    featureImageAspectRatio: 1.5,
-    supportsGallery: false,
-    supportsVideoEmbed: false,
-    supportsBookmarkCard: false,
-    supportsCodeBlocks: true,
-    supportsWideImages: false,
-    displaysTags: true,
-    displaysAuthor: true,
-    displaysAuthorImage: false,
-    displaysExcerpt: true,
-    displaysReadingTime: false,
-    expectedWordCount: { min: 500, target: 850, max: 1200 },
-    confidence: 0,
-    evidence: [
-      "no theme analysis was requested \u2014 these are generic defaults, not measurements",
-      "run `themeseed seed --study-theme`, or `themeseed analyze`, to read the real theme"
-    ],
-    analyzedVia: ["defaults"]
-  };
-}
 
 // src/core/seed.ts
 async function seedSite(request) {
@@ -35361,6 +36018,75 @@ function registerContentTools(server) {
           url: r.url,
           status: r.status
         }))
+      });
+    }
+  );
+  server.registerTool(
+    "export_content",
+    {
+      title: "Export demo content as an importable file",
+      description: "Generates the same content generate_posts would, but writes it to disk as a Ghost import archive instead of publishing it live. Needs no site and no credentials. The archive bundles its own images, so after importing, the site serves them from /content/images/ rather than staying dependent on a stock CDN. Use this to ship demo content inside a theme package; use generate_posts when you have a live site to fill. Pass `pages` for static pages \u2014 set needsBody false where a theme template renders the page itself, or suppliedBody to use markup you already have.",
+      inputSchema: {
+        topic: external_exports.string().optional().describe('Subject of the publication, e.g. "SaaS productivity blog".'),
+        outDir: external_exports.string().describe("Directory to write content-export.zip into. Created if missing."),
+        count: external_exports.number().int().min(1).max(50).default(12).describe("How many posts to create."),
+        pages: external_exports.array(
+          external_exports.object({
+            slug: external_exports.string(),
+            title: external_exports.string().optional(),
+            needsBody: external_exports.boolean().optional().describe(
+              "False when a dedicated theme template renders this page, so a generated body would never be shown. Defaults to true."
+            ),
+            suppliedBody: external_exports.string().optional().describe("Final markup to use verbatim instead of generating a body.")
+          })
+        ).optional().describe("Static pages to include, e.g. about, privacy-policy, style-guide."),
+        navigation: external_exports.array(external_exports.object({ label: external_exports.string(), url: external_exports.string() })).optional().describe("Primary menu. Imported as a site setting, so the theme header fills in."),
+        secondaryNavigation: external_exports.array(external_exports.object({ label: external_exports.string(), url: external_exports.string() })).optional().describe("Secondary menu, which most themes render in the footer."),
+        imageSource: external_exports.enum(["auto", "local", "stock", "ai", "none"]).default("auto").describe("Same meaning as in generate_posts. Images are bundled into the archive."),
+        titles: external_exports.array(external_exports.string()).optional().describe("Your own post titles."),
+        authorName: external_exports.string().optional(),
+        includeVideo: external_exports.boolean().default(true)
+      }
+    },
+    async (args) => {
+      loadUserEnv();
+      const topic = args.topic?.trim() || await askForTopic(server);
+      const site = args.navigation || args.secondaryNavigation ? {
+        ...args.navigation ? { navigation: args.navigation } : {},
+        ...args.secondaryNavigation ? { secondaryNavigation: args.secondaryNavigation } : {}
+      } : void 0;
+      const report = await exportSite({
+        platform: "ghost",
+        topic,
+        count: args.count,
+        outDir: args.outDir,
+        imageSource: args.imageSource,
+        includeVideo: args.includeVideo,
+        ...args.pages?.length ? { pages: args.pages } : {},
+        ...site ? { site } : {},
+        ...args.titles?.length ? { titles: args.titles } : {},
+        ...args.authorName ? { authorName: args.authorName } : {}
+      });
+      const lines = [
+        `Wrote ${report.zipPath}`,
+        `  posts:   ${report.stats.posts}`,
+        `  pages:   ${report.stats.pages}`,
+        `  tags:    ${report.stats.tags}`,
+        `  authors: ${report.stats.authors}`,
+        `  images:  ${report.stats.images} bundled${report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ""}`
+      ];
+      for (const failure of report.failed) {
+        lines.push(`    - ${failure.location}: ${failure.error}`);
+      }
+      lines.push(
+        "",
+        "Import it in Ghost Admin -> Settings -> Import content. The images travel with it."
+      );
+      return text(lines.join("\n"), {
+        zipPath: report.zipPath,
+        topic,
+        stats: report.stats,
+        failedImages: report.failed
       });
     }
   );
