@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-09-15
+
 ### Added
 
 - **WordPress file export.** `themeseed export --platform wordpress` (and the
