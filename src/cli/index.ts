@@ -190,19 +190,22 @@ program
 program
   .command('export')
   .description(
-    'Write demo content to an importable Ghost archive — no site or credentials needed'
+    'Write demo content to an importable file — no site or credentials needed. ' +
+      'ghost → content-export.zip, wordpress → demo-content.xml (WXR)'
   )
   .option('-t, --topic <topic>', 'What the publication is about')
+  .option('-p, --platform <platform>', 'ghost or wordpress', 'ghost')
   .option(
     '-c, --count <n>',
     'How many posts to create',
     (value) => Number.parseInt(value, 10),
     12
   )
-  .option('-o, --out <dir>', 'Where to write content-export.zip', './demo-content')
+  .option('-o, --out <dir>', 'Where to write the import file', './demo-content')
   .option(
     '-i, --image-source <source>',
-    'auto | local | stock | ai | none. Images are bundled into the archive',
+    'auto | local | stock | ai | none. Ghost bundles images into the archive; a WordPress ' +
+      'WXR references them by URL, so use stock or none there',
     'auto'
   )
   .option(

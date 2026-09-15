@@ -368,6 +368,7 @@ export interface ExportFlags {
   topic?: string;
   count?: number;
   out?: string;
+  platform?: string;
   imageSource?: string;
   draft?: boolean;
   author?: string;
@@ -381,11 +382,18 @@ export interface ExportFlags {
  * Writes demo content to a file rather than to a site.
  *
  * Takes no site argument on purpose: there is nothing to connect to. That is
- * the whole point — a theme author packaging demo content has no Ghost of the
+ * the whole point — a theme author packaging demo content has no site of the
  * customer's to publish into.
  */
 export async function exportCommand(flags: ExportFlags = {}): Promise<void> {
   const outDir = flags.out ?? './demo-content';
+
+  const platform = (flags.platform ?? 'ghost') as 'ghost' | 'wordpress';
+  if (platform !== 'ghost' && platform !== 'wordpress') {
+    p.log.error(`No file export for platform "${flags.platform}". Use ghost or wordpress.`);
+    process.exitCode = 1;
+    return;
+  }
 
   let topic = flags.topic;
   if (!topic) {
@@ -423,7 +431,7 @@ export async function exportCommand(flags: ExportFlags = {}): Promise<void> {
   spinner.start('Generating and writing the archive');
 
   const report = await exportSite({
-    platform: 'ghost',
+    platform,
     topic,
     count,
     outDir,
@@ -437,7 +445,7 @@ export async function exportCommand(flags: ExportFlags = {}): Promise<void> {
       spinner.message(`${phase} ${done}/${total} — ${detail}`),
   });
 
-  spinner.stop(`Wrote ${report.zipPath}`);
+  spinner.stop(`Wrote ${report.artifactPath}`);
 
   p.log.success(
     [
@@ -445,13 +453,20 @@ export async function exportCommand(flags: ExportFlags = {}): Promise<void> {
       `pages   ${report.stats.pages}`,
       `tags    ${report.stats.tags}`,
       `authors ${report.stats.authors}`,
-      `images  ${report.stats.images} bundled${
-        report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''
-      }`,
+      platform === 'wordpress'
+        ? `images  ${report.stats.images} referenced${
+            report.stats.failedImages ? `, ${report.stats.failedImages} could not travel` : ''
+          }`
+        : `images  ${report.stats.images} bundled${
+            report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''
+          }`,
     ].join('\n')
   );
 
   p.log.info(
-    'Import it in Ghost Admin → Settings → Import content. The images travel with it.'
+    platform === 'wordpress'
+      ? 'Import it via Tools → Import → WordPress, ticking "Download and import file ' +
+          'attachments" so the images land in your media library. See IMPORT.md next to it.'
+      : 'Import it in Ghost Admin → Settings → Import content. The images travel with it.'
   );
 }

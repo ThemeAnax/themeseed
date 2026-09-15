@@ -7,6 +7,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **WordPress file export.** `themeseed export --platform wordpress` (and the
+  `export_content` MCP tool's new `platform` input) writes `demo-content.xml` —
+  a WXR 1.2 file the stock WordPress importer reads — plus an `IMPORT.md` with
+  the exact import steps. The neutral content model is unchanged: a new
+  `providers/wordpress/gutenberg.ts` serializes the same blocks into
+  Gutenberg's comment-delimited grammar, exactly as ghost/lexical.ts's docblock
+  predicted a WordPress provider would.
+
+  WordPress's importer works differently from Ghost's, and the export follows
+  WordPress's model rather than imitating the Ghost archive: a WXR carries no
+  bytes, so images travel as `attachment` items the importer downloads from
+  their source URLs ("Download and import file attachments") and re-hosts in
+  the media library. That means URL-backed images (the stock source) work and
+  local/AI files cannot travel — those are reported in `failed` with the fix,
+  never dropped silently. Menus export as `wp_navigation` posts, which appear
+  in the Site Editor's navigation picker after import.
+
+### Changed
+
+- **`ExportReport.zipPath` is now `artifactPath`.** The Ghost export writes a
+  zip; the WordPress export writes an XML file. One honestly-named field for
+  the import artifact beats a `zipPath` that sometimes is not a zip. The
+  `export_content` MCP result carries `artifactPath` (and the `platform`) too.
+
 ## [0.6.0] — 2026-09-11
 
 ### Added
