@@ -44,8 +44,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // node_modules/dotenv/lib/main.js
 var require_main = __commonJS({
   "node_modules/dotenv/lib/main.js"(exports, module) {
-    var fs9 = __require("fs");
-    var path9 = __require("path");
+    var fs10 = __require("fs");
+    var path10 = __require("path");
     var os4 = __require("os");
     var crypto2 = __require("crypto");
     var TIPS = [
@@ -176,7 +176,7 @@ var require_main = __commonJS({
       if (options && options.path && options.path.length > 0) {
         if (Array.isArray(options.path)) {
           for (const filepath of options.path) {
-            if (fs9.existsSync(filepath)) {
+            if (fs10.existsSync(filepath)) {
               possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
             }
           }
@@ -184,15 +184,15 @@ var require_main = __commonJS({
           possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
         }
       } else {
-        possibleVaultPath = path9.resolve(process.cwd(), ".env.vault");
+        possibleVaultPath = path10.resolve(process.cwd(), ".env.vault");
       }
-      if (fs9.existsSync(possibleVaultPath)) {
+      if (fs10.existsSync(possibleVaultPath)) {
         return possibleVaultPath;
       }
       return null;
     }
     function _resolveHome(envPath2) {
-      return envPath2[0] === "~" ? path9.join(os4.homedir(), envPath2.slice(1)) : envPath2;
+      return envPath2[0] === "~" ? path10.join(os4.homedir(), envPath2.slice(1)) : envPath2;
     }
     function _configVault(options) {
       const debug = parseBoolean(process.env.DOTENV_CONFIG_DEBUG || options && options.debug);
@@ -209,7 +209,7 @@ var require_main = __commonJS({
       return { parsed };
     }
     function configDotenv(options) {
-      const dotenvPath = path9.resolve(process.cwd(), ".env");
+      const dotenvPath = path10.resolve(process.cwd(), ".env");
       let encoding = "utf8";
       let processEnv = process.env;
       if (options && options.processEnv != null) {
@@ -237,13 +237,13 @@ var require_main = __commonJS({
       }
       let lastError;
       const parsedAll = {};
-      for (const path10 of optionPaths) {
+      for (const path11 of optionPaths) {
         try {
-          const parsed = DotenvModule.parse(fs9.readFileSync(path10, { encoding }));
+          const parsed = DotenvModule.parse(fs10.readFileSync(path11, { encoding }));
           DotenvModule.populate(parsedAll, parsed, options);
         } catch (e) {
           if (debug) {
-            _debug(`failed to load ${path10} ${e.message}`);
+            _debug(`failed to load ${path11} ${e.message}`);
           }
           lastError = e;
         }
@@ -256,7 +256,7 @@ var require_main = __commonJS({
         const shortPaths = [];
         for (const filePath of optionPaths) {
           try {
-            const relative = path9.relative(process.cwd(), filePath);
+            const relative = path10.relative(process.cwd(), filePath);
             shortPaths.push(relative);
           } catch (e) {
             if (debug) {
@@ -3556,8 +3556,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path9) {
-      let input = path9;
+    function removeDotSegments(path10) {
+      let input = path10;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3809,8 +3809,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path9, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path9 && path9 !== "/" ? path9 : void 0;
+        const [path10, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path10 && path10 !== "/" ? path10 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -7229,12 +7229,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs9, exportName) {
+    function addFormats(ajv, list, fs10, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs9[f]);
+        ajv.addFormat(f, fs10[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -8011,10 +8011,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path9) {
-  if (!path9)
+function getElementAtPath(obj, path10) {
+  if (!path10)
     return obj;
-  return path9.reduce((acc, key) => acc?.[key], obj);
+  return path10.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8423,11 +8423,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path9, issues) {
+function prefixIssues(path10, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path9);
+    iss.path.unshift(path10);
     return iss;
   });
 }
@@ -8574,16 +8574,16 @@ function flattenError(error51, mapper = (issue2) => issue2.message) {
 }
 function formatError(error51, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error52, path9 = []) => {
+  const processError = (error52, path10 = []) => {
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path9, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path10, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
       } else {
-        const fullpath = [...path9, ...issue2.path];
+        const fullpath = [...path10, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -8610,17 +8610,17 @@ function formatError(error51, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error51, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error52, path9 = []) => {
+  const processError = (error52, path10 = []) => {
     var _a3, _b;
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path9, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path10, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path9, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
       } else {
-        const fullpath = [...path9, ...issue2.path];
+        const fullpath = [...path10, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -8652,8 +8652,8 @@ function treeifyError(error51, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path9 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path9) {
+  const path10 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path10) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -21345,13 +21345,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path9 = ref.slice(1).split("/").filter(Boolean);
-  if (path9.length === 0) {
+  const path10 = ref.slice(1).split("/").filter(Boolean);
+  if (path10.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path9[0] === defsKey) {
-    const key = path9[1];
+  if (path10[0] === defsKey) {
+    const key = path10[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -24096,8 +24096,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path9, errorMaps, issueData } = params;
-  const fullPath = [...path9, ...issueData.path || []];
+  const { data, path: path10, errorMaps, issueData } = params;
+  const fullPath = [...path10, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -24212,11 +24212,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path9, key) {
+  constructor(parent, value, path10, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path9;
+    this._path = path10;
     this._key = key;
   }
   get path() {
@@ -27743,11 +27743,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path9) {
-  if (path9.length === 0) {
+function getDotPath(path10) {
+  if (path10.length === 0) {
     return "object root";
   }
-  return path9.reduce((acc, seg, index) => {
+  return path10.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -34189,6 +34189,455 @@ async function exportGhostArchive(bundle, options) {
   };
 }
 
+// src/providers/wordpress/export.ts
+import { promises as fs7 } from "node:fs";
+import path7 from "node:path";
+
+// src/providers/wordpress/gutenberg.ts
+function blocksToGutenberg(blocks, resolve) {
+  const rendered = [];
+  for (const block of blocks) {
+    const html = blockToHtml(block, resolve);
+    if (html) rendered.push(html);
+  }
+  if (rendered.length === 0) rendered.push(paragraph2(""));
+  return rendered.join("\n\n");
+}
+function blockToHtml(block, resolve) {
+  switch (block.type) {
+    case "paragraph":
+      return paragraph2(block.text);
+    case "heading": {
+      const attrs = block.level === 2 ? "" : ` ${JSON.stringify({ level: block.level })}`;
+      const tag = `h${block.level}`;
+      return `<!-- wp:heading${attrs} -->
+<${tag} class="wp-block-heading">${escapeHtml2(block.text)}</${tag}>
+<!-- /wp:heading -->`;
+    }
+    case "image": {
+      const hosted = resolve(block.image);
+      if (!hosted) return null;
+      return imageBlock(hosted, block.alt ?? block.image.alt, block.caption);
+    }
+    case "gallery": {
+      const hosted = [];
+      for (const image of block.images) {
+        const resolved = resolve(image);
+        if (resolved) {
+          hosted.push({ resolved, ...image.alt !== void 0 ? { alt: image.alt } : {} });
+        }
+      }
+      if (hosted.length < 2) return null;
+      const inner = hosted.map((entry) => imageBlock(entry.resolved, entry.alt, void 0)).join("\n\n");
+      const caption = block.caption ? `<figcaption class="blocks-gallery-caption wp-element-caption">${escapeHtml2(block.caption)}</figcaption>` : "";
+      return `<!-- wp:gallery {"linkTo":"none"} -->
+<figure class="wp-block-gallery has-nested-images columns-default is-cropped">${inner}${caption}</figure>
+<!-- /wp:gallery -->`;
+    }
+    case "video": {
+      const attrs = JSON.stringify({
+        url: block.url,
+        type: "video",
+        providerNameSlug: block.provider,
+        responsive: true,
+        className: "wp-embed-aspect-16-9 wp-has-aspect-ratio"
+      });
+      return `<!-- wp:embed ${attrs} -->
+<figure class="wp-block-embed is-type-video is-provider-${block.provider} wp-block-embed-${block.provider} wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
+${escapeHtml2(block.url)}
+</div></figure>
+<!-- /wp:embed -->`;
+    }
+    case "quote": {
+      const cite = block.attribution ? `<cite>${escapeHtml2(block.attribution)}</cite>` : "";
+      return `<!-- wp:quote -->
+<blockquote class="wp-block-quote"><!-- wp:paragraph -->
+<p>${escapeHtml2(block.text)}</p>
+<!-- /wp:paragraph -->${cite}</blockquote>
+<!-- /wp:quote -->`;
+    }
+    case "list": {
+      const attrs = block.ordered ? ' {"ordered":true}' : "";
+      const tag = block.ordered ? "ol" : "ul";
+      const items = block.items.map(
+        (item) => `<!-- wp:list-item -->
+<li>${escapeHtml2(item)}</li>
+<!-- /wp:list-item -->`
+      ).join("\n\n");
+      return `<!-- wp:list${attrs} -->
+<${tag} class="wp-block-list">${items}</${tag}>
+<!-- /wp:list -->`;
+    }
+    case "code":
+      return `<!-- wp:code -->
+<pre class="wp-block-code"><code>${escapeHtml2(block.code)}</code></pre>
+<!-- /wp:code -->`;
+    case "divider":
+      return `<!-- wp:separator -->
+<hr class="wp-block-separator has-alpha-channel-opacity"/>
+<!-- /wp:separator -->`;
+    default:
+      return null;
+  }
+}
+function paragraph2(text2) {
+  return `<!-- wp:paragraph -->
+<p>${escapeHtml2(text2)}</p>
+<!-- /wp:paragraph -->`;
+}
+function imageBlock(hosted, alt, caption) {
+  const captionHtml = caption ? `<figcaption class="wp-element-caption">${escapeHtml2(caption)}</figcaption>` : "";
+  return `<!-- wp:image {"sizeSlug":"large","linkDestination":"none"} -->
+<figure class="wp-block-image size-large"><img src="${escapeAttr(hosted.url)}" alt="${escapeAttr(alt ?? hosted.alt ?? "")}"/>${captionHtml}</figure>
+<!-- /wp:image -->`;
+}
+function escapeHtml2(text2) {
+  return text2.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function escapeAttr(text2) {
+  return escapeHtml2(text2).replace(/"/g, "&quot;");
+}
+
+// src/providers/wordpress/export.ts
+var WXR_VERSION = "1.2";
+var WXR_NAME = "demo-content.xml";
+var BASE_URL = "https://demo.example.com";
+var SEED_META_KEY = "_themeseed";
+function imageKey2(ref) {
+  return `${ref.kind}:${ref.location}`;
+}
+function imageTitle(ref) {
+  const fromUrl = (() => {
+    try {
+      return new URL(ref.location).pathname.split("/").pop() ?? "";
+    } catch {
+      return "";
+    }
+  })();
+  const stem = (ref.alt || fromUrl || "image").replace(/\.\w+$/, "");
+  return stem.slice(0, 80) || "image";
+}
+function collectWxrImages(bundle, nextId) {
+  const attachments = [];
+  const byKey = /* @__PURE__ */ new Map();
+  const failed = [];
+  const failedKeys = /* @__PURE__ */ new Set();
+  const register = (ref) => {
+    if (!ref) return;
+    const key = imageKey2(ref);
+    if (byKey.has(key) || failedKeys.has(key)) return;
+    if (ref.kind !== "url") {
+      failedKeys.add(key);
+      failed.push({
+        location: ref.location,
+        error: 'a WXR file cannot carry local image files \u2014 the WordPress importer downloads images by URL. Use a URL-backed image source (stock), or imageSource "none".'
+      });
+      return;
+    }
+    const attachment = {
+      id: nextId(),
+      url: ref.location,
+      title: imageTitle(ref),
+      ...ref.alt ? { alt: ref.alt } : {}
+    };
+    byKey.set(key, attachment);
+    attachments.push(attachment);
+  };
+  const fromBlocks = (blocks) => {
+    for (const block of blocks) {
+      if (block.type === "image") register(block.image);
+      else if (block.type === "gallery") block.images.forEach(register);
+    }
+  };
+  for (const post of bundle.posts) {
+    register(post.featureImage);
+    fromBlocks(post.blocks);
+  }
+  for (const page of bundle.pages ?? []) {
+    register(page.featureImage);
+    fromBlocks(page.blocks);
+  }
+  const resolve = (ref) => {
+    const hit = byKey.get(imageKey2(ref));
+    if (!hit) return void 0;
+    const image = { url: hit.url };
+    if (ref.width !== void 0) image.width = ref.width;
+    if (ref.height !== void 0) image.height = ref.height;
+    if (ref.alt !== void 0) image.alt = ref.alt;
+    if (ref.caption !== void 0) image.caption = ref.caption;
+    return image;
+  };
+  return {
+    attachments,
+    resolve,
+    attachmentIdFor: (ref) => byKey.get(imageKey2(ref))?.id,
+    failed
+  };
+}
+function escXml(text2) {
+  return text2.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function cdata(text2) {
+  const safe = text2.replace(/\]\]>/g, "]]]]><![CDATA[>");
+  return `<![CDATA[${safe}]]>`;
+}
+function wpDate(iso2) {
+  return new Date(iso2).toISOString().slice(0, 19).replace("T", " ");
+}
+function rfc2822(iso2) {
+  return new Date(iso2).toUTCString();
+}
+function idFactory2(start = 100) {
+  let n = start;
+  return () => {
+    n += 1;
+    return n;
+  };
+}
+function buildWordPressWxr(bundle, options = {}) {
+  const now = options.now ?? /* @__PURE__ */ new Date();
+  const nowIso = now.toISOString();
+  const nextId = idFactory2();
+  const images = collectWxrImages(bundle, nextId);
+  const authors = /* @__PURE__ */ new Map();
+  for (const author of bundle.authors ?? []) {
+    authors.set(author.slug, {
+      login: author.slug,
+      name: author.name,
+      ...author.bio ? { bio: author.bio } : {}
+    });
+  }
+  const creatorFor = (name) => {
+    if (!name) {
+      if (!authors.has("themeseed")) {
+        authors.set("themeseed", { login: "themeseed", name: "Themeseed Demo" });
+      }
+      return "themeseed";
+    }
+    const slug = slugify2(name);
+    if (!authors.has(slug)) authors.set(slug, { login: slug, name });
+    return slug;
+  };
+  const tags = /* @__PURE__ */ new Map();
+  for (const tag of bundle.tags ?? []) {
+    tags.set(tag.slug, {
+      slug: tag.slug,
+      name: tag.name,
+      ...tag.description ? { description: tag.description } : {}
+    });
+  }
+  const tagFor = (name) => {
+    const slug = slugify2(name);
+    if (!tags.has(slug)) tags.set(slug, { slug, name });
+    return slug;
+  };
+  const seedMeta = { key: SEED_META_KEY, value: SEED_TAG };
+  const items = [];
+  const bodyFor = (entry) => {
+    const supplied = "suppliedBody" in entry ? entry.suppliedBody : void 0;
+    if (supplied) return supplied;
+    if ("needsBody" in entry && entry.needsBody === false) return "";
+    return blocksToGutenberg(entry.blocks, images.resolve);
+  };
+  for (const post of bundle.posts) {
+    const meta3 = [seedMeta];
+    if (post.featureImage) {
+      const thumbId = images.attachmentIdFor(post.featureImage);
+      if (thumbId !== void 0) meta3.push({ key: "_thumbnail_id", value: String(thumbId) });
+    }
+    items.push({
+      id: nextId(),
+      title: post.title,
+      slug: post.slug ?? slugify2(post.title),
+      type: "post",
+      status: post.status === "published" ? "publish" : "draft",
+      content: bodyFor(post),
+      ...post.excerpt ? { excerpt: post.excerpt } : {},
+      creator: creatorFor(post.authorName),
+      date: post.publishedAt ?? nowIso,
+      commentStatus: "open",
+      tags: post.tags.map(tagFor),
+      meta: meta3
+    });
+  }
+  for (const page of bundle.pages ?? []) {
+    const meta3 = [seedMeta];
+    if (page.featureImage) {
+      const thumbId = images.attachmentIdFor(page.featureImage);
+      if (thumbId !== void 0) meta3.push({ key: "_thumbnail_id", value: String(thumbId) });
+    }
+    items.push({
+      id: nextId(),
+      title: page.title,
+      slug: page.slug,
+      type: "page",
+      status: page.status === "published" ? "publish" : "draft",
+      content: bodyFor(page),
+      ...page.excerpt ? { excerpt: page.excerpt } : {},
+      creator: creatorFor(void 0),
+      date: nowIso,
+      commentStatus: "closed",
+      meta: meta3
+    });
+  }
+  for (const attachment of images.attachments) {
+    items.push({
+      id: attachment.id,
+      title: attachment.title,
+      slug: slugify2(attachment.title),
+      type: "attachment",
+      // 'inherit' is the one status WordPress gives attachments; anything
+      // else and the importer skips the download.
+      status: "inherit",
+      content: "",
+      creator: creatorFor(void 0),
+      date: nowIso,
+      attachmentUrl: attachment.url,
+      commentStatus: "closed",
+      meta: [
+        seedMeta,
+        ...attachment.alt ? [{ key: "_wp_attachment_image_alt", value: attachment.alt }] : []
+      ]
+    });
+  }
+  const navigation = (title, slug, links) => ({
+    id: nextId(),
+    title,
+    slug,
+    type: "wp_navigation",
+    status: "publish",
+    content: links.map(
+      (link) => `<!-- wp:navigation-link ${JSON.stringify({
+        label: link.label,
+        url: link.url,
+        kind: "custom"
+      })} /-->`
+    ).join("\n"),
+    creator: creatorFor(void 0),
+    date: nowIso,
+    commentStatus: "closed",
+    meta: [seedMeta]
+  });
+  if (bundle.site?.navigation?.length) {
+    items.push(navigation("Primary navigation", "primary-navigation", bundle.site.navigation));
+  }
+  if (bundle.site?.secondaryNavigation?.length) {
+    items.push(
+      navigation("Secondary navigation", "secondary-navigation", bundle.site.secondaryNavigation)
+    );
+  }
+  const lines = [];
+  lines.push('<?xml version="1.0" encoding="UTF-8" ?>');
+  lines.push(
+    '<rss version="2.0"',
+    '	xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"',
+    '	xmlns:content="http://purl.org/rss/1.0/modules/content/"',
+    '	xmlns:wfw="http://wellformedweb.org/CommentAPI/"',
+    '	xmlns:dc="http://purl.org/dc/elements/1.1/"',
+    `	xmlns:wp="http://wordpress.org/export/${WXR_VERSION}/">`,
+    "<channel>"
+  );
+  lines.push(`	<title>${escXml(options.siteTitle ?? "themeseed demo content")}</title>`);
+  lines.push(`	<link>${BASE_URL}</link>`);
+  lines.push("	<description>Demo content generated by themeseed</description>");
+  lines.push(`	<pubDate>${rfc2822(nowIso)}</pubDate>`);
+  lines.push("	<language>en-US</language>");
+  lines.push(`	<wp:wxr_version>${WXR_VERSION}</wp:wxr_version>`);
+  lines.push(`	<wp:base_site_url>${BASE_URL}</wp:base_site_url>`);
+  lines.push(`	<wp:base_blog_url>${BASE_URL}</wp:base_blog_url>`);
+  let authorId = 0;
+  for (const author of authors.values()) {
+    authorId += 1;
+    lines.push(
+      `	<wp:author><wp:author_id>${authorId}</wp:author_id><wp:author_login>${cdata(author.login)}</wp:author_login><wp:author_email>${cdata(`${author.login}@example.com`)}</wp:author_email><wp:author_display_name>${cdata(author.name)}</wp:author_display_name><wp:author_first_name><![CDATA[]]></wp:author_first_name><wp:author_last_name><![CDATA[]]></wp:author_last_name></wp:author>`
+    );
+  }
+  let termId = 0;
+  for (const tag of tags.values()) {
+    termId += 1;
+    lines.push(
+      `	<wp:tag><wp:term_id>${termId}</wp:term_id><wp:tag_slug>${cdata(tag.slug)}</wp:tag_slug><wp:tag_name>${cdata(tag.name)}</wp:tag_name>` + (tag.description ? `<wp:tag_description>${cdata(tag.description)}</wp:tag_description>` : "") + "</wp:tag>"
+    );
+  }
+  for (const item of items) {
+    const date5 = item.date ?? nowIso;
+    lines.push("	<item>");
+    lines.push(`		<title>${cdata(item.title)}</title>`);
+    lines.push(`		<link>${BASE_URL}/${escXml(item.slug)}/</link>`);
+    lines.push(`		<pubDate>${rfc2822(date5)}</pubDate>`);
+    lines.push(`		<dc:creator>${cdata(item.creator)}</dc:creator>`);
+    lines.push(`		<guid isPermaLink="false">${BASE_URL}/?p=${item.id}</guid>`);
+    lines.push("		<description></description>");
+    lines.push(`		<content:encoded>${cdata(item.content)}</content:encoded>`);
+    lines.push(`		<excerpt:encoded>${cdata(item.excerpt ?? "")}</excerpt:encoded>`);
+    lines.push(`		<wp:post_id>${item.id}</wp:post_id>`);
+    lines.push(`		<wp:post_date>${cdata(wpDate(date5))}</wp:post_date>`);
+    lines.push(`		<wp:post_date_gmt>${cdata(wpDate(date5))}</wp:post_date_gmt>`);
+    lines.push(`		<wp:comment_status>${cdata(item.commentStatus ?? "closed")}</wp:comment_status>`);
+    lines.push("		<wp:ping_status><![CDATA[closed]]></wp:ping_status>");
+    lines.push(`		<wp:post_name>${cdata(item.slug)}</wp:post_name>`);
+    lines.push(`		<wp:status>${cdata(item.status)}</wp:status>`);
+    lines.push(`		<wp:post_parent>${item.parent ?? 0}</wp:post_parent>`);
+    lines.push("		<wp:menu_order>0</wp:menu_order>");
+    lines.push(`		<wp:post_type>${cdata(item.type)}</wp:post_type>`);
+    lines.push("		<wp:post_password><![CDATA[]]></wp:post_password>");
+    lines.push("		<wp:is_sticky>0</wp:is_sticky>");
+    if (item.attachmentUrl) {
+      lines.push(`		<wp:attachment_url>${cdata(item.attachmentUrl)}</wp:attachment_url>`);
+    }
+    for (const slug of item.tags ?? []) {
+      const tag = tags.get(slug);
+      lines.push(
+        `		<category domain="post_tag" nicename="${escXml(slug)}">${cdata(tag.name)}</category>`
+      );
+    }
+    for (const meta3 of item.meta ?? []) {
+      lines.push(
+        `		<wp:postmeta><wp:meta_key>${cdata(meta3.key)}</wp:meta_key><wp:meta_value>${cdata(meta3.value)}</wp:meta_value></wp:postmeta>`
+      );
+    }
+    lines.push("	</item>");
+  }
+  lines.push("</channel>", "</rss>", "");
+  return { xml: lines.join("\n"), attachments: images.attachments, failed: images.failed };
+}
+var IMPORT_GUIDE = `# Importing the demo content
+
+1. In WordPress admin, go to **Tools \u2192 Import \u2192 WordPress** and install the
+   importer when prompted (the official "WordPress Importer" plugin).
+2. Upload \`${WXR_NAME}\`.
+3. On the assignment screen, map the demo authors onto a real user.
+4. Tick **"Download and import file attachments"** \u2014 this is what fetches the
+   images from their source URLs into your media library. WordPress then
+   rewrites the image URLs in the imported content to your own copies, so the
+   site does not stay dependent on the source CDN.
+5. Menus import as Navigation entries: open **Appearance \u2192 Editor \u2192
+   Navigation** and pick "Primary navigation" for the header (block themes
+   cannot attach a menu from an import file).
+
+Everything imported carries hidden \`_themeseed\` post meta, so it can be
+identified and removed later without touching real content.
+`;
+async function exportWordPressWxr(bundle, options) {
+  const document = buildWordPressWxr(bundle, options);
+  await fs7.mkdir(options.outDir, { recursive: true });
+  const artifactPath = path7.join(options.outDir, WXR_NAME);
+  await fs7.writeFile(artifactPath, document.xml, "utf8");
+  await fs7.writeFile(path7.join(options.outDir, "IMPORT.md"), IMPORT_GUIDE, "utf8");
+  return {
+    artifactPath,
+    stats: {
+      posts: bundle.posts.length,
+      pages: bundle.pages?.length ?? 0,
+      tags: bundle.tags?.length ?? 0,
+      authors: bundle.authors?.length ?? 0,
+      images: document.attachments.length,
+      failedImages: document.failed.length
+    },
+    failed: document.failed
+  };
+}
+
 // src/core/theme-defaults.ts
 function genericCapabilities(platform) {
   return {
@@ -34217,11 +34666,12 @@ function genericCapabilities(platform) {
 }
 
 // src/core/export.ts
+var EXPORTABLE = ["ghost", "wordpress"];
 async function exportSite(request) {
-  if (request.platform !== "ghost") {
+  if (!EXPORTABLE.includes(request.platform)) {
     throw new ThemeseedError(`No file export implemented for platform "${request.platform}"`, {
       code: "EXPORT_NOT_IMPLEMENTED",
-      hint: "Only ghost writes an import archive today. See CONTRIBUTING.md for adding one."
+      hint: `File export exists for ${EXPORTABLE.join(" and ")} today. See CONTRIBUTING.md for adding one.`
     });
   }
   const capabilities = request.capabilities ?? genericCapabilities(request.platform);
@@ -34243,25 +34693,27 @@ async function exportSite(request) {
     ...request.includeVideo === false ? { videoFinder: null } : {},
     onProgress: (done, total, title) => request.onProgress?.("generating", done, total, title)
   });
-  request.onProgress?.("writing", 0, 1, "bundling images and writing the archive");
-  const result = await exportGhostArchive(
-    {
-      posts: generation.posts,
-      ...generation.pages ? { pages: generation.pages } : {},
-      ...generation.tags ? { tags: generation.tags } : {},
-      ...generation.authors ? { authors: generation.authors } : {},
-      ...request.site ? { site: request.site } : {}
-    },
-    { outDir: request.outDir }
-  );
-  request.onProgress?.("writing", 1, 1, result.zipPath);
+  request.onProgress?.("writing", 0, 1, "writing the import file");
+  const bundle = {
+    posts: generation.posts,
+    ...generation.pages ? { pages: generation.pages } : {},
+    ...generation.tags ? { tags: generation.tags } : {},
+    ...generation.authors ? { authors: generation.authors } : {},
+    ...request.site ? { site: request.site } : {}
+  };
+  const result = request.platform === "wordpress" ? await exportWordPressWxr(bundle, { outDir: request.outDir }) : await exportGhostArchive(bundle, { outDir: request.outDir }).then((r) => ({
+    artifactPath: r.zipPath,
+    stats: r.stats,
+    failed: r.failed
+  }));
+  request.onProgress?.("writing", 1, 1, result.artifactPath);
   if (result.stats.failedImages > 0) {
     logger.warn(
-      `${result.stats.failedImages} image(s) could not be bundled; those posts import without them`
+      `${result.stats.failedImages} image(s) could not travel with the export; those posts import without them`
     );
   }
   return {
-    zipPath: result.zipPath,
+    artifactPath: result.artifactPath,
     capabilities,
     stats: result.stats,
     failed: result.failed
@@ -34307,8 +34759,8 @@ var GhostClient = class {
       ...extra
     };
   }
-  async request(method, path9, init = {}) {
-    const url2 = new URL(`${this.baseUrl}/ghost/api/admin${path9}`);
+  async request(method, path10, init = {}) {
+    const url2 = new URL(`${this.baseUrl}/ghost/api/admin${path10}`);
     for (const [key, value] of Object.entries(init.query ?? {})) {
       if (value !== void 0) url2.searchParams.set(key, String(value));
     }
@@ -34326,7 +34778,7 @@ var GhostClient = class {
     } catch (err) {
       if (err.name === "AbortError") {
         throw new ProviderError(
-          `Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path9}`,
+          `Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path10}`,
           {
             code: "GHOST_TIMEOUT",
             hint: "Is the site reachable and awake?"
@@ -34341,7 +34793,7 @@ var GhostClient = class {
     } finally {
       clearTimeout(timer);
     }
-    return this.parse(response, `${method} ${path9}`);
+    return this.parse(response, `${method} ${path10}`);
   }
   async parse(response, context) {
     const text2 = await response.text();
@@ -34546,8 +34998,8 @@ function hintForStatus(status) {
 }
 
 // src/providers/ghost/posts.ts
-import { promises as fs7 } from "node:fs";
-import path7 from "node:path";
+import { promises as fs8 } from "node:fs";
+import path8 from "node:path";
 async function publishPosts(client, items, options = {}) {
   const results = [];
   const uploadCache = /* @__PURE__ */ new Map();
@@ -34622,12 +35074,12 @@ async function updateOne(client, item, cache, options) {
     const hosted = /* @__PURE__ */ new Map();
     for (const ref of collectImageRefs({ blocks: item.blocks })) {
       try {
-        hosted.set(imageKey2(ref), await hostImage(client, ref, cache, options));
+        hosted.set(imageKey3(ref), await hostImage(client, ref, cache, options));
       } catch (err) {
         logger.warn(`skipping image ${ref.location}:`, err);
       }
     }
-    payload["lexical"] = blocksToLexical(item.blocks, (ref) => hosted.get(imageKey2(ref)));
+    payload["lexical"] = blocksToLexical(item.blocks, (ref) => hosted.get(imageKey3(ref)));
   } else if (item.insertImage) {
     if (!existing.lexical) {
       throw new Error("post has no Lexical body to insert an image into");
@@ -34649,7 +35101,7 @@ async function updateOne(client, item, cache, options) {
   return toSeedResult(updated);
 }
 async function hostImage(client, ref, cache, options) {
-  const key = imageKey2(ref);
+  const key = imageKey3(ref);
   const cached3 = cache.get(key);
   if (cached3) return cached3;
   const uploaded = await uploadImageRef(client, ref, options.maxRetries ?? 2);
@@ -34660,7 +35112,7 @@ async function publishOne(client, item, cache, options) {
   const refs = collectImageRefs(item);
   const hosted = /* @__PURE__ */ new Map();
   for (const ref of refs) {
-    const key = imageKey2(ref);
+    const key = imageKey3(ref);
     const cached3 = cache.get(key);
     if (cached3) {
       hosted.set(key, cached3);
@@ -34674,7 +35126,7 @@ async function publishOne(client, item, cache, options) {
       logger.warn(`skipping image ${ref.location}:`, err);
     }
   }
-  const resolve = (ref) => hosted.get(imageKey2(ref));
+  const resolve = (ref) => hosted.get(imageKey3(ref));
   const lexical = blocksToLexical(item.blocks, resolve);
   const featureImage = item.featureImage ? resolve(item.featureImage) : void 0;
   const payload = {
@@ -34714,13 +35166,13 @@ function collectImageRefs(item) {
   }
   const seen = /* @__PURE__ */ new Set();
   return refs.filter((ref) => {
-    const key = imageKey2(ref);
+    const key = imageKey3(ref);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
-function imageKey2(ref) {
+function imageKey3(ref) {
   return `${ref.kind}:${ref.location}`;
 }
 async function uploadImageRef(client, ref, maxRetries) {
@@ -34755,7 +35207,7 @@ async function uploadImageRef(client, ref, maxRetries) {
   };
 }
 async function readLocalImage(location) {
-  const buffer = await fs7.readFile(location);
+  const buffer = await fs8.readFile(location);
   return new Uint8Array(buffer);
 }
 async function downloadImage(url2) {
@@ -34773,7 +35225,7 @@ async function downloadImage(url2) {
   }
 }
 function filenameFor(ref, format) {
-  const base = ref.kind === "file" ? path7.basename(ref.location).replace(/\.\w+$/, "") : (new URL(ref.location).pathname.split("/").pop() ?? "image").replace(
+  const base = ref.kind === "file" ? path8.basename(ref.location).replace(/\.\w+$/, "") : (new URL(ref.location).pathname.split("/").pop() ?? "image").replace(
     /\.\w+$/,
     ""
   );
@@ -34834,12 +35286,12 @@ async function publishPages(client, items, options = {}) {
       const hosted = /* @__PURE__ */ new Map();
       for (const ref of collectImageRefs(item)) {
         try {
-          hosted.set(imageKey2(ref), await hostImage(client, ref, uploadCache, options));
+          hosted.set(imageKey3(ref), await hostImage(client, ref, uploadCache, options));
         } catch (err) {
           logger.warn(`image for page "${item.title}" could not be uploaded:`, err);
         }
       }
-      const resolve = (ref) => hosted.get(imageKey2(ref));
+      const resolve = (ref) => hosted.get(imageKey3(ref));
       const bodyField = item.suppliedBody ? { html: item.suppliedBody } : { lexical: blocksToLexical(item.blocks, resolve) };
       const created = await client.createPage({
         title: item.title,
@@ -34898,9 +35350,9 @@ async function publishTags(client, items, options = {}) {
 }
 
 // src/providers/ghost/theme/local-theme-source.ts
-import { promises as fs8 } from "node:fs";
+import { promises as fs9 } from "node:fs";
 import os3 from "node:os";
-import path8 from "node:path";
+import path9 from "node:path";
 
 // src/providers/ghost/theme/signals.ts
 function defaultCapabilities(themeName) {
@@ -35093,7 +35545,7 @@ var LocalThemeSource = class {
   // -- directory resolution -------------------------------------------------
   async resolveThemeDir() {
     for (const base of this.candidateThemeDirs()) {
-      const candidate = path8.join(base, this.options.themeName);
+      const candidate = path9.join(base, this.options.themeName);
       if (await isDirectory(candidate)) {
         return candidate;
       }
@@ -35110,16 +35562,16 @@ var LocalThemeSource = class {
     );
     return [
       ...explicit,
-      path8.join(process.cwd(), "content", "themes"),
-      path8.join(process.cwd(), "themes"),
+      path9.join(process.cwd(), "content", "themes"),
+      path9.join(process.cwd(), "themes"),
       "/var/lib/ghost/content/themes",
-      path8.join(home, "ghost", "content", "themes")
+      path9.join(home, "ghost", "content", "themes")
     ];
   }
   // -- readers --------------------------------------------------------------
   async readPackage(dir, evidence, capabilities) {
     try {
-      const raw = await fs8.readFile(path8.join(dir, "package.json"), "utf8");
+      const raw = await fs9.readFile(path9.join(dir, "package.json"), "utf8");
       const pkg = JSON.parse(raw);
       if (pkg.version) capabilities.themeVersion = pkg.version;
       if (pkg.description) capabilities.description = pkg.description;
@@ -35143,13 +35595,13 @@ var LocalThemeSource = class {
     for (const file2 of files) {
       let text2;
       try {
-        text2 = await fs8.readFile(file2, "utf8");
+        text2 = await fs9.readFile(file2, "utf8");
       } catch {
         continue;
       }
       combined += `
 ${text2}`;
-      const base = path8.basename(file2);
+      const base = path9.basename(file2);
       if (base === "post.hbs") post = text2;
       if (base === "index.hbs") index = text2;
     }
@@ -35162,7 +35614,7 @@ ${text2}`;
       if (/cards(\.min)?\.css$/.test(file2)) continue;
       try {
         css += `
-${await fs8.readFile(file2, "utf8")}`;
+${await fs9.readFile(file2, "utf8")}`;
       } catch {
         continue;
       }
@@ -35260,7 +35712,7 @@ function cardAssetsEnabled(value) {
 }
 async function isDirectory(target) {
   try {
-    return (await fs8.stat(target)).isDirectory();
+    return (await fs9.stat(target)).isDirectory();
   } catch {
     return false;
   }
@@ -35271,13 +35723,13 @@ async function collectFiles(root, extension, maxDepth) {
     if (depth > maxDepth) return;
     let entries;
     try {
-      entries = await fs8.readdir(dir, { withFileTypes: true });
+      entries = await fs9.readdir(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const entry of entries) {
       if (entry.name.startsWith(".") || entry.name === "node_modules") continue;
-      const full = path8.join(dir, entry.name);
+      const full = path9.join(dir, entry.name);
       if (entry.isDirectory()) await walk(full, depth + 1);
       else if (entry.isFile() && entry.name.endsWith(extension)) found.push(full);
     }
@@ -36025,8 +36477,11 @@ function registerContentTools(server) {
     "export_content",
     {
       title: "Export demo content as an importable file",
-      description: "Generates the same content generate_posts would, but writes it to disk as a Ghost import archive instead of publishing it live. Needs no site and no credentials. The archive bundles its own images, so after importing, the site serves them from /content/images/ rather than staying dependent on a stock CDN. Use this to ship demo content inside a theme package; use generate_posts when you have a live site to fill. Pass `pages` for static pages \u2014 set needsBody false where a theme template renders the page itself, or suppliedBody to use markup you already have.",
+      description: 'Generates the same content generate_posts would, but writes it to disk as an import file instead of publishing it live. Needs no site and no credentials. platform "ghost" writes content-export.zip with the images bundled inside; platform "wordpress" writes demo-content.xml (WXR) whose images the WordPress importer downloads from their source URLs at import time \u2014 so for wordpress use a URL-backed imageSource (stock) or none, never local/ai. Use this to ship demo content inside a theme package; use generate_posts when you have a live site to fill. Pass `pages` for static pages \u2014 set needsBody false where a theme template renders the page itself, or suppliedBody to use markup you already have (for wordpress, suppliedBody should be serialized Gutenberg block markup).',
       inputSchema: {
+        platform: external_exports.enum(["ghost", "wordpress"]).default("ghost").describe(
+          "Which CMS the file targets: ghost \u2192 content-export.zip, wordpress \u2192 demo-content.xml (WXR 1.2)."
+        ),
         topic: external_exports.string().optional().describe('Subject of the publication, e.g. "SaaS productivity blog".'),
         outDir: external_exports.string().describe("Directory to write content-export.zip into. Created if missing."),
         count: external_exports.number().int().min(1).max(50).default(12).describe("How many posts to create."),
@@ -36056,7 +36511,7 @@ function registerContentTools(server) {
         ...args.secondaryNavigation ? { secondaryNavigation: args.secondaryNavigation } : {}
       } : void 0;
       const report = await exportSite({
-        platform: "ghost",
+        platform: args.platform,
         topic,
         count: args.count,
         outDir: args.outDir,
@@ -36067,23 +36522,25 @@ function registerContentTools(server) {
         ...args.titles?.length ? { titles: args.titles } : {},
         ...args.authorName ? { authorName: args.authorName } : {}
       });
+      const imagesLine = args.platform === "wordpress" ? `  images:  ${report.stats.images} referenced (the importer downloads them)${report.stats.failedImages ? `, ${report.stats.failedImages} could not travel` : ""}` : `  images:  ${report.stats.images} bundled${report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ""}`;
       const lines = [
-        `Wrote ${report.zipPath}`,
+        `Wrote ${report.artifactPath}`,
         `  posts:   ${report.stats.posts}`,
         `  pages:   ${report.stats.pages}`,
         `  tags:    ${report.stats.tags}`,
         `  authors: ${report.stats.authors}`,
-        `  images:  ${report.stats.images} bundled${report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ""}`
+        imagesLine
       ];
       for (const failure of report.failed) {
         lines.push(`    - ${failure.location}: ${failure.error}`);
       }
       lines.push(
         "",
-        "Import it in Ghost Admin -> Settings -> Import content. The images travel with it."
+        args.platform === "wordpress" ? 'Import it in WordPress admin -> Tools -> Import -> WordPress, and tick "Download and import file attachments" so the images land in the media library. See IMPORT.md next to the file.' : "Import it in Ghost Admin -> Settings -> Import content. The images travel with it."
       );
       return text(lines.join("\n"), {
-        zipPath: report.zipPath,
+        artifactPath: report.artifactPath,
+        platform: args.platform,
         topic,
         stats: report.stats,
         failedImages: report.failed
