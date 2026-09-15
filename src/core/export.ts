@@ -17,6 +17,7 @@ import { generateSeedContent, type PageRequest } from '../content/generator.js';
 import type { ContentEngine } from '../content/engine.js';
 import { createRequestedImageSource, type ImageSourceOptions } from '../images/index.js';
 import { exportGhostArchive } from '../providers/ghost/export.js';
+import { exportWordPressWxr } from '../providers/wordpress/export.js';
 import { logger } from './logger.js';
 import { genericCapabilities } from './theme-defaults.js';
 import { ThemeseedError } from './errors.js';
@@ -29,7 +30,11 @@ import type {
 } from './types.js';
 
 export interface ExportRequest {
-  /** Only `ghost` writes an archive today. */
+  /**
+   * `ghost` writes an import archive (zip, images bundled); `wordpress`
+   * writes a WXR file (images referenced by URL — the WordPress importer
+   * downloads them at import time). Other platforms have no file export yet.
+   */
   platform: Platform;
   topic: string;
   count: number;
@@ -56,25 +61,32 @@ export interface ExportRequest {
 export type ExportPhase = 'generating' | 'writing';
 
 export interface ExportReport {
-  zipPath: string;
+  /**
+   * The import artifact on disk — `content-export.zip` for Ghost,
+   * `demo-content.xml` for WordPress.
+   */
+  artifactPath: string;
   capabilities: ThemeCapabilities;
   stats: {
     posts: number;
     pages: number;
     tags: number;
     authors: number;
+    /** Ghost: images bundled in the zip. WordPress: attachments referenced. */
     images: number;
     failedImages: number;
   };
-  /** Images that could not be bundled. Reported, never fatal. */
+  /** Images that could not travel. Reported, never fatal. */
   failed: Array<{ location: string; error: string }>;
 }
 
+const EXPORTABLE: readonly Platform[] = ['ghost', 'wordpress'] as const;
+
 export async function exportSite(request: ExportRequest): Promise<ExportReport> {
-  if (request.platform !== 'ghost') {
+  if (!EXPORTABLE.includes(request.platform)) {
     throw new ThemeseedError(`No file export implemented for platform "${request.platform}"`, {
       code: 'EXPORT_NOT_IMPLEMENTED',
-      hint: 'Only ghost writes an import archive today. See CONTRIBUTING.md for adding one.',
+      hint: `File export exists for ${EXPORTABLE.join(' and ')} today. See CONTRIBUTING.md for adding one.`,
     });
   }
 
@@ -100,31 +112,37 @@ export async function exportSite(request: ExportRequest): Promise<ExportReport> 
     onProgress: (done, total, title) => request.onProgress?.('generating', done, total, title),
   });
 
-  request.onProgress?.('writing', 0, 1, 'bundling images and writing the archive');
+  request.onProgress?.('writing', 0, 1, 'writing the import file');
 
-  const result = await exportGhostArchive(
-    {
-      posts: generation.posts,
-      ...(generation.pages ? { pages: generation.pages } : {}),
-      ...(generation.tags ? { tags: generation.tags } : {}),
-      ...(generation.authors ? { authors: generation.authors } : {}),
-      ...(request.site ? { site: request.site } : {}),
-    },
-    { outDir: request.outDir },
-  );
+  const bundle = {
+    posts: generation.posts,
+    ...(generation.pages ? { pages: generation.pages } : {}),
+    ...(generation.tags ? { tags: generation.tags } : {}),
+    ...(generation.authors ? { authors: generation.authors } : {}),
+    ...(request.site ? { site: request.site } : {}),
+  };
 
-  request.onProgress?.('writing', 1, 1, result.zipPath);
+  const result =
+    request.platform === 'wordpress'
+      ? await exportWordPressWxr(bundle, { outDir: request.outDir })
+      : await exportGhostArchive(bundle, { outDir: request.outDir }).then((r) => ({
+          artifactPath: r.zipPath,
+          stats: r.stats,
+          failed: r.failed,
+        }));
 
-  // An archive that lost every image still writes successfully, and reporting
+  request.onProgress?.('writing', 1, 1, result.artifactPath);
+
+  // An export that lost every image still writes successfully, and reporting
   // that only to stderr is how a broken run calls itself a success.
   if (result.stats.failedImages > 0) {
     logger.warn(
-      `${result.stats.failedImages} image(s) could not be bundled; those posts import without them`,
+      `${result.stats.failedImages} image(s) could not travel with the export; those posts import without them`,
     );
   }
 
   return {
-    zipPath: result.zipPath,
+    artifactPath: result.artifactPath,
     capabilities,
     stats: result.stats,
     failed: result.failed,

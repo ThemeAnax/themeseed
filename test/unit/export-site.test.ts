@@ -38,13 +38,13 @@ describe('exportSite', () => {
     // The whole reason this exists next to seedSite: no Admin API key, no URL.
     const outDir = await scratch();
     const report = await exportSite(base(outDir));
-    await expect(fs.stat(report.zipPath)).resolves.toBeDefined();
+    await expect(fs.stat(report.artifactPath)).resolves.toBeDefined();
   });
 
   it('generates the posts it was asked for and puts them in the archive', async () => {
     const outDir = await scratch();
     const report = await exportSite(base(outDir));
-    expect(content(report.zipPath).posts!.filter((p) => p['type'] === 'post')).toHaveLength(2);
+    expect(content(report.artifactPath).posts!.filter((p) => p['type'] === 'post')).toHaveLength(2);
   });
 
   it('writes the requested pages, giving a body only where one is wanted', async () => {
@@ -53,7 +53,7 @@ describe('exportSite', () => {
       ...base(outDir),
       pages: [{ slug: 'about' }, { slug: 'authors', needsBody: false }],
     });
-    const pages = content(report.zipPath).posts!.filter((p) => p['type'] === 'page');
+    const pages = content(report.artifactPath).posts!.filter((p) => p['type'] === 'page');
     expect(pages.map((p) => p['slug']).sort()).toEqual(['about', 'authors']);
   });
 
@@ -63,7 +63,7 @@ describe('exportSite', () => {
       ...base(outDir),
       site: { navigation: [{ label: 'Home', url: '/' }] },
     });
-    const row = content(report.zipPath).settings!.find((s) => s['key'] === 'navigation');
+    const row = content(report.artifactPath).settings!.find((s) => s['key'] === 'navigation');
     expect(JSON.parse(row!['value'] as string)).toEqual([{ label: 'Home', url: '/' }]);
   });
 
@@ -78,5 +78,48 @@ describe('exportSite', () => {
     const outDir = await scratch();
     const report = await exportSite(base(outDir));
     expect(report.capabilities.analyzedVia).toContain('defaults');
+  });
+});
+
+describe('exportSite for wordpress', () => {
+  const wpBase = (outDir: string) => ({ ...base(outDir), platform: 'wordpress' as const });
+
+  it('writes a WXR file and the import guide, with no site or credentials', async () => {
+    const outDir = await scratch();
+    const report = await exportSite(wpBase(outDir));
+    expect(path.basename(report.artifactPath)).toBe('demo-content.xml');
+    await expect(fs.stat(report.artifactPath)).resolves.toBeDefined();
+    await expect(fs.stat(path.join(outDir, 'IMPORT.md'))).resolves.toBeDefined();
+  });
+
+  it('puts the requested posts and pages in the file as WXR items', async () => {
+    const outDir = await scratch();
+    const report = await exportSite({
+      ...wpBase(outDir),
+      pages: [{ slug: 'about' }, { slug: 'authors', needsBody: false }],
+    });
+    const xml = await fs.readFile(report.artifactPath, 'utf8');
+    expect(xml.match(/<wp:post_type><!\[CDATA\[post\]\]><\/wp:post_type>/g)).toHaveLength(2);
+    expect(xml.match(/<wp:post_type><!\[CDATA\[page\]\]><\/wp:post_type>/g)).toHaveLength(2);
+    expect(xml).toContain('<wp:post_name><![CDATA[about]]></wp:post_name>');
+  });
+
+  it('exports navigation as a wp_navigation post, not a settings row', async () => {
+    const outDir = await scratch();
+    const report = await exportSite({
+      ...wpBase(outDir),
+      site: { navigation: [{ label: 'Home', url: '/' }] },
+    });
+    const xml = await fs.readFile(report.artifactPath, 'utf8');
+    expect(xml).toContain('<wp:post_type><![CDATA[wp_navigation]]></wp:post_type>');
+    expect(xml).toContain('wp:navigation-link');
+    expect(xml).toContain('"label":"Home"');
+  });
+
+  it('still refuses a platform with no file export', async () => {
+    const outDir = await scratch();
+    await expect(
+      exportSite({ ...base(outDir), platform: 'joomla' as never })
+    ).rejects.toMatchObject({ code: 'EXPORT_NOT_IMPLEMENTED' });
   });
 });

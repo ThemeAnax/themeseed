@@ -332,14 +332,24 @@ function registerContentTools(server: McpServer): void {
     {
       title: 'Export demo content as an importable file',
       description:
-        'Generates the same content generate_posts would, but writes it to disk as a Ghost ' +
-        'import archive instead of publishing it live. Needs no site and no credentials. ' +
-        'The archive bundles its own images, so after importing, the site serves them from ' +
-        '/content/images/ rather than staying dependent on a stock CDN. Use this to ship ' +
-        'demo content inside a theme package; use generate_posts when you have a live site ' +
+        'Generates the same content generate_posts would, but writes it to disk as an import ' +
+        'file instead of publishing it live. Needs no site and no credentials. ' +
+        'platform "ghost" writes content-export.zip with the images bundled inside; ' +
+        'platform "wordpress" writes demo-content.xml (WXR) whose images the WordPress ' +
+        'importer downloads from their source URLs at import time — so for wordpress use a ' +
+        'URL-backed imageSource (stock) or none, never local/ai. Use this to ship demo ' +
+        'content inside a theme package; use generate_posts when you have a live site ' +
         'to fill. Pass `pages` for static pages — set needsBody false where a theme template ' +
-        'renders the page itself, or suppliedBody to use markup you already have.',
+        'renders the page itself, or suppliedBody to use markup you already have (for ' +
+        'wordpress, suppliedBody should be serialized Gutenberg block markup).',
       inputSchema: {
+        platform: z
+          .enum(['ghost', 'wordpress'])
+          .default('ghost')
+          .describe(
+            'Which CMS the file targets: ghost → content-export.zip, wordpress → ' +
+              'demo-content.xml (WXR 1.2).'
+          ),
         topic: z
           .string()
           .optional()
@@ -400,7 +410,7 @@ function registerContentTools(server: McpServer): void {
           : undefined;
 
       const report = await exportSite({
-        platform: 'ghost',
+        platform: args.platform,
         topic,
         count: args.count,
         outDir: args.outDir,
@@ -412,26 +422,38 @@ function registerContentTools(server: McpServer): void {
         ...(args.authorName ? { authorName: args.authorName } : {}),
       });
 
+      const imagesLine =
+        args.platform === 'wordpress'
+          ? `  images:  ${report.stats.images} referenced (the importer downloads them)${
+              report.stats.failedImages ? `, ${report.stats.failedImages} could not travel` : ''
+            }`
+          : `  images:  ${report.stats.images} bundled${
+              report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''
+            }`;
+
       const lines = [
-        `Wrote ${report.zipPath}`,
+        `Wrote ${report.artifactPath}`,
         `  posts:   ${report.stats.posts}`,
         `  pages:   ${report.stats.pages}`,
         `  tags:    ${report.stats.tags}`,
         `  authors: ${report.stats.authors}`,
-        `  images:  ${report.stats.images} bundled${
-          report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''
-        }`,
+        imagesLine,
       ];
       for (const failure of report.failed) {
         lines.push(`    - ${failure.location}: ${failure.error}`);
       }
       lines.push(
         '',
-        'Import it in Ghost Admin -> Settings -> Import content. The images travel with it.'
+        args.platform === 'wordpress'
+          ? 'Import it in WordPress admin -> Tools -> Import -> WordPress, and tick ' +
+              '"Download and import file attachments" so the images land in the media ' +
+              'library. See IMPORT.md next to the file.'
+          : 'Import it in Ghost Admin -> Settings -> Import content. The images travel with it.'
       );
 
       return text(lines.join('\n'), {
-        zipPath: report.zipPath,
+        artifactPath: report.artifactPath,
+        platform: args.platform,
         topic,
         stats: report.stats,
         failedImages: report.failed,
