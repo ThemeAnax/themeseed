@@ -7,6 +7,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-10-13
+
+### Added
+
+- **`themeseed nic-demo` — demo content for NIC Core themes.** Reads a
+  `nic-content-request/1` file and writes `<theme>/demo/posts.json`
+  (`nic-content/1`) plus `content-media/`, and an image credits file outside the
+  theme. The request's seeds (the source design's own posts, team, portfolio,
+  testimonials, services and WooCommerce products) keep their key, title and
+  every non-empty field byte for byte; ThemeSeed fills the empty fields and
+  generates the remaining items, terms, past dates, simple products with valid
+  prices and unique SKUs, and body images. Exit `0` written, `1` refused or
+  failed with a message naming the fix, `2` usage; `--json` prints one report.
+  `posts.json` and `content-media/` are replaced wholesale and nothing else in
+  `--out` is touched.
+- **Image licensing by target.** For `themeforest` and `wordpress.org` stock
+  images (Unsplash, Pexels, Picsum) are refused and `images.source: auto` never
+  falls back to them; `local` and `ai` images are credited `GPL-2.0-or-later`
+  to the site name. `client` and `private` targets may use stock, credited with
+  their real licence and source URL. Images outside the contract's limits
+  (jpg/png/webp, 2000px, 500 KB each, 25 MB total) are skipped with a warning.
+- The output is validated against the vendored `nic-content-1` schema plus
+  cross-reference rules (terms exist, files and references match, credits cover
+  every file) before anything is written. Schemas are vendored under
+  `src/nic-demo/schema/`; the mcphub copies are canonical.
+- `export_content` gains `platform: "nic-demo"` with `request` and `credits`.
+- `ajv` is now a runtime dependency (schema validation).
+
 ## [0.7.0] — 2026-09-15
 
 ### Added

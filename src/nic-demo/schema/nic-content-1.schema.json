@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://themeanax.com/schema/nic-content-1.schema.json",
+  "title": "NIC demo content (nic-content/1)",
+  "description": "demo/posts.json of a nic-demo/2 package. Written by ThemeSeed, read by NIC Core. Spec: docs/superpowers/specs/2026-10-13-demo-content-contract.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "generator", "theme", "items"],
+  "properties": {
+    "format": {
+      "const": "nic-content/1"
+    },
+    "generator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "theme": {
+      "$ref": "#/$defs/slug"
+    },
+    "terms": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/termList"
+        },
+        "post_tag": {
+          "$ref": "#/$defs/termList"
+        },
+        "nic_portfolio_category": {
+          "$ref": "#/$defs/termList"
+        },
+        "product_cat": {
+          "$ref": "#/$defs/termList"
+        },
+        "product_tag": {
+          "$ref": "#/$defs/termList"
+        }
+      }
+    },
+    "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "post": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/post"
+          }
+        },
+        "team": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/team"
+          }
+        },
+        "portfolio": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/portfolio"
+          }
+        },
+        "testimonial": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/testimonial"
+          }
+        },
+        "service": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/service"
+          }
+        },
+        "product": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/product"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,99}$"
+    },
+    "media": {
+      "type": "string",
+      "pattern": "^content-media/[a-z0-9][a-z0-9-]*\\.(jpg|png|webp)$"
+    },
+    "gallery": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/media"
+      }
+    },
+    "keys": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/slug"
+      }
+    },
+    "termList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "name"],
+        "properties": {
+          "key": {
+            "$ref": "#/$defs/slug"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+    },
+    "common": {
+      "type": "object",
+      "required": ["key", "title"],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/slug"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "content": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "image": {
+          "$ref": "#/$defs/media"
+        },
+        "menu_order": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "post": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "key": true,
+        "title": true,
+        "content": true,
+        "excerpt": true,
+        "image": true,
+        "menu_order": true,
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "terms": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "category": {
+              "$ref": "#/$defs/keys"
+            },
+            "post_tag": {
+              "$ref": "#/$defs/keys"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "team": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "key": true,
+        "title": true,
+        "content": true,
+        "excerpt": true,
+        "image": true,
+        "menu_order": true,
+        "meta": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nic_role": {
+              "type": "string"
+            },
+            "nic_linkedin": {
+              "type": "string"
+            },
+            "nic_twitter": {
+              "type": "string"
+            },
+            "nic_website": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "portfolio": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "key": true,
+        "title": true,
+        "content": true,
+        "excerpt": true,
+        "image": true,
+        "menu_order": true,
+        "gallery": {
+          "$ref": "#/$defs/gallery"
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nic_client": {
+              "type": "string"
+            },
+            "nic_year": {
+              "type": "string"
+            },
+            "nic_project_url": {
+              "type": "string"
+            }
+          }
+        },
+        "terms": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nic_portfolio_category": {
+              "$ref": "#/$defs/keys"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "testimonial": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "key": true,
+        "title": true,
+        "content": true,
+        "excerpt": true,
+        "image": true,
+        "menu_order": true,
+        "meta": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nic_company": {
+              "type": "string"
+            },
+            "nic_rating": {
+              "type": "string",
+              "pattern": "^[0-5]$"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "service": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "key": true,
+        "title": true,
+        "content": true,
+        "excerpt": true,
+        "image": true,
+        "menu_order": true,
+        "meta": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nic_icon": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "product": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "required": ["product"],
+      "properties": {
+        "key": true,
+        "title": true,
+        "content": true,
+        "excerpt": true,
+        "image": true,
+        "menu_order": true,
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "gallery": {
+          "$ref": "#/$defs/gallery"
+        },
+        "terms": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "product_cat": {
+              "$ref": "#/$defs/keys"
+            },
+            "product_tag": {
+              "$ref": "#/$defs/keys"
+            }
+          }
+        },
+        "product": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "regular_price", "sku"],
+          "properties": {
+            "type": {
+              "const": "simple"
+            },
+            "regular_price": {
+              "type": "string",
+              "pattern": "^\\d+(\\.\\d{1,2})?$"
+            },
+            "sale_price": {
+              "type": "string",
+              "pattern": "^(\\d+(\\.\\d{1,2})?)?$"
+            },
+            "sku": {
+              "type": "string",
+              "pattern": "^[A-Z0-9-]{1,40}$"
+            },
+            "stock_status": {
+              "enum": ["instock", "outofstock"]
+            },
+            "featured": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -44,8 +44,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // node_modules/dotenv/lib/main.js
 var require_main = __commonJS({
   "node_modules/dotenv/lib/main.js"(exports, module) {
-    var fs10 = __require("fs");
-    var path10 = __require("path");
+    var fs13 = __require("fs");
+    var path13 = __require("path");
     var os4 = __require("os");
     var crypto2 = __require("crypto");
     var TIPS = [
@@ -176,7 +176,7 @@ var require_main = __commonJS({
       if (options && options.path && options.path.length > 0) {
         if (Array.isArray(options.path)) {
           for (const filepath of options.path) {
-            if (fs10.existsSync(filepath)) {
+            if (fs13.existsSync(filepath)) {
               possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
             }
           }
@@ -184,15 +184,15 @@ var require_main = __commonJS({
           possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
         }
       } else {
-        possibleVaultPath = path10.resolve(process.cwd(), ".env.vault");
+        possibleVaultPath = path13.resolve(process.cwd(), ".env.vault");
       }
-      if (fs10.existsSync(possibleVaultPath)) {
+      if (fs13.existsSync(possibleVaultPath)) {
         return possibleVaultPath;
       }
       return null;
     }
     function _resolveHome(envPath2) {
-      return envPath2[0] === "~" ? path10.join(os4.homedir(), envPath2.slice(1)) : envPath2;
+      return envPath2[0] === "~" ? path13.join(os4.homedir(), envPath2.slice(1)) : envPath2;
     }
     function _configVault(options) {
       const debug = parseBoolean(process.env.DOTENV_CONFIG_DEBUG || options && options.debug);
@@ -209,7 +209,7 @@ var require_main = __commonJS({
       return { parsed };
     }
     function configDotenv(options) {
-      const dotenvPath = path10.resolve(process.cwd(), ".env");
+      const dotenvPath = path13.resolve(process.cwd(), ".env");
       let encoding = "utf8";
       let processEnv = process.env;
       if (options && options.processEnv != null) {
@@ -237,13 +237,13 @@ var require_main = __commonJS({
       }
       let lastError;
       const parsedAll = {};
-      for (const path11 of optionPaths) {
+      for (const path14 of optionPaths) {
         try {
-          const parsed = DotenvModule.parse(fs10.readFileSync(path11, { encoding }));
+          const parsed = DotenvModule.parse(fs13.readFileSync(path14, { encoding }));
           DotenvModule.populate(parsedAll, parsed, options);
         } catch (e) {
           if (debug) {
-            _debug(`failed to load ${path11} ${e.message}`);
+            _debug(`failed to load ${path14} ${e.message}`);
           }
           lastError = e;
         }
@@ -256,7 +256,7 @@ var require_main = __commonJS({
         const shortPaths = [];
         for (const filePath of optionPaths) {
           try {
-            const relative = path10.relative(process.cwd(), filePath);
+            const relative = path13.relative(process.cwd(), filePath);
             shortPaths.push(relative);
           } catch (e) {
             if (debug) {
@@ -3556,8 +3556,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path10) {
-      let input = path10;
+    function removeDotSegments(path13) {
+      let input = path13;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3809,8 +3809,8 @@ var require_schemes = __commonJS({
         wsComponent.secure = void 0;
       }
       if (wsComponent.resourceName) {
-        const [path10, query] = wsComponent.resourceName.split("?");
-        wsComponent.path = path10 && path10 !== "/" ? path10 : void 0;
+        const [path13, query] = wsComponent.resourceName.split("?");
+        wsComponent.path = path13 && path13 !== "/" ? path13 : void 0;
         wsComponent.query = query;
         wsComponent.resourceName = void 0;
       }
@@ -7229,16 +7229,840 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs10, exportName) {
+    function addFormats(ajv, list, fs13, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs10[f]);
+        ajv.addFormat(f, fs13[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = formatsPlugin;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/dynamic/dynamicAnchor.js
+var require_dynamicAnchor = __commonJS({
+  "node_modules/ajv/dist/vocabularies/dynamic/dynamicAnchor.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.dynamicAnchor = void 0;
+    var codegen_1 = require_codegen();
+    var names_1 = require_names();
+    var compile_1 = require_compile();
+    var ref_1 = require_ref();
+    var def = {
+      keyword: "$dynamicAnchor",
+      schemaType: "string",
+      code: (cxt) => dynamicAnchor(cxt, cxt.schema)
+    };
+    function dynamicAnchor(cxt, anchor) {
+      const { gen, it } = cxt;
+      it.schemaEnv.root.dynamicAnchors[anchor] = true;
+      const v = (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor)}`;
+      const validate = it.errSchemaPath === "#" ? it.validateName : _getValidate(cxt);
+      gen.if((0, codegen_1._)`!${v}`, () => gen.assign(v, validate));
+    }
+    exports.dynamicAnchor = dynamicAnchor;
+    function _getValidate(cxt) {
+      const { schemaEnv, schema, self } = cxt.it;
+      const { root, baseId, localRefs, meta: meta3 } = schemaEnv.root;
+      const { schemaId } = self.opts;
+      const sch = new compile_1.SchemaEnv({ schema, schemaId, root, baseId, localRefs, meta: meta3 });
+      compile_1.compileSchema.call(self, sch);
+      return (0, ref_1.getValidate)(cxt, sch);
+    }
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/dynamic/dynamicRef.js
+var require_dynamicRef = __commonJS({
+  "node_modules/ajv/dist/vocabularies/dynamic/dynamicRef.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.dynamicRef = void 0;
+    var codegen_1 = require_codegen();
+    var names_1 = require_names();
+    var ref_1 = require_ref();
+    var def = {
+      keyword: "$dynamicRef",
+      schemaType: "string",
+      code: (cxt) => dynamicRef(cxt, cxt.schema)
+    };
+    function dynamicRef(cxt, ref) {
+      const { gen, keyword, it } = cxt;
+      if (ref[0] !== "#")
+        throw new Error(`"${keyword}" only supports hash fragment reference`);
+      const anchor = ref.slice(1);
+      if (it.allErrors) {
+        _dynamicRef();
+      } else {
+        const valid = gen.let("valid", false);
+        _dynamicRef(valid);
+        cxt.ok(valid);
+      }
+      function _dynamicRef(valid) {
+        if (it.schemaEnv.root.dynamicAnchors[anchor]) {
+          const v = gen.let("_v", (0, codegen_1._)`${names_1.default.dynamicAnchors}${(0, codegen_1.getProperty)(anchor)}`);
+          gen.if(v, _callRef(v, valid), _callRef(it.validateName, valid));
+        } else {
+          _callRef(it.validateName, valid)();
+        }
+      }
+      function _callRef(validate, valid) {
+        return valid ? () => gen.block(() => {
+          (0, ref_1.callRef)(cxt, validate);
+          gen.let(valid, true);
+        }) : () => (0, ref_1.callRef)(cxt, validate);
+      }
+    }
+    exports.dynamicRef = dynamicRef;
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/dynamic/recursiveAnchor.js
+var require_recursiveAnchor = __commonJS({
+  "node_modules/ajv/dist/vocabularies/dynamic/recursiveAnchor.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var dynamicAnchor_1 = require_dynamicAnchor();
+    var util_1 = require_util();
+    var def = {
+      keyword: "$recursiveAnchor",
+      schemaType: "boolean",
+      code(cxt) {
+        if (cxt.schema)
+          (0, dynamicAnchor_1.dynamicAnchor)(cxt, "");
+        else
+          (0, util_1.checkStrictMode)(cxt.it, "$recursiveAnchor: false is ignored");
+      }
+    };
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/dynamic/recursiveRef.js
+var require_recursiveRef = __commonJS({
+  "node_modules/ajv/dist/vocabularies/dynamic/recursiveRef.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var dynamicRef_1 = require_dynamicRef();
+    var def = {
+      keyword: "$recursiveRef",
+      schemaType: "string",
+      code: (cxt) => (0, dynamicRef_1.dynamicRef)(cxt, cxt.schema)
+    };
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/dynamic/index.js
+var require_dynamic = __commonJS({
+  "node_modules/ajv/dist/vocabularies/dynamic/index.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var dynamicAnchor_1 = require_dynamicAnchor();
+    var dynamicRef_1 = require_dynamicRef();
+    var recursiveAnchor_1 = require_recursiveAnchor();
+    var recursiveRef_1 = require_recursiveRef();
+    var dynamic = [dynamicAnchor_1.default, dynamicRef_1.default, recursiveAnchor_1.default, recursiveRef_1.default];
+    exports.default = dynamic;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/validation/dependentRequired.js
+var require_dependentRequired = __commonJS({
+  "node_modules/ajv/dist/vocabularies/validation/dependentRequired.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var dependencies_1 = require_dependencies();
+    var def = {
+      keyword: "dependentRequired",
+      type: "object",
+      schemaType: "object",
+      error: dependencies_1.error,
+      code: (cxt) => (0, dependencies_1.validatePropertyDeps)(cxt)
+    };
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/applicator/dependentSchemas.js
+var require_dependentSchemas = __commonJS({
+  "node_modules/ajv/dist/vocabularies/applicator/dependentSchemas.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var dependencies_1 = require_dependencies();
+    var def = {
+      keyword: "dependentSchemas",
+      type: "object",
+      schemaType: "object",
+      code: (cxt) => (0, dependencies_1.validateSchemaDeps)(cxt)
+    };
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/validation/limitContains.js
+var require_limitContains = __commonJS({
+  "node_modules/ajv/dist/vocabularies/validation/limitContains.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var util_1 = require_util();
+    var def = {
+      keyword: ["maxContains", "minContains"],
+      type: "array",
+      schemaType: "number",
+      code({ keyword, parentSchema, it }) {
+        if (parentSchema.contains === void 0) {
+          (0, util_1.checkStrictMode)(it, `"${keyword}" without "contains" is ignored`);
+        }
+      }
+    };
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/next.js
+var require_next = __commonJS({
+  "node_modules/ajv/dist/vocabularies/next.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var dependentRequired_1 = require_dependentRequired();
+    var dependentSchemas_1 = require_dependentSchemas();
+    var limitContains_1 = require_limitContains();
+    var next = [dependentRequired_1.default, dependentSchemas_1.default, limitContains_1.default];
+    exports.default = next;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedProperties.js
+var require_unevaluatedProperties = __commonJS({
+  "node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedProperties.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var codegen_1 = require_codegen();
+    var util_1 = require_util();
+    var names_1 = require_names();
+    var error51 = {
+      message: "must NOT have unevaluated properties",
+      params: ({ params }) => (0, codegen_1._)`{unevaluatedProperty: ${params.unevaluatedProperty}}`
+    };
+    var def = {
+      keyword: "unevaluatedProperties",
+      type: "object",
+      schemaType: ["boolean", "object"],
+      trackErrors: true,
+      error: error51,
+      code(cxt) {
+        const { gen, schema, data, errsCount, it } = cxt;
+        if (!errsCount)
+          throw new Error("ajv implementation error");
+        const { allErrors, props } = it;
+        if (props instanceof codegen_1.Name) {
+          gen.if((0, codegen_1._)`${props} !== true`, () => gen.forIn("key", data, (key) => gen.if(unevaluatedDynamic(props, key), () => unevaluatedPropCode(key))));
+        } else if (props !== true) {
+          gen.forIn("key", data, (key) => props === void 0 ? unevaluatedPropCode(key) : gen.if(unevaluatedStatic(props, key), () => unevaluatedPropCode(key)));
+        }
+        it.props = true;
+        cxt.ok((0, codegen_1._)`${errsCount} === ${names_1.default.errors}`);
+        function unevaluatedPropCode(key) {
+          if (schema === false) {
+            cxt.setParams({ unevaluatedProperty: key });
+            cxt.error();
+            if (!allErrors)
+              gen.break();
+            return;
+          }
+          if (!(0, util_1.alwaysValidSchema)(it, schema)) {
+            const valid = gen.name("valid");
+            cxt.subschema({
+              keyword: "unevaluatedProperties",
+              dataProp: key,
+              dataPropType: util_1.Type.Str
+            }, valid);
+            if (!allErrors)
+              gen.if((0, codegen_1.not)(valid), () => gen.break());
+          }
+        }
+        function unevaluatedDynamic(evaluatedProps, key) {
+          return (0, codegen_1._)`!${evaluatedProps} || !${evaluatedProps}[${key}]`;
+        }
+        function unevaluatedStatic(evaluatedProps, key) {
+          const ps = [];
+          for (const p in evaluatedProps) {
+            if (evaluatedProps[p] === true)
+              ps.push((0, codegen_1._)`${key} !== ${p}`);
+          }
+          return (0, codegen_1.and)(...ps);
+        }
+      }
+    };
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedItems.js
+var require_unevaluatedItems = __commonJS({
+  "node_modules/ajv/dist/vocabularies/unevaluated/unevaluatedItems.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var codegen_1 = require_codegen();
+    var util_1 = require_util();
+    var error51 = {
+      message: ({ params: { len } }) => (0, codegen_1.str)`must NOT have more than ${len} items`,
+      params: ({ params: { len } }) => (0, codegen_1._)`{limit: ${len}}`
+    };
+    var def = {
+      keyword: "unevaluatedItems",
+      type: "array",
+      schemaType: ["boolean", "object"],
+      error: error51,
+      code(cxt) {
+        const { gen, schema, data, it } = cxt;
+        const items = it.items || 0;
+        if (items === true)
+          return;
+        const len = gen.const("len", (0, codegen_1._)`${data}.length`);
+        if (schema === false) {
+          cxt.setParams({ len: items });
+          cxt.fail((0, codegen_1._)`${len} > ${items}`);
+        } else if (typeof schema == "object" && !(0, util_1.alwaysValidSchema)(it, schema)) {
+          const valid = gen.var("valid", (0, codegen_1._)`${len} <= ${items}`);
+          gen.if((0, codegen_1.not)(valid), () => validateItems(valid, items));
+          cxt.ok(valid);
+        }
+        it.items = true;
+        function validateItems(valid, from) {
+          gen.forRange("i", from, len, (i) => {
+            cxt.subschema({ keyword: "unevaluatedItems", dataProp: i, dataPropType: util_1.Type.Num }, valid);
+            if (!it.allErrors)
+              gen.if((0, codegen_1.not)(valid), () => gen.break());
+          });
+        }
+      }
+    };
+    exports.default = def;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/unevaluated/index.js
+var require_unevaluated = __commonJS({
+  "node_modules/ajv/dist/vocabularies/unevaluated/index.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var unevaluatedProperties_1 = require_unevaluatedProperties();
+    var unevaluatedItems_1 = require_unevaluatedItems();
+    var unevaluated = [unevaluatedProperties_1.default, unevaluatedItems_1.default];
+    exports.default = unevaluated;
+  }
+});
+
+// node_modules/ajv/dist/vocabularies/draft2020.js
+var require_draft2020 = __commonJS({
+  "node_modules/ajv/dist/vocabularies/draft2020.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var core_1 = require_core2();
+    var validation_1 = require_validation();
+    var applicator_1 = require_applicator();
+    var dynamic_1 = require_dynamic();
+    var next_1 = require_next();
+    var unevaluated_1 = require_unevaluated();
+    var format_1 = require_format2();
+    var metadata_1 = require_metadata();
+    var draft2020Vocabularies = [
+      dynamic_1.default,
+      core_1.default,
+      validation_1.default,
+      (0, applicator_1.default)(true),
+      format_1.default,
+      metadata_1.metadataVocabulary,
+      metadata_1.contentVocabulary,
+      next_1.default,
+      unevaluated_1.default
+    ];
+    exports.default = draft2020Vocabularies;
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/schema.json
+var require_schema = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/schema.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/schema",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/core": true,
+        "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+        "https://json-schema.org/draft/2020-12/vocab/unevaluated": true,
+        "https://json-schema.org/draft/2020-12/vocab/validation": true,
+        "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+        "https://json-schema.org/draft/2020-12/vocab/format-annotation": true,
+        "https://json-schema.org/draft/2020-12/vocab/content": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Core and Validation specifications meta-schema",
+      allOf: [
+        { $ref: "meta/core" },
+        { $ref: "meta/applicator" },
+        { $ref: "meta/unevaluated" },
+        { $ref: "meta/validation" },
+        { $ref: "meta/meta-data" },
+        { $ref: "meta/format-annotation" },
+        { $ref: "meta/content" }
+      ],
+      type: ["object", "boolean"],
+      $comment: "This meta-schema also defines keywords that have appeared in previous drafts in order to prevent incompatible extensions as they remain in common use.",
+      properties: {
+        definitions: {
+          $comment: '"definitions" has been replaced by "$defs".',
+          type: "object",
+          additionalProperties: { $dynamicRef: "#meta" },
+          deprecated: true,
+          default: {}
+        },
+        dependencies: {
+          $comment: '"dependencies" has been split and replaced by "dependentSchemas" and "dependentRequired" in order to serve their differing semantics.',
+          type: "object",
+          additionalProperties: {
+            anyOf: [{ $dynamicRef: "#meta" }, { $ref: "meta/validation#/$defs/stringArray" }]
+          },
+          deprecated: true,
+          default: {}
+        },
+        $recursiveAnchor: {
+          $comment: '"$recursiveAnchor" has been replaced by "$dynamicAnchor".',
+          $ref: "meta/core#/$defs/anchorString",
+          deprecated: true
+        },
+        $recursiveRef: {
+          $comment: '"$recursiveRef" has been replaced by "$dynamicRef".',
+          $ref: "meta/core#/$defs/uriReferenceString",
+          deprecated: true
+        }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/meta/applicator.json
+var require_applicator2 = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/meta/applicator.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/meta/applicator",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/applicator": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Applicator vocabulary meta-schema",
+      type: ["object", "boolean"],
+      properties: {
+        prefixItems: { $ref: "#/$defs/schemaArray" },
+        items: { $dynamicRef: "#meta" },
+        contains: { $dynamicRef: "#meta" },
+        additionalProperties: { $dynamicRef: "#meta" },
+        properties: {
+          type: "object",
+          additionalProperties: { $dynamicRef: "#meta" },
+          default: {}
+        },
+        patternProperties: {
+          type: "object",
+          additionalProperties: { $dynamicRef: "#meta" },
+          propertyNames: { format: "regex" },
+          default: {}
+        },
+        dependentSchemas: {
+          type: "object",
+          additionalProperties: { $dynamicRef: "#meta" },
+          default: {}
+        },
+        propertyNames: { $dynamicRef: "#meta" },
+        if: { $dynamicRef: "#meta" },
+        then: { $dynamicRef: "#meta" },
+        else: { $dynamicRef: "#meta" },
+        allOf: { $ref: "#/$defs/schemaArray" },
+        anyOf: { $ref: "#/$defs/schemaArray" },
+        oneOf: { $ref: "#/$defs/schemaArray" },
+        not: { $dynamicRef: "#meta" }
+      },
+      $defs: {
+        schemaArray: {
+          type: "array",
+          minItems: 1,
+          items: { $dynamicRef: "#meta" }
+        }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/meta/unevaluated.json
+var require_unevaluated2 = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/meta/unevaluated.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/meta/unevaluated",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/unevaluated": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Unevaluated applicator vocabulary meta-schema",
+      type: ["object", "boolean"],
+      properties: {
+        unevaluatedItems: { $dynamicRef: "#meta" },
+        unevaluatedProperties: { $dynamicRef: "#meta" }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/meta/content.json
+var require_content = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/meta/content.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/meta/content",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/content": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Content vocabulary meta-schema",
+      type: ["object", "boolean"],
+      properties: {
+        contentEncoding: { type: "string" },
+        contentMediaType: { type: "string" },
+        contentSchema: { $dynamicRef: "#meta" }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/meta/core.json
+var require_core3 = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/meta/core.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/meta/core",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/core": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Core vocabulary meta-schema",
+      type: ["object", "boolean"],
+      properties: {
+        $id: {
+          $ref: "#/$defs/uriReferenceString",
+          $comment: "Non-empty fragments not allowed.",
+          pattern: "^[^#]*#?$"
+        },
+        $schema: { $ref: "#/$defs/uriString" },
+        $ref: { $ref: "#/$defs/uriReferenceString" },
+        $anchor: { $ref: "#/$defs/anchorString" },
+        $dynamicRef: { $ref: "#/$defs/uriReferenceString" },
+        $dynamicAnchor: { $ref: "#/$defs/anchorString" },
+        $vocabulary: {
+          type: "object",
+          propertyNames: { $ref: "#/$defs/uriString" },
+          additionalProperties: {
+            type: "boolean"
+          }
+        },
+        $comment: {
+          type: "string"
+        },
+        $defs: {
+          type: "object",
+          additionalProperties: { $dynamicRef: "#meta" }
+        }
+      },
+      $defs: {
+        anchorString: {
+          type: "string",
+          pattern: "^[A-Za-z_][-A-Za-z0-9._]*$"
+        },
+        uriString: {
+          type: "string",
+          format: "uri"
+        },
+        uriReferenceString: {
+          type: "string",
+          format: "uri-reference"
+        }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/meta/format-annotation.json
+var require_format_annotation = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/meta/format-annotation.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/meta/format-annotation",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/format-annotation": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Format vocabulary meta-schema for annotation results",
+      type: ["object", "boolean"],
+      properties: {
+        format: { type: "string" }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/meta/meta-data.json
+var require_meta_data = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/meta/meta-data.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/meta/meta-data",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/meta-data": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Meta-data vocabulary meta-schema",
+      type: ["object", "boolean"],
+      properties: {
+        title: {
+          type: "string"
+        },
+        description: {
+          type: "string"
+        },
+        default: true,
+        deprecated: {
+          type: "boolean",
+          default: false
+        },
+        readOnly: {
+          type: "boolean",
+          default: false
+        },
+        writeOnly: {
+          type: "boolean",
+          default: false
+        },
+        examples: {
+          type: "array",
+          items: true
+        }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/meta/validation.json
+var require_validation2 = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/meta/validation.json"(exports, module) {
+    module.exports = {
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      $id: "https://json-schema.org/draft/2020-12/meta/validation",
+      $vocabulary: {
+        "https://json-schema.org/draft/2020-12/vocab/validation": true
+      },
+      $dynamicAnchor: "meta",
+      title: "Validation vocabulary meta-schema",
+      type: ["object", "boolean"],
+      properties: {
+        type: {
+          anyOf: [
+            { $ref: "#/$defs/simpleTypes" },
+            {
+              type: "array",
+              items: { $ref: "#/$defs/simpleTypes" },
+              minItems: 1,
+              uniqueItems: true
+            }
+          ]
+        },
+        const: true,
+        enum: {
+          type: "array",
+          items: true
+        },
+        multipleOf: {
+          type: "number",
+          exclusiveMinimum: 0
+        },
+        maximum: {
+          type: "number"
+        },
+        exclusiveMaximum: {
+          type: "number"
+        },
+        minimum: {
+          type: "number"
+        },
+        exclusiveMinimum: {
+          type: "number"
+        },
+        maxLength: { $ref: "#/$defs/nonNegativeInteger" },
+        minLength: { $ref: "#/$defs/nonNegativeIntegerDefault0" },
+        pattern: {
+          type: "string",
+          format: "regex"
+        },
+        maxItems: { $ref: "#/$defs/nonNegativeInteger" },
+        minItems: { $ref: "#/$defs/nonNegativeIntegerDefault0" },
+        uniqueItems: {
+          type: "boolean",
+          default: false
+        },
+        maxContains: { $ref: "#/$defs/nonNegativeInteger" },
+        minContains: {
+          $ref: "#/$defs/nonNegativeInteger",
+          default: 1
+        },
+        maxProperties: { $ref: "#/$defs/nonNegativeInteger" },
+        minProperties: { $ref: "#/$defs/nonNegativeIntegerDefault0" },
+        required: { $ref: "#/$defs/stringArray" },
+        dependentRequired: {
+          type: "object",
+          additionalProperties: {
+            $ref: "#/$defs/stringArray"
+          }
+        }
+      },
+      $defs: {
+        nonNegativeInteger: {
+          type: "integer",
+          minimum: 0
+        },
+        nonNegativeIntegerDefault0: {
+          $ref: "#/$defs/nonNegativeInteger",
+          default: 0
+        },
+        simpleTypes: {
+          enum: ["array", "boolean", "integer", "null", "number", "object", "string"]
+        },
+        stringArray: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: []
+        }
+      }
+    };
+  }
+});
+
+// node_modules/ajv/dist/refs/json-schema-2020-12/index.js
+var require_json_schema_2020_12 = __commonJS({
+  "node_modules/ajv/dist/refs/json-schema-2020-12/index.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var metaSchema = require_schema();
+    var applicator = require_applicator2();
+    var unevaluated = require_unevaluated2();
+    var content = require_content();
+    var core = require_core3();
+    var format = require_format_annotation();
+    var metadata = require_meta_data();
+    var validation = require_validation2();
+    var META_SUPPORT_DATA = ["/properties"];
+    function addMetaSchema2020($data) {
+      ;
+      [
+        metaSchema,
+        applicator,
+        unevaluated,
+        content,
+        core,
+        with$data(this, format),
+        metadata,
+        with$data(this, validation)
+      ].forEach((sch) => this.addMetaSchema(sch, void 0, false));
+      return this;
+      function with$data(ajv, sch) {
+        return $data ? ajv.$dataMetaSchema(sch, META_SUPPORT_DATA) : sch;
+      }
+    }
+    exports.default = addMetaSchema2020;
+  }
+});
+
+// node_modules/ajv/dist/2020.js
+var require__ = __commonJS({
+  "node_modules/ajv/dist/2020.js"(exports, module) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.MissingRefError = exports.ValidationError = exports.CodeGen = exports.Name = exports.nil = exports.stringify = exports.str = exports._ = exports.KeywordCxt = exports.Ajv2020 = void 0;
+    var core_1 = require_core();
+    var draft2020_1 = require_draft2020();
+    var discriminator_1 = require_discriminator();
+    var json_schema_2020_12_1 = require_json_schema_2020_12();
+    var META_SCHEMA_ID = "https://json-schema.org/draft/2020-12/schema";
+    var Ajv20202 = class extends core_1.default {
+      constructor(opts = {}) {
+        super({
+          ...opts,
+          dynamicRef: true,
+          next: true,
+          unevaluated: true
+        });
+      }
+      _addVocabularies() {
+        super._addVocabularies();
+        draft2020_1.default.forEach((v) => this.addVocabulary(v));
+        if (this.opts.discriminator)
+          this.addKeyword(discriminator_1.default);
+      }
+      _addDefaultMetaSchema() {
+        super._addDefaultMetaSchema();
+        const { $data, meta: meta3 } = this.opts;
+        if (!meta3)
+          return;
+        json_schema_2020_12_1.default.call(this, $data);
+        this.refs["http://json-schema.org/schema"] = META_SCHEMA_ID;
+      }
+      defaultMeta() {
+        return this.opts.defaultMeta = super.defaultMeta() || (this.getSchema(META_SCHEMA_ID) ? META_SCHEMA_ID : void 0);
+      }
+    };
+    exports.Ajv2020 = Ajv20202;
+    module.exports = exports = Ajv20202;
+    module.exports.Ajv2020 = Ajv20202;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = Ajv20202;
+    var validate_1 = require_validate();
+    Object.defineProperty(exports, "KeywordCxt", { enumerable: true, get: function() {
+      return validate_1.KeywordCxt;
+    } });
+    var codegen_1 = require_codegen();
+    Object.defineProperty(exports, "_", { enumerable: true, get: function() {
+      return codegen_1._;
+    } });
+    Object.defineProperty(exports, "str", { enumerable: true, get: function() {
+      return codegen_1.str;
+    } });
+    Object.defineProperty(exports, "stringify", { enumerable: true, get: function() {
+      return codegen_1.stringify;
+    } });
+    Object.defineProperty(exports, "nil", { enumerable: true, get: function() {
+      return codegen_1.nil;
+    } });
+    Object.defineProperty(exports, "Name", { enumerable: true, get: function() {
+      return codegen_1.Name;
+    } });
+    Object.defineProperty(exports, "CodeGen", { enumerable: true, get: function() {
+      return codegen_1.CodeGen;
+    } });
+    var validation_error_1 = require_validation_error();
+    Object.defineProperty(exports, "ValidationError", { enumerable: true, get: function() {
+      return validation_error_1.default;
+    } });
+    var ref_error_1 = require_ref_error();
+    Object.defineProperty(exports, "MissingRefError", { enumerable: true, get: function() {
+      return ref_error_1.default;
+    } });
   }
 });
 
@@ -8011,10 +8835,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path10) {
-  if (!path10)
+function getElementAtPath(obj, path13) {
+  if (!path13)
     return obj;
-  return path10.reduce((acc, key) => acc?.[key], obj);
+  return path13.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8423,11 +9247,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path10, issues) {
+function prefixIssues(path13, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path10);
+    iss.path.unshift(path13);
     return iss;
   });
 }
@@ -8574,16 +9398,16 @@ function flattenError(error51, mapper = (issue2) => issue2.message) {
 }
 function formatError(error51, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error52, path10 = []) => {
+  const processError = (error52, path13 = []) => {
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path10, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path13, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path13, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path13, ...issue2.path]);
       } else {
-        const fullpath = [...path10, ...issue2.path];
+        const fullpath = [...path13, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -8610,17 +9434,17 @@ function formatError(error51, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error51, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error52, path10 = []) => {
+  const processError = (error52, path13 = []) => {
     var _a3, _b;
     for (const issue2 of error52.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path10, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path13, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path13, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path10, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path13, ...issue2.path]);
       } else {
-        const fullpath = [...path10, ...issue2.path];
+        const fullpath = [...path13, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -8652,8 +9476,8 @@ function treeifyError(error51, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path10 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path10) {
+  const path13 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path13) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -21345,13 +22169,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path10 = ref.slice(1).split("/").filter(Boolean);
-  if (path10.length === 0) {
+  const path13 = ref.slice(1).split("/").filter(Boolean);
+  if (path13.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path10[0] === defsKey) {
-    const key = path10[1];
+  if (path13[0] === defsKey) {
+    const key = path13[1];
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -23425,6 +24249,14 @@ var ConfigError = class extends ThemeseedError {
     this.name = "ConfigError";
   }
 };
+function describeError(err) {
+  if (err instanceof ThemeseedError) {
+    return err.hint ? `${err.message}
+  \u2192 ${err.hint}` : err.message;
+  }
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
 
 // src/images/providers.ts
 var IMAGE_PROVIDERS = [
@@ -24096,8 +24928,8 @@ function getErrorMap2() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path10, errorMaps, issueData } = params;
-  const fullPath = [...path10, ...issueData.path || []];
+  const { data, path: path13, errorMaps, issueData } = params;
+  const fullPath = [...path13, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -24212,11 +25044,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path10, key) {
+  constructor(parent, value, path13, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path10;
+    this._path = path13;
     this._key = key;
   }
   get path() {
@@ -27743,11 +28575,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path10) {
-  if (path10.length === 0) {
+function getDotPath(path13) {
+  if (path13.length === 0) {
     return "object root";
   }
-  return path10.reduce((acc, seg, index) => {
+  return path13.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -34720,6 +35552,1712 @@ async function exportSite(request) {
   };
 }
 
+// src/nic-demo/index.ts
+import { promises as fs10 } from "node:fs";
+import path10 from "node:path";
+
+// src/nic-demo/types.ts
+var NIC_TYPES = [
+  "post",
+  "team",
+  "portfolio",
+  "testimonial",
+  "service",
+  "product"
+];
+var META_KEYS = {
+  post: [],
+  team: ["nic_role", "nic_linkedin", "nic_twitter", "nic_website"],
+  portfolio: ["nic_client", "nic_year", "nic_project_url"],
+  testimonial: ["nic_company", "nic_rating"],
+  service: ["nic_icon"],
+  product: []
+};
+var TYPE_TAXONOMIES = {
+  post: ["category", "post_tag"],
+  team: [],
+  portfolio: ["nic_portfolio_category"],
+  testimonial: [],
+  service: [],
+  product: ["product_cat", "product_tag"]
+};
+var MEDIA_LIMITS = {
+  maxLongEdge: 2e3,
+  maxFileBytes: 500 * 1024,
+  maxTotalBytes: 25 * 1024 * 1024,
+  namePattern: /^[a-z0-9][a-z0-9-]*\.(jpg|png|webp)$/
+};
+
+// src/nic-demo/vocab.ts
+var FIRST_NAMES = [
+  "Ana",
+  "Ben",
+  "Priya",
+  "Marco",
+  "Sofia",
+  "Daniel",
+  "Amara",
+  "Lucas",
+  "Mei",
+  "Jonas",
+  "Leila",
+  "Tomas",
+  "Nadia",
+  "Oliver",
+  "Ines",
+  "Kwame",
+  "Hannah",
+  "Rafael",
+  "Yuki",
+  "Elena",
+  "Samir",
+  "Clara",
+  "Diego",
+  "Freya"
+];
+var LAST_NAMES = [
+  "Lima",
+  "Okafor",
+  "Brandt",
+  "Moreau",
+  "Tanaka",
+  "Hughes",
+  "Rossi",
+  "Nguyen",
+  "Larsen",
+  "Haddad",
+  "Costa",
+  "Ivanova",
+  "Walker",
+  "Mehta",
+  "Duarte",
+  "Kowalski",
+  "Santos",
+  "Fischer",
+  "Adeyemi",
+  "Lindqvist",
+  "Bauer",
+  "Quinn",
+  "Silva",
+  "Novak"
+];
+var ROLES = [
+  "Founder",
+  "Creative Director",
+  "Senior Advisor",
+  "Operations Lead",
+  "Client Partner",
+  "Head of Design",
+  "Account Manager",
+  "Project Lead",
+  "Specialist",
+  "Content Lead",
+  "Community Manager",
+  "Studio Manager"
+];
+var COMPANIES = [
+  "Harbour & Co",
+  "Lumen Works",
+  "Fernhill Group",
+  "Alder Street Studio",
+  "Northgate Partners",
+  "Bluebird Collective",
+  "Copperleaf",
+  "Westmoor Trading",
+  "Kite & Compass",
+  "Ironbridge Labs",
+  "Marlow House",
+  "Tidewater Foods"
+];
+var PROJECT_ADJECTIVES = [
+  "Harbour",
+  "Meadow",
+  "Summit",
+  "Lantern",
+  "Orchard",
+  "Cedar",
+  "Atlas",
+  "Ember",
+  "Willow",
+  "Northern"
+];
+var PROJECT_NOUNS = [
+  "Residence",
+  "Campaign",
+  "Collection",
+  "Project",
+  "Redesign",
+  "Retreat",
+  "Launch",
+  "Studio"
+];
+var SERVICE_TITLES = [
+  "Strategy & Planning",
+  "Concierge Support",
+  "Custom Design",
+  "Expert Consultation",
+  "Ongoing Care",
+  "Workshops & Training",
+  "Audits & Reviews",
+  "Implementation",
+  "Research & Discovery",
+  "Maintenance Plans",
+  "Priority Support",
+  "Group Programmes"
+];
+var SERVICE_ICONS = [
+  "\u2728",
+  "\u{1F9ED}",
+  "\u{1F3AF}",
+  "\u{1F4A1}",
+  "\u{1F6E1}\uFE0F",
+  "\u{1F33F}",
+  "\u{1F4D0}",
+  "\u{1F91D}",
+  "\u{1F527}",
+  "\u2B50",
+  "\u{1F5D3}\uFE0F",
+  "\u{1F4AC}"
+];
+var PRODUCT_ADJECTIVES = [
+  "Coastal",
+  "Classic",
+  "Everyday",
+  "Signature",
+  "Weekend",
+  "Premium",
+  "Essential",
+  "Heritage",
+  "Compact",
+  "Deluxe"
+];
+var PRODUCT_NOUNS = [
+  "Kit",
+  "Bundle",
+  "Pass",
+  "Set",
+  "Edition",
+  "Pack",
+  "Voucher",
+  "Box"
+];
+var BASE_PRICES = [19, 24, 39, 49, 59, 79, 99, 129, 149, 199, 249, 349];
+var CATEGORY_NAMES = [
+  "Guides",
+  "Stories",
+  "News",
+  "Behind the scenes",
+  "Tips",
+  "Ideas"
+];
+var TAG_NAMES = [
+  "Beginners",
+  "Planning",
+  "Inspiration",
+  "Checklist",
+  "How-to",
+  "Trends",
+  "Lessons",
+  "Community"
+];
+var PORTFOLIO_CATEGORY_NAMES = [
+  "Featured",
+  "Recent work",
+  "Case studies",
+  "Collaborations"
+];
+var PRODUCT_CATEGORY_NAMES = [
+  "Essentials",
+  "Premium",
+  "Gift ideas",
+  "New arrivals"
+];
+var PRODUCT_TAG_NAMES = ["Bestseller", "Limited", "New"];
+var TESTIMONIAL_QUOTES = [
+  "We arrived with a vague idea about {subject} and left with a plan we actually trusted. Everything landed on time and the small details were handled before we had to ask.",
+  "Honest advice, no upselling, and a genuine feel for {subject}. I would not hesitate to recommend them to friends.",
+  "Something went sideways at the last minute and it was sorted before we even noticed. That is the difference experience makes.",
+  "Warm, quick to reply and refreshingly practical. Our experience of {subject} was far smoother than we had expected.",
+  "They listened first, then proposed. The result felt like it was made for us rather than pulled off a shelf."
+];
+
+// src/nic-demo/generate.ts
+var DEFAULT_RATIO = {
+  post: 1.5,
+  team: 0.76,
+  portfolio: 0.75,
+  testimonial: 1,
+  service: 1.5,
+  product: 1
+};
+var GALLERY_EXTRA = { portfolio: 2, product: 2 };
+async function generateNicContent(options) {
+  const { request, media, imageSource } = options;
+  const engine = options.engine ?? new TemplateContentEngine();
+  const now = options.now ?? /* @__PURE__ */ new Date();
+  const warnings = [];
+  const topic = request.site.topic;
+  const profile = profileTopic(topic);
+  const rootSeed = hashString(`${request.theme}|${topic}`);
+  if (request.site.language && !/^en(\b|[-_])/i.test(request.site.language)) {
+    warnings.push(
+      `site.language "${request.site.language}" is not supported by the built-in prose engine; the demo text is English`
+    );
+  }
+  const requested = NIC_TYPES.filter((type) => request.types[type]);
+  const terms = buildTerms(requested, request, profile, rootSeed);
+  const total = requested.reduce(
+    (n, type) => n + Math.max(request.types[type].count, request.types[type].seeds?.length ?? 0),
+    0
+  );
+  let done = 0;
+  const items = {};
+  const counts = {};
+  for (const type of requested) {
+    const spec = request.types[type];
+    const seeds = spec.seeds ?? [];
+    if (seeds.length > spec.count) {
+      warnings.push(
+        `types.${type}: ${seeds.length} seeds exceed count ${spec.count}; all seeds are kept and nothing extra is generated`
+      );
+    }
+    const typeSeed = hashString(`${rootSeed}:${type}`);
+    const random = seededRandom(typeSeed);
+    const planned = await planItems(
+      type,
+      spec.count,
+      seeds,
+      topic,
+      profile,
+      engine,
+      typeSeed,
+      random
+    );
+    const list = [];
+    for (const [index, plan] of planned.entries()) {
+      options.onProgress?.(done++, total, plan.title);
+      const item = await buildItem({
+        type,
+        index,
+        count: planned.length,
+        plan,
+        request,
+        profile,
+        engine,
+        media,
+        imageSource,
+        terms,
+        now,
+        itemSeed: hashString(`${typeSeed}:${plan.key}`),
+        warnings
+      });
+      list.push(item);
+    }
+    if (type === "product") assignSkus(list, request.theme);
+    if (list.length > 0) items[type] = list;
+    counts[type] = list.length;
+  }
+  options.onProgress?.(total, total, "done");
+  warnings.push(...media.warnings);
+  const usedTerms = {};
+  for (const [taxonomy, list] of Object.entries(terms)) {
+    if (list.length > 0) usedTerms[taxonomy] = list;
+  }
+  return {
+    content: {
+      format: "nic-content/1",
+      generator: options.generator,
+      theme: request.theme,
+      ...Object.keys(usedTerms).length ? { terms: usedTerms } : {},
+      items
+    },
+    counts,
+    warnings
+  };
+}
+async function planItems(type, count, seeds, topic, profile, engine, typeSeed, random) {
+  const planned = seeds.map((seed) => ({
+    seed,
+    title: seed.title,
+    key: seed.key
+  }));
+  const extras = Math.max(0, count - seeds.length);
+  if (extras === 0) return planned;
+  const takenTitles = new Set(seeds.map((s) => s.title.toLowerCase()));
+  const takenKeys = new Set(seeds.map((s) => s.key));
+  let titles;
+  if (type === "post") {
+    titles = await engine.generateTitles(topic, extras + seeds.length + 2, typeSeed);
+  } else {
+    titles = vocabTitles(type, extras + seeds.length + 2, profile, random);
+  }
+  for (const title of titles) {
+    if (planned.length - seeds.length >= extras) break;
+    const clean = title.trim().slice(0, 200);
+    if (!clean || takenTitles.has(clean.toLowerCase())) continue;
+    const key = uniqueKey(slugify3(clean) || `${type}-${planned.length + 1}`, takenKeys);
+    takenTitles.add(clean.toLowerCase());
+    planned.push({ title: clean, key });
+  }
+  while (planned.length - seeds.length < extras) {
+    const n = planned.length + 1;
+    const title = `${capitalize(type)} ${n}`;
+    planned.push({ title, key: uniqueKey(slugify3(title), takenKeys) });
+  }
+  return planned;
+}
+function vocabTitles(type, n, profile, random) {
+  const out = [];
+  const seen = /* @__PURE__ */ new Set();
+  const push = (title) => {
+    if (!seen.has(title)) {
+      seen.add(title);
+      out.push(title);
+    }
+  };
+  const shuffled = (arr) => [...arr].map((v) => [random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
+  switch (type) {
+    case "team":
+    case "testimonial": {
+      const firsts = shuffled(FIRST_NAMES);
+      const lasts = shuffled(LAST_NAMES);
+      for (let i = 0; out.length < n && i < n * 4; i++) {
+        const first = firsts[i % firsts.length];
+        const last = lasts[(i * 7 + Math.floor(i / firsts.length)) % lasts.length];
+        push(type === "team" ? `${first} ${last}` : `${first} ${last.charAt(0)}.`);
+      }
+      break;
+    }
+    case "portfolio": {
+      const adjectives = shuffled(PROJECT_ADJECTIVES);
+      const nouns = shuffled(PROJECT_NOUNS);
+      for (let i = 0; out.length < n && i < n * 4; i++) {
+        push(
+          `${adjectives[i % adjectives.length]} ${nouns[Math.floor(i / adjectives.length) % nouns.length]}`
+        );
+      }
+      break;
+    }
+    case "service":
+      for (const title of shuffled(SERVICE_TITLES)) push(title);
+      break;
+    case "product": {
+      const adjectives = shuffled(PRODUCT_ADJECTIVES);
+      const nouns = shuffled(PRODUCT_NOUNS);
+      const subject = capitalize(profile.terms[0] ?? profile.subject);
+      for (let i = 0; out.length < n && i < n * 4; i++) {
+        push(
+          `${adjectives[i % adjectives.length]} ${subject} ${nouns[Math.floor(i / adjectives.length) % nouns.length]}`
+        );
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  return out;
+}
+async function buildItem(a) {
+  const { type, plan, index, profile, engine, itemSeed } = a;
+  const seed = plan.seed;
+  const random = seededRandom(itemSeed);
+  const topic = a.request.site.topic;
+  const item = { key: plan.key, title: plan.title };
+  let bodyImage;
+  if (a.imageSource) {
+    const ratio = ratioFor(type, seed);
+    const extra = GALLERY_EXTRA[type] ?? 0;
+    const wantBody = type === "post" && nonEmpty(seed?.content) === void 0 ? 1 : 0;
+    const refs = await safeFetch(
+      a,
+      {
+        query: imageQuery(type, plan.title, profile),
+        aspectRatio: ratio,
+        minWidth: widthFor(seed),
+        role: "feature"
+      },
+      1 + extra + wantBody
+    );
+    const [main2, ...rest] = refs;
+    if (main2) item.image = await a.media.add(main2, `${type}-${plan.key}`) ?? void 0;
+    if (!main2) a.media.skipped += 1;
+    const galleryRefs = rest.slice(0, extra);
+    if (galleryRefs.length > 0) {
+      const paths = [];
+      for (const [i, ref] of galleryRefs.entries()) {
+        const added = await a.media.add(ref, `${type}-${plan.key}-${i + 2}`);
+        if (added && added !== item.image && !paths.includes(added)) paths.push(added);
+      }
+      if (paths.length > 0) item.gallery = paths;
+    }
+    if (wantBody && rest[0])
+      bodyImage = await a.media.add(rest[0], `${type}-${plan.key}-body`);
+  }
+  const seedContent = nonEmpty(seed?.content);
+  if (seedContent !== void 0) {
+    item.content = seedContent;
+  } else {
+    item.content = await generateContent(a, topic, bodyImage);
+  }
+  const seedExcerpt = nonEmpty(seed?.excerpt);
+  if (seedExcerpt !== void 0) {
+    item.excerpt = seedExcerpt;
+  } else if (type === "post" || type === "portfolio" || type === "service" || type === "product") {
+    item.excerpt = clampExcerpt(
+      await engine.generateExcerpt(plan.title, topic, itemSeed)
+    );
+  }
+  if (type === "post" || type === "product")
+    item.date = pastDate(a.now, index, a.count, random);
+  item.menu_order = index;
+  const meta3 = buildMeta(a, random);
+  if (Object.keys(meta3).length > 0) item.meta = meta3;
+  const itemTerms = assignTerms(type, a.terms, index, random);
+  if (itemTerms) item.terms = itemTerms;
+  if (type === "product") item.product = buildProduct(index, random);
+  return item;
+}
+async function safeFetch(a, request, count) {
+  try {
+    return await a.imageSource.fetch(request, count);
+  } catch (err) {
+    a.warnings.push(
+      `image lookup for "${request.query}" failed (${err instanceof Error ? err.message : String(err)}); the item imports without images`
+    );
+    return [];
+  }
+}
+function ratioFor(type, seed) {
+  const size = seed?.image_size;
+  if (size && size[0] > 0 && size[1] > 0) return size[0] / size[1];
+  return DEFAULT_RATIO[type];
+}
+function widthFor(seed) {
+  const hinted = seed?.image_size?.[0];
+  return Math.min(1e3, Math.max(600, hinted ? Math.round(hinted * 1.5) : 900));
+}
+function imageQuery(type, title, profile) {
+  switch (type) {
+    case "team":
+    case "testimonial":
+      return `portrait of ${title}`;
+    case "product":
+      return `${title} product photo`;
+    case "post":
+      return title;
+    default:
+      return `${title} ${profile.subject}`;
+  }
+}
+async function generateContent(a, topic, bodyImage) {
+  const { type, plan, engine, itemSeed, profile } = a;
+  const textual = (blocks2) => blocks2.filter((b) => ["paragraph", "heading", "list", "quote"].includes(b.type));
+  if (type === "testimonial") {
+    const random = seededRandom(itemSeed);
+    const quote = TESTIMONIAL_QUOTES[Math.floor(random() * TESTIMONIAL_QUOTES.length)];
+    return `<p>${escapeHtml2(quote.replace("{subject}", profile.subject))}</p>`;
+  }
+  const words = { post: 450, team: 60, portfolio: 130, service: 90, product: 120 }[type];
+  const blocks = textual(
+    await engine.generateBody({
+      title: plan.title,
+      topic,
+      targetWords: words,
+      seed: itemSeed
+    })
+  );
+  if (type === "post") {
+    if (bodyImage) {
+      const at = blocks.findIndex((b) => b.type === "paragraph") + 1;
+      const image = {
+        type: "image",
+        image: { kind: "file", location: bodyImage, alt: plan.title },
+        alt: plan.title
+      };
+      blocks.splice(Math.max(1, at), 0, image);
+    }
+    return blocksToGutenberg(blocks, (ref) => ({
+      url: ref.location,
+      ...ref.alt ? { alt: ref.alt } : {}
+    }));
+  }
+  return blocksToHtml(blocks);
+}
+function blocksToHtml(blocks) {
+  const out = [];
+  for (const block of blocks) {
+    if (block.type === "paragraph") out.push(`<p>${escapeHtml2(block.text)}</p>`);
+    else if (block.type === "heading") out.push(`<h3>${escapeHtml2(block.text)}</h3>`);
+    else if (block.type === "quote")
+      out.push(`<blockquote><p>${escapeHtml2(block.text)}</p></blockquote>`);
+    else if (block.type === "list") {
+      const tag = block.ordered ? "ol" : "ul";
+      out.push(
+        `<${tag}>${block.items.map((i) => `<li>${escapeHtml2(i)}</li>`).join("")}</${tag}>`
+      );
+    }
+  }
+  return out.length > 0 ? out.join("\n") : "<p></p>";
+}
+function clampExcerpt(text2) {
+  const clean = text2.replace(/\s+/g, " ").trim();
+  if (clean.length <= 300) return clean;
+  const cut = clean.slice(0, 299);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 200 ? cut.slice(0, space) : cut).replace(/[\s,;:.]+$/, "")}\u2026`;
+}
+function buildMeta(a, random) {
+  const { type, plan } = a;
+  const allowed = META_KEYS[type];
+  const meta3 = {};
+  for (const [key, value] of Object.entries(plan.seed?.meta ?? {})) {
+    if (!allowed.includes(key)) {
+      a.warnings.push(
+        `types.${type} seed "${plan.key}": meta key "${key}" is not part of the contract and was dropped`
+      );
+      continue;
+    }
+    if (value !== "") meta3[key] = value;
+  }
+  const fill2 = (key, make) => {
+    if (allowed.includes(key) && meta3[key] === void 0) meta3[key] = make();
+  };
+  const year = a.now.getUTCFullYear();
+  const pick3 = (list) => list[Math.floor(random() * list.length)];
+  switch (type) {
+    case "team":
+      fill2("nic_role", () => pick3(ROLES));
+      break;
+    case "portfolio":
+      fill2("nic_client", () => pick3(COMPANIES));
+      fill2("nic_year", () => String(year - Math.floor(random() * 4)));
+      break;
+    case "testimonial":
+      fill2("nic_company", () => pick3(COMPANIES));
+      fill2("nic_rating", () => random() < 0.8 ? "5" : "4");
+      break;
+    case "service":
+      fill2("nic_icon", () => SERVICE_ICONS[a.index % SERVICE_ICONS.length]);
+      break;
+    default:
+      break;
+  }
+  return meta3;
+}
+function buildTerms(requested, request, profile, rootSeed) {
+  const random = seededRandom(rootSeed ^ 2654435761);
+  const make = (names, n, prefix) => {
+    const chosen = [...names].map((v) => [random(), v]).sort((x, y) => x[0] - y[0]).slice(0, n).map(([, v]) => v);
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    for (const name of chosen) {
+      const key = slugify3(prefix ? `${prefix} ${name}` : name);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push({ key, name });
+    }
+    return out;
+  };
+  const size = (type, min, max) => Math.min(
+    max,
+    Math.max(
+      min,
+      Math.ceil(
+        Math.max(
+          request.types[type]?.count ?? 0,
+          request.types[type]?.seeds?.length ?? 0
+        ) / 2
+      )
+    )
+  );
+  const terms = {};
+  if (requested.includes("post")) {
+    terms.category = make(CATEGORIES(profile), size("post", 3, 5));
+    terms.post_tag = make(TAG_NAMES, size("post", 4, 6));
+  }
+  if (requested.includes("portfolio")) {
+    terms.nic_portfolio_category = make(
+      PORTFOLIO_CATEGORY_NAMES,
+      size("portfolio", 2, 4)
+    );
+  }
+  if (requested.includes("product")) {
+    terms.product_cat = make(PRODUCT_CATEGORY_NAMES, size("product", 2, 4));
+    terms.product_tag = make(PRODUCT_TAG_NAMES, 3);
+  }
+  return terms;
+}
+function CATEGORIES(profile) {
+  const subject = capitalize(profile.terms[0] ?? profile.subject);
+  return [`${subject} tips`, ...CATEGORY_NAMES];
+}
+function assignTerms(type, terms, index, random) {
+  const out = {};
+  const one = (taxonomy) => {
+    const list = terms[taxonomy] ?? [];
+    return list.length ? [list[index % list.length].key] : [];
+  };
+  const some = (taxonomy, max) => {
+    const list = terms[taxonomy] ?? [];
+    if (!list.length) return [];
+    const n = 1 + Math.floor(random() * Math.min(max, list.length));
+    const start = Math.floor(random() * list.length);
+    return [
+      ...new Set(
+        Array.from({ length: n }, (_, i) => list[(start + i) % list.length].key)
+      )
+    ];
+  };
+  if (type === "post") {
+    out.category = one("category");
+    out.post_tag = some("post_tag", 2);
+  } else if (type === "portfolio") {
+    out.nic_portfolio_category = one("nic_portfolio_category");
+  } else if (type === "product") {
+    out.product_cat = one("product_cat");
+    if (random() < 0.5) out.product_tag = some("product_tag", 1);
+  }
+  const cleaned = Object.fromEntries(Object.entries(out).filter(([, v]) => v.length > 0));
+  return Object.keys(cleaned).length ? cleaned : void 0;
+}
+function buildProduct(index, random) {
+  const base = BASE_PRICES[Math.floor(random() * BASE_PRICES.length)];
+  const onSale = index % 3 === 1;
+  return {
+    type: "simple",
+    regular_price: base.toFixed(2),
+    // 20% off is always strictly below the regular price for any price above zero.
+    sale_price: onSale ? (base * 0.8).toFixed(2) : "",
+    sku: "",
+    // assigned once the whole list exists, so uniqueness is checkable
+    stock_status: index % 7 === 6 ? "outofstock" : "instock",
+    featured: index < 2
+  };
+}
+function assignSkus(items, theme) {
+  const prefix = theme.split("-").filter(Boolean).map((w) => w[0].toUpperCase()).join("").replace(/[^A-Z0-9]/g, "").slice(0, 4) || "NIC";
+  const used = /* @__PURE__ */ new Set();
+  for (const [i, item] of items.entries()) {
+    if (!item.product) continue;
+    const code = item.title.toUpperCase().replace(/[^A-Z0-9 ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 4) || "ITM";
+    let n = i + 1;
+    let sku = `${prefix}-${code}-${String(n).padStart(3, "0")}`;
+    while (used.has(sku)) sku = `${prefix}-${code}-${String(++n).padStart(3, "0")}`;
+    used.add(sku);
+    item.product.sku = sku;
+  }
+}
+function pastDate(now, index, count, random) {
+  const spread = Math.floor(index * 90 / Math.max(count, 1));
+  const days = 2 + spread + Math.floor(random() * 3);
+  const when = new Date(now.getTime() - days * 864e5);
+  const hour = 8 + Math.floor(random() * 10);
+  const minute = [0, 15, 30, 45][Math.floor(random() * 4)];
+  when.setUTCHours(hour, minute, 0, 0);
+  return when.toISOString().slice(0, 19);
+}
+function nonEmpty(value) {
+  return value !== void 0 && value !== "" ? value : void 0;
+}
+function slugify3(text2) {
+  return text2.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 100).replace(/-+$/g, "");
+}
+function uniqueKey(base, taken) {
+  let key = base;
+  for (let n = 2; taken.has(key); n++) key = `${base.slice(0, 96)}-${n}`;
+  taken.add(key);
+  return key;
+}
+function capitalize(text2) {
+  return text2 ? text2.charAt(0).toUpperCase() + text2.slice(1) : text2;
+}
+
+// src/nic-demo/media.ts
+import { createHash } from "node:crypto";
+import { promises as fs8 } from "node:fs";
+import path8 from "node:path";
+function isGplTarget(target) {
+  return target === "themeforest" || target === "wordpress.org";
+}
+async function chooseImageSource(requested, target, options = {}) {
+  const warnings = [];
+  const env = options.env ?? process.env;
+  if (requested === "none") return { source: null, warnings };
+  let source;
+  if (options.override) {
+    source = options.override;
+  } else if (requested === "auto") {
+    source = await resolveAuto(target, options.sourceOptions ?? {}, env, warnings);
+  } else {
+    source = createImageSource(requested, options.sourceOptions ?? {});
+  }
+  if (source.kind === "none") return { source: null, warnings };
+  if (isGplTarget(target) && source.kind === "stock") {
+    throw new ThemeseedError(
+      `Stock images are refused for target "${target}": Unsplash, Pexels and Picsum licences are not GPL-compatible`,
+      {
+        code: "STOCK_REFUSED",
+        hint: 'Set images.source to "ai" or "local" (a folder of your own images via THEMESEED_LOCAL_IMAGE_DIR) in the content request, or change target to "client" or "private" if the demo will not ship in a marketplace theme.'
+      }
+    );
+  }
+  if (!await source.isAvailable()) {
+    throw new ThemeseedError(`Image source "${source.kind}" is not usable`, {
+      code: "IMAGE_SOURCE_UNAVAILABLE",
+      hint: await source.unavailableReason()
+    });
+  }
+  return { source, warnings };
+}
+async function resolveAuto(target, options, env, warnings) {
+  if (hasAiKey(env)) return createImageSource("ai", options);
+  const localDir = options.local?.directory ?? env.THEMESEED_LOCAL_IMAGE_DIR;
+  if (localDir) {
+    const local = createImageSource("local", options);
+    if (await local.isAvailable()) return local;
+    warnings.push(
+      `images.source "auto": local folder skipped \u2014 ${await local.unavailableReason()}`
+    );
+  }
+  if (!isGplTarget(target)) {
+    if (hasStockKey(env)) return createImageSource("stock", options);
+  }
+  warnings.push(
+    `images.source "auto" found no usable source for target "${target}", so the demo has no images. Set an AI key (OPENAI_API_KEY, XAI_API_KEY, GOOGLE_API_KEY, FAL_KEY), point THEMESEED_LOCAL_IMAGE_DIR at your own images, or set images.source to "ai" for placeholders.`
+  );
+  return createImageSource("none");
+}
+async function defaultFetchBytes2(ref) {
+  if (ref.kind === "file") return new Uint8Array(await fs8.readFile(ref.location));
+  const response = await fetch(ref.location, {
+    headers: { "User-Agent": "themeseed" },
+    signal: AbortSignal.timeout(45e3)
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status} fetching ${ref.location}`);
+  return new Uint8Array(await response.arrayBuffer());
+}
+var MediaCollector = class {
+  constructor(siteName, fetchBytes = defaultFetchBytes2) {
+    this.siteName = siteName;
+    this.fetchBytes = fetchBytes;
+  }
+  siteName;
+  fetchBytes;
+  files = [];
+  credits = [];
+  warnings = [];
+  /** Images that were requested and did not make it in. */
+  skipped = 0;
+  total = 0;
+  byHash = /* @__PURE__ */ new Map();
+  names = /* @__PURE__ */ new Set();
+  /** Returns the `content-media/<name>` path, or undefined if the image was skipped. */
+  async add(ref, baseName) {
+    let bytes;
+    try {
+      bytes = await this.fetchBytes(ref);
+    } catch (err) {
+      return this.skip(
+        ref,
+        `could not be fetched (${err instanceof Error ? err.message : String(err)})`
+      );
+    }
+    const info = probeImage(bytes);
+    if (!info || !["png", "jpeg", "webp"].includes(info.format)) {
+      return this.skip(
+        ref,
+        `is not a jpg, png or webp image (${info?.format ?? "unreadable"})`
+      );
+    }
+    if (Math.max(info.width, info.height) > MEDIA_LIMITS.maxLongEdge) {
+      return this.skip(
+        ref,
+        `is ${info.width}x${info.height}, over the ${MEDIA_LIMITS.maxLongEdge}px long-edge limit \u2014 resize it first`
+      );
+    }
+    if (bytes.byteLength > MEDIA_LIMITS.maxFileBytes) {
+      return this.skip(
+        ref,
+        `is ${Math.ceil(bytes.byteLength / 1024)} KB, over the ${MEDIA_LIMITS.maxFileBytes / 1024} KB per-file limit \u2014 compress or resize it first`
+      );
+    }
+    const hash2 = createHash("sha256").update(bytes).digest("hex");
+    const existing = this.byHash.get(hash2);
+    if (existing) return `content-media/${existing}`;
+    if (this.total + bytes.byteLength > MEDIA_LIMITS.maxTotalBytes) {
+      return this.skip(
+        ref,
+        `would take content-media/ over the ${MEDIA_LIMITS.maxTotalBytes / 1048576} MB limit`
+      );
+    }
+    const name = this.uniqueName(baseName, extensionFor(info.format));
+    this.total += bytes.byteLength;
+    this.byHash.set(hash2, name);
+    this.files.push({ name, bytes });
+    this.credits.push(creditFor(ref, name, this.siteName));
+    return `content-media/${name}`;
+  }
+  skip(ref, why) {
+    this.skipped += 1;
+    this.warnings.push(`image ${describeRef(ref)} ${why}; the item imports without it`);
+    return void 0;
+  }
+  uniqueName(base, ext) {
+    const stem = slugForFile(base);
+    let name = `${stem}.${ext}`;
+    for (let n = 2; this.names.has(name); n++) name = `${stem}-${n}.${ext}`;
+    this.names.add(name);
+    return name;
+  }
+};
+function describeRef(ref) {
+  return ref.kind === "file" ? path8.basename(ref.location) : ref.location;
+}
+function slugForFile(base) {
+  const slug = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80).replace(/-+$/g, "");
+  return slug || "image";
+}
+function creditFor(ref, fileName, siteName) {
+  const entryPath = `demo/content-media/${fileName}`;
+  switch (ref.source) {
+    case "stock": {
+      const credit = ref.credit ?? "";
+      const provider = /unsplash/i.test(credit) || /picsum/i.test(credit) ? "Unsplash" : /pexels/i.test(credit) ? "Pexels" : /unsplash/i.test(ref.location) ? "Unsplash" : "Pexels";
+      return {
+        path: entryPath,
+        // Not SPDX-listed; LicenseRef- is the SPDX form for a custom licence.
+        license: `LicenseRef-${provider}`,
+        source: ref.kind === "url" ? ref.location : credit || provider,
+        author: credit || provider
+      };
+    }
+    case "ai":
+      return {
+        path: entryPath,
+        license: "GPL-2.0-or-later",
+        source: /^Procedurally generated/i.test(ref.credit ?? "") ? "Procedurally generated placeholder (themeseed)" : ref.credit ? `AI-generated (${ref.credit.replace(/^Image generated with /i, "")})` : "AI-generated",
+        author: siteName
+      };
+    default:
+      return {
+        path: entryPath,
+        license: "GPL-2.0-or-later",
+        source: `Author-owned image (${path8.basename(ref.location)})`,
+        author: siteName
+      };
+  }
+}
+
+// src/nic-demo/schema.ts
+var import__ = __toESM(require__(), 1);
+
+// src/nic-demo/schema/nic-content-1.schema.json
+var nic_content_1_schema_default = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://themeanax.com/schema/nic-content-1.schema.json",
+  title: "NIC demo content (nic-content/1)",
+  description: "demo/posts.json of a nic-demo/2 package. Written by ThemeSeed, read by NIC Core. Spec: docs/superpowers/specs/2026-10-13-demo-content-contract.md",
+  type: "object",
+  additionalProperties: false,
+  required: ["format", "generator", "theme", "items"],
+  properties: {
+    format: {
+      const: "nic-content/1"
+    },
+    generator: {
+      type: "string",
+      minLength: 1
+    },
+    theme: {
+      $ref: "#/$defs/slug"
+    },
+    terms: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        category: {
+          $ref: "#/$defs/termList"
+        },
+        post_tag: {
+          $ref: "#/$defs/termList"
+        },
+        nic_portfolio_category: {
+          $ref: "#/$defs/termList"
+        },
+        product_cat: {
+          $ref: "#/$defs/termList"
+        },
+        product_tag: {
+          $ref: "#/$defs/termList"
+        }
+      }
+    },
+    items: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        post: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/post"
+          }
+        },
+        team: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/team"
+          }
+        },
+        portfolio: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/portfolio"
+          }
+        },
+        testimonial: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/testimonial"
+          }
+        },
+        service: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/service"
+          }
+        },
+        product: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/product"
+          }
+        }
+      }
+    }
+  },
+  $defs: {
+    slug: {
+      type: "string",
+      pattern: "^[a-z0-9][a-z0-9-]{0,99}$"
+    },
+    media: {
+      type: "string",
+      pattern: "^content-media/[a-z0-9][a-z0-9-]*\\.(jpg|png|webp)$"
+    },
+    gallery: {
+      type: "array",
+      items: {
+        $ref: "#/$defs/media"
+      }
+    },
+    keys: {
+      type: "array",
+      items: {
+        $ref: "#/$defs/slug"
+      }
+    },
+    termList: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["key", "name"],
+        properties: {
+          key: {
+            $ref: "#/$defs/slug"
+          },
+          name: {
+            type: "string",
+            minLength: 1,
+            maxLength: 200
+          },
+          description: {
+            type: "string"
+          }
+        }
+      }
+    },
+    date: {
+      type: "string",
+      pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+    },
+    common: {
+      type: "object",
+      required: ["key", "title"],
+      properties: {
+        key: {
+          $ref: "#/$defs/slug"
+        },
+        title: {
+          type: "string",
+          minLength: 1,
+          maxLength: 200
+        },
+        content: {
+          type: "string"
+        },
+        excerpt: {
+          type: "string",
+          maxLength: 300
+        },
+        image: {
+          $ref: "#/$defs/media"
+        },
+        menu_order: {
+          type: "integer",
+          minimum: 0
+        }
+      }
+    },
+    post: {
+      type: "object",
+      allOf: [
+        {
+          $ref: "#/$defs/common"
+        }
+      ],
+      properties: {
+        key: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        image: true,
+        menu_order: true,
+        date: {
+          $ref: "#/$defs/date"
+        },
+        terms: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            category: {
+              $ref: "#/$defs/keys"
+            },
+            post_tag: {
+              $ref: "#/$defs/keys"
+            }
+          }
+        }
+      },
+      additionalProperties: false
+    },
+    team: {
+      type: "object",
+      allOf: [
+        {
+          $ref: "#/$defs/common"
+        }
+      ],
+      properties: {
+        key: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        image: true,
+        menu_order: true,
+        meta: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            nic_role: {
+              type: "string"
+            },
+            nic_linkedin: {
+              type: "string"
+            },
+            nic_twitter: {
+              type: "string"
+            },
+            nic_website: {
+              type: "string"
+            }
+          }
+        }
+      },
+      additionalProperties: false
+    },
+    portfolio: {
+      type: "object",
+      allOf: [
+        {
+          $ref: "#/$defs/common"
+        }
+      ],
+      properties: {
+        key: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        image: true,
+        menu_order: true,
+        gallery: {
+          $ref: "#/$defs/gallery"
+        },
+        meta: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            nic_client: {
+              type: "string"
+            },
+            nic_year: {
+              type: "string"
+            },
+            nic_project_url: {
+              type: "string"
+            }
+          }
+        },
+        terms: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            nic_portfolio_category: {
+              $ref: "#/$defs/keys"
+            }
+          }
+        }
+      },
+      additionalProperties: false
+    },
+    testimonial: {
+      type: "object",
+      allOf: [
+        {
+          $ref: "#/$defs/common"
+        }
+      ],
+      properties: {
+        key: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        image: true,
+        menu_order: true,
+        meta: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            nic_company: {
+              type: "string"
+            },
+            nic_rating: {
+              type: "string",
+              pattern: "^[0-5]$"
+            }
+          }
+        }
+      },
+      additionalProperties: false
+    },
+    service: {
+      type: "object",
+      allOf: [
+        {
+          $ref: "#/$defs/common"
+        }
+      ],
+      properties: {
+        key: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        image: true,
+        menu_order: true,
+        meta: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            nic_icon: {
+              type: "string"
+            }
+          }
+        }
+      },
+      additionalProperties: false
+    },
+    product: {
+      type: "object",
+      allOf: [
+        {
+          $ref: "#/$defs/common"
+        }
+      ],
+      required: ["product"],
+      properties: {
+        key: true,
+        title: true,
+        content: true,
+        excerpt: true,
+        image: true,
+        menu_order: true,
+        date: {
+          $ref: "#/$defs/date"
+        },
+        gallery: {
+          $ref: "#/$defs/gallery"
+        },
+        terms: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            product_cat: {
+              $ref: "#/$defs/keys"
+            },
+            product_tag: {
+              $ref: "#/$defs/keys"
+            }
+          }
+        },
+        product: {
+          type: "object",
+          additionalProperties: false,
+          required: ["type", "regular_price", "sku"],
+          properties: {
+            type: {
+              const: "simple"
+            },
+            regular_price: {
+              type: "string",
+              pattern: "^\\d+(\\.\\d{1,2})?$"
+            },
+            sale_price: {
+              type: "string",
+              pattern: "^(\\d+(\\.\\d{1,2})?)?$"
+            },
+            sku: {
+              type: "string",
+              pattern: "^[A-Z0-9-]{1,40}$"
+            },
+            stock_status: {
+              enum: ["instock", "outofstock"]
+            },
+            featured: {
+              type: "boolean"
+            }
+          }
+        }
+      },
+      additionalProperties: false
+    }
+  }
+};
+
+// src/nic-demo/schema/nic-content-request-1.schema.json
+var nic_content_request_1_schema_default = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://themeanax.com/schema/nic-content-request-1.schema.json",
+  title: "NIC demo content request (nic-content-request/1)",
+  description: "Written by nic-wp-theme, read by `themeseed nic-demo --request`. Spec: docs/superpowers/specs/2026-10-13-demo-content-contract.md",
+  type: "object",
+  additionalProperties: false,
+  required: ["format", "theme", "target", "site", "types"],
+  properties: {
+    format: { const: "nic-content-request/1" },
+    theme: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{0,99}$" },
+    target: { enum: ["themeforest", "wordpress.org", "client", "private"] },
+    site: {
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "topic"],
+      properties: {
+        name: { type: "string", minLength: 1 },
+        topic: { type: "string", minLength: 1 },
+        language: { type: "string", default: "en" },
+        tone: { type: "string" }
+      }
+    },
+    images: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        source: { enum: ["auto", "local", "ai", "stock", "none"], default: "auto" }
+      }
+    },
+    types: {
+      type: "object",
+      additionalProperties: false,
+      minProperties: 1,
+      properties: {
+        post: { $ref: "#/$defs/typeRequest" },
+        team: { $ref: "#/$defs/typeRequest" },
+        portfolio: { $ref: "#/$defs/typeRequest" },
+        testimonial: { $ref: "#/$defs/typeRequest" },
+        service: { $ref: "#/$defs/typeRequest" },
+        product: { $ref: "#/$defs/typeRequest" }
+      }
+    }
+  },
+  $defs: {
+    typeRequest: {
+      type: "object",
+      additionalProperties: false,
+      required: ["count"],
+      properties: {
+        count: { type: "integer", minimum: 0, maximum: 50 },
+        seeds: {
+          type: "array",
+          description: "The source design's own items. key, title and every non-empty field are kept verbatim.",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["key", "title"],
+            properties: {
+              key: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{0,99}$" },
+              title: { type: "string", minLength: 1 },
+              content: { type: "string" },
+              excerpt: { type: "string" },
+              meta: { type: "object", additionalProperties: { type: "string" } },
+              image_size: {
+                type: "array",
+                items: { type: "integer", minimum: 1 },
+                minItems: 2,
+                maxItems: 2
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+// src/nic-demo/schema.ts
+var Ctor = import__.default.default ?? import__.default;
+var requestValidator;
+var contentValidator;
+function compile(schema) {
+  return new Ctor({ allErrors: true, strict: false }).compile(schema);
+}
+function validateRequestSchema(doc) {
+  requestValidator ??= compile(nic_content_request_1_schema_default);
+  return requestValidator(doc) ? [] : formatErrors(requestValidator.errors);
+}
+function validateContentSchema(doc) {
+  contentValidator ??= compile(nic_content_1_schema_default);
+  return contentValidator(doc) ? [] : formatErrors(contentValidator.errors);
+}
+function formatErrors(errors) {
+  const lines = (errors ?? []).map((error51) => {
+    const where = error51.instancePath || "(root)";
+    const extra = error51.keyword === "additionalProperties" ? ` "${String(error51.params.additionalProperty)}"` : "";
+    return `${where}: ${error51.message ?? "invalid"}${extra}`;
+  });
+  return [...new Set(lines)];
+}
+
+// src/nic-demo/validate.ts
+var MEDIA_PREFIX = "content-media/";
+function validateNicContent(content, options = {}) {
+  const schemaProblems = validateContentSchema(content);
+  if (schemaProblems.length > 0) return schemaProblems.map((p) => `schema ${p}`);
+  const doc = content;
+  const problems = [];
+  const now = options.now ?? /* @__PURE__ */ new Date();
+  const termKeys = /* @__PURE__ */ new Map();
+  for (const [taxonomy, list] of Object.entries(doc.terms ?? {})) {
+    const seen = /* @__PURE__ */ new Set();
+    for (const term of list) {
+      if (seen.has(term.key))
+        problems.push(`terms.${taxonomy}: duplicate key "${term.key}"`);
+      seen.add(term.key);
+    }
+    termKeys.set(taxonomy, seen);
+  }
+  const referencedMedia = /* @__PURE__ */ new Set();
+  const skus = /* @__PURE__ */ new Set();
+  for (const type of NIC_TYPES) {
+    const items = doc.items[type] ?? [];
+    const keys = /* @__PURE__ */ new Set();
+    for (const item of items) {
+      const at = `items.${type}[${item.key}]`;
+      if (keys.has(item.key)) problems.push(`${at}: duplicate key within type "${type}"`);
+      keys.add(item.key);
+      if (item.date !== void 0 && !isPast(item.date, now)) {
+        problems.push(`${at}: date ${item.date} is not in the past`);
+      }
+      for (const [taxonomy, refs] of Object.entries(item.terms ?? {})) {
+        if (!TYPE_TAXONOMIES[type].includes(taxonomy)) {
+          problems.push(`${at}: taxonomy "${taxonomy}" is not allowed on ${type}`);
+        }
+        for (const ref of refs) {
+          if (!termKeys.get(taxonomy)?.has(ref)) {
+            problems.push(`${at}: term "${ref}" is not defined under terms.${taxonomy}`);
+          }
+        }
+      }
+      if (item.image) referencedMedia.add(item.image);
+      for (const g of item.gallery ?? []) referencedMedia.add(g);
+      for (const body of bodyMediaRefs(item)) referencedMedia.add(body);
+      problems.push(...contentProblems(at, item));
+      if (type === "product") problems.push(...productProblems(at, item, skus));
+    }
+  }
+  if (options.media) {
+    const present = new Map(
+      options.media.map((file2) => [`${MEDIA_PREFIX}${file2.name}`, file2])
+    );
+    let total = 0;
+    for (const [ref, file2] of present) {
+      total += file2.bytes.byteLength;
+      if (!MEDIA_LIMITS.namePattern.test(file2.name)) {
+        problems.push(`${ref}: file name must match ${MEDIA_LIMITS.namePattern}`);
+      }
+      if (file2.bytes.byteLength > MEDIA_LIMITS.maxFileBytes) {
+        problems.push(
+          `${ref}: ${Math.ceil(file2.bytes.byteLength / 1024)} KB exceeds the ${MEDIA_LIMITS.maxFileBytes / 1024} KB per-file limit`
+        );
+      }
+      const info = probeImage(file2.bytes);
+      if (!info || !["png", "jpeg", "webp"].includes(info.format)) {
+        problems.push(`${ref}: not a readable jpg, png or webp image`);
+      } else if (Math.max(info.width, info.height) > MEDIA_LIMITS.maxLongEdge) {
+        problems.push(
+          `${ref}: ${info.width}x${info.height} exceeds ${MEDIA_LIMITS.maxLongEdge}px on the long edge`
+        );
+      }
+    }
+    if (total > MEDIA_LIMITS.maxTotalBytes) {
+      problems.push(
+        `content-media/: ${(total / 1048576).toFixed(1)} MB exceeds the ${MEDIA_LIMITS.maxTotalBytes / 1048576} MB folder limit`
+      );
+    }
+    for (const ref of referencedMedia) {
+      if (!present.has(ref))
+        problems.push(`${ref}: referenced but missing from content-media/`);
+    }
+    for (const ref of present.keys()) {
+      if (!referencedMedia.has(ref))
+        problems.push(`${ref}: in content-media/ but never referenced`);
+    }
+    if (options.credits) {
+      problems.push(...creditProblems(options.credits, [...present.keys()]));
+    }
+  }
+  return problems;
+}
+function creditProblems(credits, mediaRefs) {
+  const problems = [];
+  const covered = /* @__PURE__ */ new Map();
+  for (const asset of credits.assets) {
+    covered.set(asset.path, (covered.get(asset.path) ?? 0) + 1);
+    if (!asset.license || !asset.source || !asset.author) {
+      problems.push(`credits: ${asset.path} needs license, source and author`);
+    }
+  }
+  for (const ref of mediaRefs) {
+    const expected = `demo/${ref}`;
+    const count = covered.get(expected) ?? 0;
+    if (count === 0) problems.push(`credits: no entry for ${expected}`);
+    if (count > 1)
+      problems.push(`credits: ${expected} has ${count} entries, expected one`);
+  }
+  const known = new Set(mediaRefs.map((ref) => `demo/${ref}`));
+  for (const path13 of covered.keys()) {
+    if (!known.has(path13))
+      problems.push(`credits: ${path13} does not match any file in content-media/`);
+  }
+  return problems;
+}
+function productProblems(at, item, skus) {
+  const problems = [];
+  const product = item.product;
+  if (!product) return [`${at}: missing product block`];
+  const regular = Number(product.regular_price);
+  if (!(regular > 0)) problems.push(`${at}: regular_price must be greater than zero`);
+  if (product.sale_price !== void 0 && product.sale_price !== "") {
+    if (!(Number(product.sale_price) < regular)) {
+      problems.push(`${at}: sale_price must be lower than regular_price`);
+    }
+  }
+  if (skus.has(product.sku)) problems.push(`${at}: duplicate sku "${product.sku}"`);
+  skus.add(product.sku);
+  return problems;
+}
+function contentProblems(at, item) {
+  const html = item.content ?? "";
+  const problems = [];
+  if (/<script\b/i.test(html)) problems.push(`${at}: content must not contain <script>`);
+  for (const match of html.matchAll(/<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi)) {
+    const src = match[1];
+    if (!src.startsWith(MEDIA_PREFIX)) {
+      problems.push(`${at}: body image "${src}" must be a content-media/ path`);
+    }
+  }
+  return problems;
+}
+function bodyMediaRefs(item) {
+  const refs = [];
+  for (const match of (item.content ?? "").matchAll(
+    /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi
+  )) {
+    if (match[1].startsWith(MEDIA_PREFIX)) refs.push(match[1]);
+  }
+  return refs;
+}
+function isPast(date5, now) {
+  const parsed = Date.parse(`${date5}Z`);
+  return Number.isFinite(parsed) && parsed < now.getTime();
+}
+
+// src/nic-demo/write.ts
+import { promises as fs9 } from "node:fs";
+import path9 from "node:path";
+async function writeNicPackage(args) {
+  const { outDir } = args;
+  await fs9.mkdir(outDir, { recursive: true });
+  const stamp = `${process.pid}-${Date.now()}`;
+  const stagedPosts = path9.join(outDir, `.posts.json.${stamp}.tmp`);
+  const stagedMedia = path9.join(outDir, `.content-media.${stamp}.tmp`);
+  try {
+    await fs9.writeFile(stagedPosts, `${JSON.stringify(args.content, null, 2)}
+`);
+    await fs9.mkdir(stagedMedia, { recursive: true });
+    for (const file2 of args.media)
+      await fs9.writeFile(path9.join(stagedMedia, file2.name), file2.bytes);
+    await fs9.rm(path9.join(outDir, "content-media"), { recursive: true, force: true });
+    await fs9.rename(stagedMedia, path9.join(outDir, "content-media"));
+    await fs9.rename(stagedPosts, path9.join(outDir, "posts.json"));
+  } finally {
+    await fs9.rm(stagedPosts, { force: true });
+    await fs9.rm(stagedMedia, { recursive: true, force: true });
+  }
+  await fs9.mkdir(path9.dirname(args.creditsPath), { recursive: true });
+  const stagedCredits = `${args.creditsPath}.${stamp}.tmp`;
+  try {
+    await fs9.writeFile(stagedCredits, `${JSON.stringify(args.credits, null, 2)}
+`);
+    await fs9.rename(stagedCredits, args.creditsPath);
+  } finally {
+    await fs9.rm(stagedCredits, { force: true });
+  }
+  return ["posts.json", ...args.media.map((file2) => `content-media/${file2.name}`).sort()];
+}
+
+// src/nic-demo/index.ts
+var NicDemoUsageError = class extends ThemeseedError {
+  constructor(message, hint) {
+    super(message, { code: "NIC_DEMO_USAGE", ...hint ? { hint } : {} });
+    this.name = "NicDemoUsageError";
+  }
+};
+async function exportNicDemo(options) {
+  const request = await loadRequest(options.request);
+  const outDir = path10.resolve(options.outDir);
+  const creditsPath = path10.resolve(options.creditsPath);
+  if (creditsPath === outDir || creditsPath.startsWith(outDir + path10.sep)) {
+    throw new NicDemoUsageError(
+      `--credits (${options.creditsPath}) is inside --out (${options.outDir}); it would ship in the theme zip`,
+      "Write credits next to the content request, outside the theme folder."
+    );
+  }
+  const warnings = [];
+  const choice = await chooseImageSource(
+    request.images?.source ?? "auto",
+    request.target,
+    {
+      ...options.imageSource ? { override: options.imageSource } : {},
+      ...options.imageSourceOptions ? { sourceOptions: options.imageSourceOptions } : {},
+      ...options.env ? { env: options.env } : {}
+    }
+  );
+  warnings.push(...choice.warnings);
+  const media = new MediaCollector(request.site.name, options.fetchBytes);
+  const version2 = await readVersion();
+  const generated = await generateNicContent({
+    request,
+    media,
+    imageSource: choice.source,
+    generator: `themeseed@${version2}`,
+    ...options.engine ? { engine: options.engine } : {},
+    ...options.now ? { now: options.now } : {},
+    ...options.onProgress ? { onProgress: options.onProgress } : {}
+  });
+  warnings.push(...generated.warnings);
+  if (choice.source && media.files.length === 0 && media.skipped > 0) {
+    throw new ThemeseedError(
+      `Every image was rejected (${media.skipped}); refusing to write a demo with no pictures`,
+      {
+        code: "NO_USABLE_IMAGES",
+        hint: `Images must be jpg/png/webp, at most 2000px on the long edge and 500 KB each. First problem: ${media.warnings[0] ?? "see warnings"}. Resize the source images or use another image source.`
+      }
+    );
+  }
+  const credits = {
+    assets: [...media.credits].sort((a, b) => a.path.localeCompare(b.path))
+  };
+  const problems = validateNicContent(generated.content, {
+    media: media.files,
+    credits,
+    ...options.now ? { now: options.now } : {}
+  });
+  if (problems.length > 0) {
+    throw new ThemeseedError(
+      `Refusing to write: the generated package is invalid (${problems.length} problem${problems.length === 1 ? "" : "s"})`,
+      {
+        code: "INVALID_OUTPUT",
+        hint: problems.slice(0, 8).join("; ") + (problems.length > 8 ? `; \u2026and ${problems.length - 8} more` : "") + ". If a seed caused it, fix that seed in the content request."
+      }
+    );
+  }
+  const written = await writeNicPackage({
+    outDir,
+    creditsPath,
+    content: generated.content,
+    media: media.files,
+    credits
+  });
+  const counts = {};
+  for (const type of NIC_TYPES) {
+    const n = generated.counts[type];
+    if (n !== void 0) counts[type] = n;
+  }
+  return { ok: true, written, counts, credits: options.creditsPath, warnings };
+}
+async function loadRequest(source) {
+  let doc = source;
+  if (typeof source === "string") {
+    let raw;
+    try {
+      raw = await fs10.readFile(source, "utf8");
+    } catch (err) {
+      throw new NicDemoUsageError(
+        `Cannot read the content request ${source}: ${err instanceof Error ? err.message : String(err)}`,
+        "Pass --request <path to a nic-content-request/1 JSON file>."
+      );
+    }
+    try {
+      doc = JSON.parse(raw);
+    } catch (err) {
+      throw new NicDemoUsageError(
+        `${source} is not valid JSON: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+  const problems = validateRequestSchema(doc);
+  if (problems.length > 0) {
+    throw new NicDemoUsageError(
+      `The content request is not a valid nic-content-request/1 document:
+  - ${problems.join("\n  - ")}`,
+      "Fix the request (schema: nic-content-request-1.schema.json)."
+    );
+  }
+  const request = doc;
+  for (const type of NIC_TYPES) {
+    const keys = /* @__PURE__ */ new Set();
+    for (const seed of request.types[type]?.seeds ?? []) {
+      if (keys.has(seed.key)) {
+        throw new NicDemoUsageError(
+          `types.${type}: seed key "${seed.key}" appears twice`,
+          "Seed keys are the import idempotency key and must be unique per type."
+        );
+      }
+      keys.add(seed.key);
+    }
+  }
+  return request;
+}
+
 // src/providers/ghost/client.ts
 import crypto from "node:crypto";
 import { basename } from "node:path";
@@ -34759,8 +37297,8 @@ var GhostClient = class {
       ...extra
     };
   }
-  async request(method, path10, init = {}) {
-    const url2 = new URL(`${this.baseUrl}/ghost/api/admin${path10}`);
+  async request(method, path13, init = {}) {
+    const url2 = new URL(`${this.baseUrl}/ghost/api/admin${path13}`);
     for (const [key, value] of Object.entries(init.query ?? {})) {
       if (value !== void 0) url2.searchParams.set(key, String(value));
     }
@@ -34778,7 +37316,7 @@ var GhostClient = class {
     } catch (err) {
       if (err.name === "AbortError") {
         throw new ProviderError(
-          `Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path10}`,
+          `Ghost request timed out after ${this.timeoutMs}ms: ${method} ${path13}`,
           {
             code: "GHOST_TIMEOUT",
             hint: "Is the site reachable and awake?"
@@ -34793,7 +37331,7 @@ var GhostClient = class {
     } finally {
       clearTimeout(timer);
     }
-    return this.parse(response, `${method} ${path10}`);
+    return this.parse(response, `${method} ${path13}`);
   }
   async parse(response, context) {
     const text2 = await response.text();
@@ -34998,8 +37536,8 @@ function hintForStatus(status) {
 }
 
 // src/providers/ghost/posts.ts
-import { promises as fs8 } from "node:fs";
-import path8 from "node:path";
+import { promises as fs11 } from "node:fs";
+import path11 from "node:path";
 async function publishPosts(client, items, options = {}) {
   const results = [];
   const uploadCache = /* @__PURE__ */ new Map();
@@ -35207,7 +37745,7 @@ async function uploadImageRef(client, ref, maxRetries) {
   };
 }
 async function readLocalImage(location) {
-  const buffer = await fs8.readFile(location);
+  const buffer = await fs11.readFile(location);
   return new Uint8Array(buffer);
 }
 async function downloadImage(url2) {
@@ -35225,7 +37763,7 @@ async function downloadImage(url2) {
   }
 }
 function filenameFor(ref, format) {
-  const base = ref.kind === "file" ? path8.basename(ref.location).replace(/\.\w+$/, "") : (new URL(ref.location).pathname.split("/").pop() ?? "image").replace(
+  const base = ref.kind === "file" ? path11.basename(ref.location).replace(/\.\w+$/, "") : (new URL(ref.location).pathname.split("/").pop() ?? "image").replace(
     /\.\w+$/,
     ""
   );
@@ -35350,9 +37888,9 @@ async function publishTags(client, items, options = {}) {
 }
 
 // src/providers/ghost/theme/local-theme-source.ts
-import { promises as fs9 } from "node:fs";
+import { promises as fs12 } from "node:fs";
 import os3 from "node:os";
-import path9 from "node:path";
+import path12 from "node:path";
 
 // src/providers/ghost/theme/signals.ts
 function defaultCapabilities(themeName) {
@@ -35545,7 +38083,7 @@ var LocalThemeSource = class {
   // -- directory resolution -------------------------------------------------
   async resolveThemeDir() {
     for (const base of this.candidateThemeDirs()) {
-      const candidate = path9.join(base, this.options.themeName);
+      const candidate = path12.join(base, this.options.themeName);
       if (await isDirectory(candidate)) {
         return candidate;
       }
@@ -35562,16 +38100,16 @@ var LocalThemeSource = class {
     );
     return [
       ...explicit,
-      path9.join(process.cwd(), "content", "themes"),
-      path9.join(process.cwd(), "themes"),
+      path12.join(process.cwd(), "content", "themes"),
+      path12.join(process.cwd(), "themes"),
       "/var/lib/ghost/content/themes",
-      path9.join(home, "ghost", "content", "themes")
+      path12.join(home, "ghost", "content", "themes")
     ];
   }
   // -- readers --------------------------------------------------------------
   async readPackage(dir, evidence, capabilities) {
     try {
-      const raw = await fs9.readFile(path9.join(dir, "package.json"), "utf8");
+      const raw = await fs12.readFile(path12.join(dir, "package.json"), "utf8");
       const pkg = JSON.parse(raw);
       if (pkg.version) capabilities.themeVersion = pkg.version;
       if (pkg.description) capabilities.description = pkg.description;
@@ -35595,13 +38133,13 @@ var LocalThemeSource = class {
     for (const file2 of files) {
       let text2;
       try {
-        text2 = await fs9.readFile(file2, "utf8");
+        text2 = await fs12.readFile(file2, "utf8");
       } catch {
         continue;
       }
       combined += `
 ${text2}`;
-      const base = path9.basename(file2);
+      const base = path12.basename(file2);
       if (base === "post.hbs") post = text2;
       if (base === "index.hbs") index = text2;
     }
@@ -35614,7 +38152,7 @@ ${text2}`;
       if (/cards(\.min)?\.css$/.test(file2)) continue;
       try {
         css += `
-${await fs9.readFile(file2, "utf8")}`;
+${await fs12.readFile(file2, "utf8")}`;
       } catch {
         continue;
       }
@@ -35712,7 +38250,7 @@ function cardAssetsEnabled(value) {
 }
 async function isDirectory(target) {
   try {
-    return (await fs9.stat(target)).isDirectory();
+    return (await fs12.stat(target)).isDirectory();
   } catch {
     return false;
   }
@@ -35723,13 +38261,13 @@ async function collectFiles(root, extension, maxDepth) {
     if (depth > maxDepth) return;
     let entries;
     try {
-      entries = await fs9.readdir(dir, { withFileTypes: true });
+      entries = await fs12.readdir(dir, { withFileTypes: true });
     } catch {
       return;
     }
     for (const entry of entries) {
       if (entry.name.startsWith(".") || entry.name === "node_modules") continue;
-      const full = path9.join(dir, entry.name);
+      const full = path12.join(dir, entry.name);
       if (entry.isDirectory()) await walk(full, depth + 1);
       else if (entry.isFile() && entry.name.endsWith(extension)) found.push(full);
     }
@@ -36477,13 +39015,15 @@ function registerContentTools(server) {
     "export_content",
     {
       title: "Export demo content as an importable file",
-      description: 'Generates the same content generate_posts would, but writes it to disk as an import file instead of publishing it live. Needs no site and no credentials. platform "ghost" writes content-export.zip with the images bundled inside; platform "wordpress" writes demo-content.xml (WXR) whose images the WordPress importer downloads from their source URLs at import time \u2014 so for wordpress use a URL-backed imageSource (stock) or none, never local/ai. Use this to ship demo content inside a theme package; use generate_posts when you have a live site to fill. Pass `pages` for static pages \u2014 set needsBody false where a theme template renders the page itself, or suppliedBody to use markup you already have (for wordpress, suppliedBody should be serialized Gutenberg block markup).',
+      description: 'Generates the same content generate_posts would, but writes it to disk as an import file instead of publishing it live. Needs no site and no credentials. platform "ghost" writes content-export.zip with the images bundled inside; platform "wordpress" writes demo-content.xml (WXR) whose images the WordPress importer downloads from their source URLs at import time \u2014 so for wordpress use a URL-backed imageSource (stock) or none, never local/ai. Use this to ship demo content inside a theme package; use generate_posts when you have a live site to fill. Pass `pages` for static pages \u2014 set needsBody false where a theme template renders the page itself, or suppliedBody to use markup you already have (for wordpress, suppliedBody should be serialized Gutenberg block markup). platform "nic-demo" writes the NIC Core demo package (posts.json + content-media/) from a content request \u2014 pass `request` and `credits`; it ignores topic/count/pages.',
       inputSchema: {
-        platform: external_exports.enum(["ghost", "wordpress"]).default("ghost").describe(
-          "Which CMS the file targets: ghost \u2192 content-export.zip, wordpress \u2192 demo-content.xml (WXR 1.2)."
+        platform: external_exports.enum(["ghost", "wordpress", "nic-demo"]).default("ghost").describe(
+          "Which CMS the file targets: ghost \u2192 content-export.zip, wordpress \u2192 demo-content.xml (WXR 1.2), nic-demo \u2192 posts.json + content-media/ for a NIC Core theme (needs `request` and `credits`; outDir is the theme's demo/ folder)."
         ),
         topic: external_exports.string().optional().describe('Subject of the publication, e.g. "SaaS productivity blog".'),
-        outDir: external_exports.string().describe("Directory to write content-export.zip into. Created if missing."),
+        outDir: external_exports.string().describe(
+          `Directory to write into. Created if missing. For platform "nic-demo" this is the theme's demo/ folder; only posts.json and content-media/ are replaced there.`
+        ),
         count: external_exports.number().int().min(1).max(50).default(12).describe("How many posts to create."),
         pages: external_exports.array(
           external_exports.object({
@@ -36500,11 +39040,54 @@ function registerContentTools(server) {
         imageSource: external_exports.enum(["auto", "local", "stock", "ai", "none"]).default("auto").describe("Same meaning as in generate_posts. Images are bundled into the archive."),
         titles: external_exports.array(external_exports.string()).optional().describe("Your own post titles."),
         authorName: external_exports.string().optional(),
-        includeVideo: external_exports.boolean().default(true)
+        includeVideo: external_exports.boolean().default(true),
+        request: external_exports.union([external_exports.string(), external_exports.record(external_exports.string(), external_exports.unknown())]).optional().describe(
+          'platform "nic-demo" only: a nic-content-request/1 document, or the path to one. Seeds are kept verbatim; stock images are refused for themeforest/wordpress.org targets.'
+        ),
+        credits: external_exports.string().optional().describe(
+          'platform "nic-demo" only: where to write the image credits JSON. Must be outside outDir.'
+        )
       }
     },
     async (args) => {
       loadUserEnv();
+      if (args.platform === "nic-demo") {
+        if (!args.request || !args.credits) {
+          throw new ThemeseedError('platform "nic-demo" needs both `request` and `credits`', {
+            code: "NIC_DEMO_USAGE",
+            hint: "Pass request (a nic-content-request/1 object or file path) and credits (output path)."
+          });
+        }
+        let report2;
+        try {
+          report2 = await exportNicDemo({
+            request: args.request,
+            outDir: args.outDir,
+            creditsPath: args.credits
+          });
+        } catch (err) {
+          if (err instanceof ThemeseedError) {
+            return {
+              content: [{ type: "text", text: describeError(err) }],
+              isError: true,
+              structuredContent: {
+                ok: false,
+                code: err.code,
+                error: err.message,
+                ...err.hint ? { hint: err.hint } : {}
+              }
+            };
+          }
+          throw err;
+        }
+        const counts = Object.entries(report2.counts).map(([type, n]) => `${type} ${n}`).join(", ");
+        const lines2 = [
+          `Wrote ${args.outDir}/posts.json and ${report2.written.length - 1} image(s) (${counts})`,
+          `  credits: ${report2.credits}`,
+          ...report2.warnings.map((w) => `  warning: ${w}`)
+        ];
+        return text(lines2.join("\n"), { ...report2, platform: "nic-demo" });
+      }
       const topic = args.topic?.trim() || await askForTopic(server);
       const site = args.navigation || args.secondaryNavigation ? {
         ...args.navigation ? { navigation: args.navigation } : {},

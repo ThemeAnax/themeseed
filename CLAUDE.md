@@ -73,6 +73,10 @@ Rules for implementers:
 
 Ghost theme analysis merges two strategies (`src/providers/ghost/theme/`): local `.hbs` sources off disk (confidence 0.9, needs `themesDir`) and the rendered site plus its public stylesheet (0.6). Higher confidence wins contested fields. The stylesheet trick matters — `kg-*` card selectors answer the gallery/embed/bookmark/wide-image questions with real evidence. There is no remote alternative: `GET /ghost/api/admin/themes/` returns 403 for API-token auth on every Ghost version (staff session only), so the active theme name comes from `GET /ghost/api/admin/settings/` (`active_theme`).
 
+### `nic-demo` (NIC Core demo package)
+
+`src/nic-demo/` is a file export like the WordPress one, but with its own contract (mcphub repo, `docs/superpowers/specs/2026-10-13-demo-content-contract.md`): request in, `posts.json` + `content-media/` + credits out. `schema/` holds **vendored** copies of the canonical mcphub schemas — never edit them here. Output is validated (`validate.ts`) before `write.ts` touches disk, and only `posts.json` and `content-media/` inside `--out` are ever replaced. Exit codes are part of the contract: 0 written, 1 refused, 2 usage.
+
 ### Swappable pieces
 
 - **`ContentEngine`** (`src/content/engine.ts`) — default `TemplateContentEngine` is deterministic and offline by design: composes paragraphs from rotating decks of claims/elaborations/examples/caveats, so a 1400-word article does not visibly repeat. Better prose needs no code change — pass `titles` into the generator (an MCP host's model writes them) or implement `ContentEngine`.

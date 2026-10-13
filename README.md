@@ -210,6 +210,36 @@ history and in `ps` output.
 | `--seed <n>`                  | topic hash | Seed the generator for reproducible output                  |
 | `-y, --yes`                   | off        | Skip the confirmation prompt                                |
 
+### NIC Core demo content (`nic-demo`)
+
+```bash
+themeseed nic-demo --request <file> --out <theme>/demo --credits <file> [--json]
+```
+
+Writes the demo package a NIC Core theme imports (`posts.json` in the `nic-content/1` format plus
+`content-media/`) from a `nic-content-request/1` file that lists the post types, counts and the
+source design's own items ("seeds"). Seeds keep their key, title and every non-empty field
+byte for byte; ThemeSeed fills the empty fields and generates the remaining items, terms,
+dates, products and images.
+
+| Flag               | Meaning                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| `--request <file>` | The content request                                                                     |
+| `--out <dir>`      | The theme's `demo/` folder. Only `posts.json` and `content-media/` are replaced         |
+| `--credits <file>` | Where image credits are written. Must be outside `--out`, so they never ship in the zip |
+| `--json`           | Print one report object on stdout (`{ ok, written, counts, credits, warnings }`)        |
+
+Exit codes: `0` written, `1` refused or failed (the message names the fix), `2` usage or an
+invalid request. For targets `themeforest` and `wordpress.org` stock images (Unsplash, Pexels,
+Picsum) are refused, because the images ship inside a GPL product: use `ai`, or `local` for a
+folder of your own images. `client` and `private` targets may use stock. Every file is checked
+against the contract (jpg/png/webp, at most 2000px and 500 KB each, 25 MB in total) and an image
+that breaks a limit is skipped with a warning rather than shipped; ThemeSeed does not resize.
+The same operation is the `export_content` MCP tool with `platform: "nic-demo"`, `request` and
+`credits`. The contract lives in the mcphub repo
+(`docs/superpowers/specs/2026-10-13-demo-content-contract.md`); the schemas under
+`src/nic-demo/schema/` are vendored copies of the canonical ones.
+
 ## MCP tools
 
 Run `themeseed install` to register the server, or add it by hand:

@@ -1,6 +1,6 @@
 {
   "name": "@indianic/themeseed",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Seed realistic demo content into any CMS so you can preview a theme with real-looking articles, images, galleries and video — instead of an empty install. MCP server + CLI. Ghost supported today; WordPress, Joomla, Drupal and Magento planned.",
   "keywords": [
     "mcp",
@@ -64,6 +64,7 @@
   "dependencies": {
     "@clack/prompts": "^1.7.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "ajv": "^8.20.0",
     "commander": "^15.0.0",
     "dotenv": "^17.4.2",
     "picocolors": "^1.1.1",
