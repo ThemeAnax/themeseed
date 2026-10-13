@@ -6,3 +6,7 @@ plugin/
 coverage/
 node_modules/
 package-lock.json
+
+# Vendored byte-for-byte from the mcphub repo (see src/nic-demo/schema/README.md); reformatting would hide drift.
+src/nic-demo/schema/*.json
+test/unit/fixtures/
