@@ -344,7 +344,11 @@ function registerContentTools(server: McpServer): void {
         'renders the page itself, or suppliedBody to use markup you already have (for ' +
         'wordpress, suppliedBody should be serialized Gutenberg block markup). ' +
         'platform "nic-demo" writes the NIC Core demo package (posts.json + content-media/) from ' +
-        'a content request — pass `request` and `credits`; it ignores topic/count/pages.',
+        'a content request — pass `request` and `credits`; it ignores topic/count/pages. ' +
+        'Product seeds (`types.product.seeds[]`) may carry a WooCommerce `product` block ' +
+        '(badge, rating, review_count, attributes) and `terms` (product_cat/product_tag slugs): ' +
+        'they are kept verbatim and extra products are generated in the same style ' +
+        '(attribute names and shapes, price range, categories, topic-named titles).',
       inputSchema: {
         platform: z
           .enum(['ghost', 'wordpress', 'nic-demo'])
@@ -364,7 +368,13 @@ function registerContentTools(server: McpServer): void {
             'Directory to write into. Created if missing. For platform "nic-demo" this is the ' +
               "theme's demo/ folder; only posts.json and content-media/ are replaced there."
           ),
-        count: z.number().int().min(1).max(50).default(12).describe('How many posts to create.'),
+        count: z
+          .number()
+          .int()
+          .min(1)
+          .max(50)
+          .default(12)
+          .describe('How many posts to create.'),
         pages: z
           .array(
             z.object({
@@ -388,7 +398,9 @@ function registerContentTools(server: McpServer): void {
         navigation: z
           .array(z.object({ label: z.string(), url: z.string() }))
           .optional()
-          .describe('Primary menu. Imported as a site setting, so the theme header fills in.'),
+          .describe(
+            'Primary menu. Imported as a site setting, so the theme header fills in.'
+          ),
         secondaryNavigation: z
           .array(z.object({ label: z.string(), url: z.string() }))
           .optional()
@@ -396,7 +408,9 @@ function registerContentTools(server: McpServer): void {
         imageSource: z
           .enum(['auto', 'local', 'stock', 'ai', 'none'])
           .default('auto')
-          .describe('Same meaning as in generate_posts. Images are bundled into the archive.'),
+          .describe(
+            'Same meaning as in generate_posts. Images are bundled into the archive.'
+          ),
         titles: z.array(z.string()).optional().describe('Your own post titles.'),
         authorName: z.string().optional(),
         includeVideo: z.boolean().default(true),
@@ -420,10 +434,13 @@ function registerContentTools(server: McpServer): void {
 
       if (args.platform === 'nic-demo') {
         if (!args.request || !args.credits) {
-          throw new ThemeseedError('platform "nic-demo" needs both `request` and `credits`', {
-            code: 'NIC_DEMO_USAGE',
-            hint: 'Pass request (a nic-content-request/1 object or file path) and credits (output path).',
-          });
+          throw new ThemeseedError(
+            'platform "nic-demo" needs both `request` and `credits`',
+            {
+              code: 'NIC_DEMO_USAGE',
+              hint: 'Pass request (a nic-content-request/1 object or file path) and credits (output path).',
+            }
+          );
         }
         let report;
         try {
@@ -486,7 +503,9 @@ function registerContentTools(server: McpServer): void {
       const imagesLine =
         args.platform === 'wordpress'
           ? `  images:  ${report.stats.images} referenced (the importer downloads them)${
-              report.stats.failedImages ? `, ${report.stats.failedImages} could not travel` : ''
+              report.stats.failedImages
+                ? `, ${report.stats.failedImages} could not travel`
+                : ''
             }`
           : `  images:  ${report.stats.images} bundled${
               report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''

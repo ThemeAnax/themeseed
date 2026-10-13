@@ -380,6 +380,44 @@
             },
             "featured": {
               "type": "boolean"
+            },
+            "badge": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "rating": {
+              "type": "string",
+              "pattern": "^[0-5](\\.\\d)?$"
+            },
+            "review_count": {
+              "type": "string",
+              "pattern": "^\\d{1,7}$"
+            },
+            "attributes": {
+              "type": "array",
+              "maxItems": 12,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "values"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "values": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    }
+                  }
+                }
+              }
             }
           }
         }

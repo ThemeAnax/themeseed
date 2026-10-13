@@ -638,3 +638,146 @@ describe('CLI', () => {
     expect(report.credits).toBe(path.join(work, 'w', 'c.json'));
   }, 30_000);
 });
+
+describe('product seeds', () => {
+  const lagoon = {
+    key: 'lagoon-villa-escape',
+    title: 'Lagoon Villa Escape',
+    terms: { product_cat: ['beach'] },
+    product: {
+      type: 'simple' as const,
+      regular_price: '2890',
+      badge: 'Bestseller',
+      rating: '4.9',
+      review_count: '212',
+      attributes: [
+        { name: 'Location', values: ['Maldives'] },
+        { name: 'Duration', values: ['6 days'] },
+        { name: 'Route', values: ['D1 | Malé', 'D2', 'D4', 'D6 | Baa Atoll'] },
+        { name: 'Includes', values: ['Flights', 'Overwater villa', 'Half board'] },
+      ],
+    },
+  };
+  const alps = {
+    key: 'alpine-lodge-week',
+    title: 'Alpine Lodge Week',
+    terms: { product_cat: ['mountain'], product_tag: ['family'] },
+    product: {
+      type: 'simple' as const,
+      regular_price: '1990',
+      sale_price: '1790',
+      rating: '4.7',
+      review_count: '96',
+      attributes: [
+        { name: 'Location', values: ['Austria'] },
+        { name: 'Duration', values: ['7 days'] },
+        { name: 'Route', values: ['D1 | Innsbruck', 'D3', 'D5 | Kitzbühel', 'D7'] },
+        { name: 'Includes', values: ['Flights', 'Lodge stay', 'Ski pass', 'Half board'] },
+      ],
+    },
+  };
+
+  function travelRequest(count: number, seeds: unknown[]): NicContentRequest {
+    return {
+      format: 'nic-content-request/1',
+      theme: 'sunmile-holidays',
+      target: 'private',
+      site: { name: 'Sunmile', topic: 'travel packages — tailor-made holidays' },
+      images: { source: 'none' },
+      types: { product: { count, seeds: seeds as never } },
+    };
+  }
+
+  it('is schema-valid and keeps seeds verbatim, creating their terms', async () => {
+    const request = travelRequest(2, [lagoon]);
+    expect(validateRequestSchema(request)).toEqual([]);
+    await run(request, { imageSource: undefined });
+    const { content } = await readOutput();
+    expect(validateContentSchema(content)).toEqual([]);
+    const seed = content.items.product![0]!;
+    expect(seed.key).toBe('lagoon-villa-escape');
+    expect(seed.terms?.product_cat).toEqual(['beach']);
+    expect(seed.product).toMatchObject({
+      type: 'simple',
+      regular_price: '2890',
+      badge: 'Bestseller',
+      rating: '4.9',
+      review_count: '212',
+      attributes: lagoon.product.attributes,
+    });
+    expect(seed.product!.sku).toMatch(/^[A-Z0-9-]+$/);
+    expect(content.terms?.product_cat).toEqual([{ key: 'beach', name: 'Beach' }]);
+  });
+
+  it('generates extras in the seeds style: attributes, price range, categories, badges', async () => {
+    await run(travelRequest(8, [lagoon, alps]), { imageSource: undefined });
+    const { content } = await readOutput();
+    const products = content.items.product!;
+    expect(products).toHaveLength(8);
+    const cats = new Set(['beach', 'mountain']);
+    expect(content.terms?.product_cat?.map((t) => t.key).sort()).toEqual([
+      'beach',
+      'mountain',
+    ]);
+    for (const extra of products.slice(2)) {
+      const p = extra.product!;
+      expect(p.attributes!.map((a) => a.name)).toEqual([
+        'Location',
+        'Duration',
+        'Route',
+        'Includes',
+      ]);
+      expect(p.regular_price).toMatch(/^\d+$/); // whole numbers, like the seeds
+      const price = Number(p.regular_price);
+      expect(price).toBeGreaterThanOrEqual(1990 * 0.7);
+      expect(price).toBeLessThanOrEqual(2890 * 1.3);
+      expect(price % 10).toBe(0);
+      expect(cats.has(extra.terms!.product_cat![0]!)).toBe(true);
+      if (p.badge) expect(p.badge).toBe('Bestseller');
+      expect(Number(p.rating)).toBeGreaterThanOrEqual(4.7 - 0.01);
+      expect(Number(p.rating)).toBeLessThanOrEqual(4.9 + 0.01);
+      expect(p.review_count).toMatch(/^\d+$/);
+      const duration = p.attributes!.find((a) => a.name === 'Duration')!.values[0]!;
+      expect(duration).toMatch(/^[67] days$/);
+      const route = p.attributes!.find((a) => a.name === 'Route')!.values;
+      expect(route[0]).toMatch(/^D1 \| \S/);
+      expect(route.some((v) => !v.includes('|'))).toBe(true);
+      expect(extra.title).not.toMatch(/\b(pass|voucher|kit|bundle|bookable)\b/i);
+    }
+  });
+
+  it('passes the package validator, including the new cross checks', async () => {
+    await run(travelRequest(6, [lagoon, alps]), { imageSource: undefined });
+    const { content } = await readOutput();
+    expect(validateNicContent(content, { now: NOW })).toEqual([]);
+
+    const broken = structuredClone(content);
+    broken.items.product![0]!.product!.rating = '5.9';
+    broken.items.product![1]!.product!.attributes!.push({
+      name: 'location',
+      values: ['x'],
+    });
+    const problems = validateNicContent(broken, { now: NOW }).join('\n');
+    expect(problems).toMatch(/rating must be between 0 and 5/);
+    expect(problems).toMatch(/duplicate attribute/);
+
+    const bad = structuredClone(content);
+    bad.items.product![0]!.terms = { product_cat: ['nope'] };
+    expect(validateNicContent(bad, { now: NOW }).join('\n')).toMatch(/nope/);
+  });
+
+  it('names products after the topic when there are no product seeds', async () => {
+    await run(travelRequest(5, []), { imageSource: undefined });
+    const { content } = await readOutput();
+    for (const item of content.items.product!) {
+      expect(item.title).not.toMatch(/\b(pass|voucher|kit|bundle|bookable)\b/i);
+      expect(item.product!.attributes).toBeUndefined();
+    }
+    const generic = travelRequest(4, []);
+    generic.site.topic = 'artisan coffee roasting';
+    await run(generic, { imageSource: undefined });
+    const out = (await readOutput()).content.items.product!;
+    expect(out.every((p) => !/\b(pass|voucher|bookable)\b/i.test(p.title))).toBe(true);
+    expect(out.every((p) => /coffee|artisan/i.test(p.title))).toBe(true);
+  });
+});

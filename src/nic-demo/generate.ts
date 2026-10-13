@@ -21,6 +21,7 @@ import type { MediaCollector } from './media.js';
 import {
   META_KEYS,
   NIC_TYPES,
+  TYPE_TAXONOMIES,
   type NicContent,
   type NicContentRequest,
   type NicItem,
@@ -29,6 +30,14 @@ import {
   type NicTerm,
   type NicType,
 } from './types.js';
+import {
+  deriveStyle,
+  isTravelTopic,
+  styledFields,
+  travelTitles,
+  type Destination,
+  type ProductStyle,
+} from './products.js';
 import * as V from './vocab.js';
 
 export interface GenerateNicOptions {
@@ -63,6 +72,7 @@ interface Planned {
   seed?: NicSeed;
   title: string;
   key: string;
+  dest?: Destination;
 }
 
 export async function generateNicContent(
@@ -104,6 +114,7 @@ export async function generateNicContent(
     }
     const typeSeed = hashString(`${rootSeed}:${type}`);
     const random = seededRandom(typeSeed);
+    const productStyle = type === 'product' ? deriveStyle(seeds) : undefined;
     const planned = await planItems(
       type,
       spec.count,
@@ -131,6 +142,7 @@ export async function generateNicContent(
         terms,
         now,
         itemSeed: hashString(`${typeSeed}:${plan.key}`),
+        productStyle,
         warnings,
       });
       list.push(item);
@@ -191,7 +203,12 @@ async function planItems(
   const takenKeys = new Set(seeds.map((s) => s.key));
 
   let titles: string[];
-  if (type === 'post') {
+  const dests = new Map<string, Destination>();
+  if (type === 'product' && isTravelTopic(topic)) {
+    const plans = travelTitles(extras + seeds.length + 2, random);
+    for (const p of plans) if (p.dest) dests.set(p.title, p.dest);
+    titles = plans.map((p) => p.title);
+  } else if (type === 'post') {
     // Over-ask: a generated headline may collide with a seed's title.
     titles = await engine.generateTitles(topic, extras + seeds.length + 2, typeSeed);
   } else {
@@ -204,7 +221,7 @@ async function planItems(
     if (!clean || takenTitles.has(clean.toLowerCase())) continue;
     const key = uniqueKey(slugify(clean) || `${type}-${planned.length + 1}`, takenKeys);
     takenTitles.add(clean.toLowerCase());
-    planned.push({ title: clean, key });
+    planned.push({ title: clean, key, dest: dests.get(title) });
   }
   // Defensive: numbered fill if the vocabulary ran dry.
   while (planned.length - seeds.length < extras) {
@@ -263,7 +280,7 @@ function vocabTitles(
     case 'product': {
       const adjectives = shuffled(V.PRODUCT_ADJECTIVES);
       const nouns = shuffled(V.PRODUCT_NOUNS);
-      const subject = capitalize(profile.terms[0] ?? profile.subject);
+      const subject = capitalize(profile.subject);
       for (let i = 0; out.length < n && i < n * 4; i++) {
         push(
           `${adjectives[i % adjectives.length]!} ${subject} ${nouns[Math.floor(i / adjectives.length) % nouns.length]!}`
@@ -294,6 +311,7 @@ interface BuildArgs {
   terms: Partial<Record<NicTaxonomy, NicTerm[]>>;
   now: Date;
   itemSeed: number;
+  productStyle: ProductStyle | undefined;
   warnings: string[];
 }
 
@@ -373,9 +391,12 @@ async function buildItem(a: BuildArgs): Promise<NicItem> {
 
   // --- terms -----------------------------------------------------------------
   const itemTerms = assignTerms(type, a.terms, index, random);
-  if (itemTerms) item.terms = itemTerms;
+  // Seed terms are verbatim; generated ones only fill taxonomies the seed left empty.
+  const seedTerms = seedTermsFor(type, seed, a.warnings);
+  const mergedTerms = { ...(itemTerms ?? {}), ...seedTerms };
+  if (Object.keys(mergedTerms).length > 0) item.terms = mergedTerms;
 
-  if (type === 'product') item.product = buildProduct(index, random);
+  if (type === 'product') item.product = buildProductItem(a, random);
 
   return item;
 }
@@ -583,6 +604,7 @@ function buildTerms(
     );
 
   const terms: Partial<Record<NicTaxonomy, NicTerm[]>> = {};
+  const seededTaxonomies: Partial<Record<NicTaxonomy, Set<string>>> = {};
   if (requested.includes('post')) {
     terms.category = make(CATEGORIES(profile), size('post', 3, 5));
     terms.post_tag = make(V.TAG_NAMES, size('post', 4, 6));
@@ -597,7 +619,43 @@ function buildTerms(
     terms.product_cat = make(V.PRODUCT_CATEGORY_NAMES, size('product', 2, 4));
     terms.product_tag = make(V.PRODUCT_TAG_NAMES, 3);
   }
+
+  // Terms the seeds reference. Product taxonomies the seeds name become the
+  // whole set (extras share the seeds' categories); elsewhere they are merged in.
+  for (const type of requested) {
+    for (const seed of request.types[type]?.seeds ?? []) {
+      for (const [taxonomy, keys] of Object.entries(seed.terms ?? {}) as Array<
+        [NicTaxonomy, string[]]
+      >) {
+        if (!TYPE_TAXONOMIES[type].includes(taxonomy)) continue; // warned per item
+        const fromSeeds = (seededTaxonomies[taxonomy] ??= new Set<string>());
+        for (const key of keys) fromSeeds.add(key);
+      }
+    }
+  }
+  for (const [taxonomy, keySet] of Object.entries(seededTaxonomies) as Array<
+    [NicTaxonomy, Set<string>]
+  >) {
+    const exclusive = taxonomy === 'product_cat' || taxonomy === 'product_tag';
+    const existing = exclusive ? [] : (terms[taxonomy] ?? []);
+    const have = new Set(existing.map((t) => t.key));
+    const list = [...existing];
+    for (const key of keySet) {
+      if (have.has(key)) continue;
+      list.push({ key, name: termName(key) });
+    }
+    terms[taxonomy] = list;
+  }
   return terms;
+}
+
+/** "city-breaks" -> "City Breaks". */
+function termName(key: string): string {
+  return key
+    .split('-')
+    .filter(Boolean)
+    .map((w) => capitalize(w))
+    .join(' ');
 }
 
 function CATEGORIES(profile: TopicProfile): readonly string[] {
@@ -641,6 +699,70 @@ function assignTerms(
   return Object.keys(cleaned).length ? (cleaned as NicItem['terms']) : undefined;
 }
 
+function buildProductItem(
+  a: BuildArgs,
+  random: () => number
+): NonNullable<NicItem['product']> {
+  const { index, plan, productStyle: style } = a;
+  const seedBlock = plan.seed?.product;
+  if (!style) return buildProduct(index, random);
+
+  const defaults = {
+    stock_status: index % 7 === 6 ? ('outofstock' as const) : ('instock' as const),
+    featured: index < 2,
+  };
+  if (seedBlock) {
+    // Seeds are kept verbatim; only the required fields they left out are filled.
+    const filled = styledFields(style, random, { index });
+    return {
+      type: 'simple',
+      regular_price: nonEmpty(seedBlock.regular_price) ?? filled.regular_price,
+      sale_price: seedBlock.sale_price ?? '',
+      sku: nonEmpty(seedBlock.sku) ?? '',
+      stock_status: seedBlock.stock_status ?? defaults.stock_status,
+      featured: seedBlock.featured ?? defaults.featured,
+      ...(seedBlock.badge !== undefined ? { badge: seedBlock.badge } : {}),
+      ...(seedBlock.rating !== undefined ? { rating: seedBlock.rating } : {}),
+      ...(seedBlock.review_count !== undefined
+        ? { review_count: seedBlock.review_count }
+        : {}),
+      ...(seedBlock.attributes?.length ? { attributes: seedBlock.attributes } : {}),
+    };
+  }
+  const fields = styledFields(style, random, { index, dest: plan.dest });
+  return {
+    type: 'simple',
+    regular_price: fields.regular_price,
+    sale_price: fields.sale_price,
+    sku: '',
+    ...defaults,
+    ...(fields.badge ? { badge: fields.badge } : {}),
+    ...(fields.rating ? { rating: fields.rating } : {}),
+    ...(fields.review_count ? { review_count: fields.review_count } : {}),
+    ...(fields.attributes ? { attributes: fields.attributes } : {}),
+  };
+}
+
+function seedTermsFor(
+  type: NicType,
+  seed: NicSeed | undefined,
+  warnings: string[]
+): NonNullable<NicItem['terms']> {
+  const out: NonNullable<NicItem['terms']> = {};
+  for (const [taxonomy, keys] of Object.entries(seed?.terms ?? {}) as Array<
+    [NicTaxonomy, string[]]
+  >) {
+    if (!TYPE_TAXONOMIES[type].includes(taxonomy)) {
+      warnings.push(
+        `types.${type} seed "${seed?.key}": taxonomy "${taxonomy}" is not allowed on ${type} and was dropped`
+      );
+      continue;
+    }
+    if (keys.length > 0) out[taxonomy] = [...keys];
+  }
+  return out;
+}
+
 function buildProduct(
   index: number,
   random: () => number
@@ -667,9 +789,12 @@ function assignSkus(items: NicItem[], theme: string): void {
       .join('')
       .replace(/[^A-Z0-9]/g, '')
       .slice(0, 4) || 'NIC';
-  const used = new Set<string>();
+  // Seeds may carry their own sku; those are kept and reserved first.
+  const used = new Set<string>(
+    items.map((item) => item.product?.sku ?? '').filter((sku) => sku !== '')
+  );
   for (const [i, item] of items.entries()) {
-    if (!item.product) continue;
+    if (!item.product || item.product.sku !== '') continue;
     const code =
       item.title
         .toUpperCase()
