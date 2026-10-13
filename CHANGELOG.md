@@ -7,6 +7,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-10-14
+
+### Added
+
+- **WooCommerce product seeds in `nic-demo`.** Product items support the optional
+  `badge`, `rating`, `review_count` and `attributes` fields of the updated
+  `nic-content/1` schema. Request seeds for `product` may carry a `product` block and
+  `terms` (`product_cat`, `product_tag`); seeds are kept verbatim and their terms are
+  created. Extra products follow the seeds' style (attribute names and value shapes,
+  price range and format, categories, badges and ratings) with titles in the site's topic.
+- Validation before writing: rating within 0–5 and unique attribute names per product, in
+  addition to the existing term, sale price and SKU checks.
+- Vendored schemas refreshed from the canonical mcphub copies.
+
+### Changed
+
+- Product titles without product seeds are now topic-aware (destination packages for travel
+  topics, otherwise named after the topic) instead of generic pass/voucher names.
+- README: WordPress is listed as supported (file export); `package.json` description fixed.
+
 ## [0.8.0] — 2026-10-13
 
 ### Added
