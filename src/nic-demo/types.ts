@@ -26,6 +26,10 @@ export interface NicSeed {
   excerpt?: string;
   meta?: Record<string, string>;
   image_size?: [number, number];
+  /** Product seeds: the nic-content/1 product block, kept verbatim. */
+  product?: Partial<NicProductBlock>;
+  /** Term keys (slugs) per taxonomy; the terms are created if missing. */
+  terms?: Partial<Record<NicTaxonomy, string[]>>;
 }
 
 export interface NicContentRequest {
@@ -53,6 +57,11 @@ export interface NicProductBlock {
   sku: string;
   stock_status: 'instock' | 'outofstock';
   featured: boolean;
+  badge?: string;
+  /** Display rating, "0"–"5" with at most one decimal. */
+  rating?: string;
+  review_count?: string;
+  attributes?: Array<{ name: string; values: string[] }>;
 }
 
 export interface NicItem {

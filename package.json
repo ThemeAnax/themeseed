@@ -1,7 +1,7 @@
 {
   "name": "@indianic/themeseed",
-  "version": "0.8.0",
-  "description": "Seed realistic demo content into any CMS so you can preview a theme with real-looking articles, images, galleries and video — instead of an empty install. MCP server + CLI. Ghost supported today; WordPress, Joomla, Drupal and Magento planned.",
+  "version": "0.8.1",
+  "description": "Seed realistic demo content into any CMS so you can preview a theme with real-looking articles, images, galleries and video — instead of an empty install. MCP server + CLI. Ghost supported live; WordPress supported as file export (WXR import file and NIC Core demo package); Joomla, Drupal and Magento planned.",
   "keywords": [
     "mcp",
     "model-context-protocol",

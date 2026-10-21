@@ -158,12 +158,12 @@ export const PRODUCT_ADJECTIVES = [
 export const PRODUCT_NOUNS = [
   'Kit',
   'Bundle',
-  'Pass',
   'Set',
   'Edition',
   'Pack',
-  'Voucher',
+  'Collection',
   'Box',
+  'Selection',
 ] as const;
 
 export const BASE_PRICES = [19, 24, 39, 49, 59, 79, 99, 129, 149, 199, 249, 349] as const;
@@ -208,3 +208,86 @@ export const TESTIMONIAL_QUOTES = [
   'Warm, quick to reply and refreshingly practical. Our experience of {subject} was far smoother than we had expected.',
   'They listened first, then proposed. The result felt like it was made for us rather than pulled off a shelf.',
 ] as const;
+
+export interface TravelDestination {
+  place: string;
+  country: string;
+  stops: readonly string[];
+}
+
+/** Travel-topic product vocabulary: package = place + experience. */
+export const DESTINATIONS: readonly TravelDestination[] = [
+  { place: 'Santorini', country: 'Greece', stops: ['Fira', 'Oia', 'Akrotiri'] },
+  { place: 'Kyoto', country: 'Japan', stops: ['Gion', 'Arashiyama', 'Fushimi'] },
+  { place: 'Amalfi', country: 'Italy', stops: ['Positano', 'Ravello', 'Sorrento'] },
+  {
+    place: 'Marrakech',
+    country: 'Morocco',
+    stops: ['Medina', 'Atlas Foothills', 'Essaouira'],
+  },
+  {
+    place: 'Patagonia',
+    country: 'Chile',
+    stops: ['Torres del Paine', 'Puerto Natales', 'Grey Glacier'],
+  },
+  { place: 'Seychelles', country: 'Seychelles', stops: ['Mahé', 'Praslin', 'La Digue'] },
+  { place: 'Lisbon', country: 'Portugal', stops: ['Alfama', 'Sintra', 'Cascais'] },
+  { place: 'Bali', country: 'Indonesia', stops: ['Ubud', 'Uluwatu', 'Nusa Penida'] },
+  {
+    place: 'Reykjavik',
+    country: 'Iceland',
+    stops: ['Golden Circle', 'Vik', 'Blue Lagoon'],
+  },
+  {
+    place: 'Serengeti',
+    country: 'Tanzania',
+    stops: ['Seronera', 'Ngorongoro', 'Tarangire'],
+  },
+  { place: 'Provence', country: 'France', stops: ['Aix', 'Luberon', 'Gordes'] },
+  {
+    place: 'Dubrovnik',
+    country: 'Croatia',
+    stops: ['Old Town', 'Lokrum', 'Elaphiti Islands'],
+  },
+  {
+    place: 'Cusco',
+    country: 'Peru',
+    stops: ['Sacred Valley', 'Ollantaytambo', 'Machu Picchu'],
+  },
+  {
+    place: 'Phuket',
+    country: 'Thailand',
+    stops: ['Old Town', 'Phi Phi', 'Phang Nga Bay'],
+  },
+  { place: 'Zanzibar', country: 'Tanzania', stops: ['Stone Town', 'Nungwi', 'Jozani'] },
+  {
+    place: 'Tuscany',
+    country: 'Italy',
+    stops: ['Florence', 'Siena', 'Val d\u2019Orcia'],
+  },
+  {
+    place: 'Queenstown',
+    country: 'New Zealand',
+    stops: ['Milford Sound', 'Arrowtown', 'Wanaka'],
+  },
+  { place: 'Petra', country: 'Jordan', stops: ['Wadi Rum', 'Amman', 'Dead Sea'] },
+  {
+    place: 'Cape Town',
+    country: 'South Africa',
+    stops: ['Table Mountain', 'Stellenbosch', 'Cape Point'],
+  },
+  { place: 'Fiji', country: 'Fiji', stops: ['Denarau', 'Yasawa Islands', 'Taveuni'] },
+];
+
+export const TRAVEL_EXPERIENCES = [
+  'Escape',
+  'Retreat',
+  'Discovery',
+  'Getaway',
+  'Highlights',
+  'Journey',
+  'Hideaway',
+  'Odyssey',
+] as const;
+
+export const TRAVEL_FLAVOURS = ['Hidden', 'Golden', 'Slow', 'Secret', 'Grand'] as const;

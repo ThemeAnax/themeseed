@@ -35734,12 +35734,12 @@ var PRODUCT_ADJECTIVES = [
 var PRODUCT_NOUNS = [
   "Kit",
   "Bundle",
-  "Pass",
   "Set",
   "Edition",
   "Pack",
-  "Voucher",
-  "Box"
+  "Collection",
+  "Box",
+  "Selection"
 ];
 var BASE_PRICES = [19, 24, 39, 49, 59, 79, 99, 129, 149, 199, 249, 349];
 var CATEGORY_NAMES = [
@@ -35780,6 +35780,263 @@ var TESTIMONIAL_QUOTES = [
   "Warm, quick to reply and refreshingly practical. Our experience of {subject} was far smoother than we had expected.",
   "They listened first, then proposed. The result felt like it was made for us rather than pulled off a shelf."
 ];
+var DESTINATIONS = [
+  { place: "Santorini", country: "Greece", stops: ["Fira", "Oia", "Akrotiri"] },
+  { place: "Kyoto", country: "Japan", stops: ["Gion", "Arashiyama", "Fushimi"] },
+  { place: "Amalfi", country: "Italy", stops: ["Positano", "Ravello", "Sorrento"] },
+  {
+    place: "Marrakech",
+    country: "Morocco",
+    stops: ["Medina", "Atlas Foothills", "Essaouira"]
+  },
+  {
+    place: "Patagonia",
+    country: "Chile",
+    stops: ["Torres del Paine", "Puerto Natales", "Grey Glacier"]
+  },
+  { place: "Seychelles", country: "Seychelles", stops: ["Mah\xE9", "Praslin", "La Digue"] },
+  { place: "Lisbon", country: "Portugal", stops: ["Alfama", "Sintra", "Cascais"] },
+  { place: "Bali", country: "Indonesia", stops: ["Ubud", "Uluwatu", "Nusa Penida"] },
+  {
+    place: "Reykjavik",
+    country: "Iceland",
+    stops: ["Golden Circle", "Vik", "Blue Lagoon"]
+  },
+  {
+    place: "Serengeti",
+    country: "Tanzania",
+    stops: ["Seronera", "Ngorongoro", "Tarangire"]
+  },
+  { place: "Provence", country: "France", stops: ["Aix", "Luberon", "Gordes"] },
+  {
+    place: "Dubrovnik",
+    country: "Croatia",
+    stops: ["Old Town", "Lokrum", "Elaphiti Islands"]
+  },
+  {
+    place: "Cusco",
+    country: "Peru",
+    stops: ["Sacred Valley", "Ollantaytambo", "Machu Picchu"]
+  },
+  {
+    place: "Phuket",
+    country: "Thailand",
+    stops: ["Old Town", "Phi Phi", "Phang Nga Bay"]
+  },
+  { place: "Zanzibar", country: "Tanzania", stops: ["Stone Town", "Nungwi", "Jozani"] },
+  {
+    place: "Tuscany",
+    country: "Italy",
+    stops: ["Florence", "Siena", "Val d\u2019Orcia"]
+  },
+  {
+    place: "Queenstown",
+    country: "New Zealand",
+    stops: ["Milford Sound", "Arrowtown", "Wanaka"]
+  },
+  { place: "Petra", country: "Jordan", stops: ["Wadi Rum", "Amman", "Dead Sea"] },
+  {
+    place: "Cape Town",
+    country: "South Africa",
+    stops: ["Table Mountain", "Stellenbosch", "Cape Point"]
+  },
+  { place: "Fiji", country: "Fiji", stops: ["Denarau", "Yasawa Islands", "Taveuni"] }
+];
+var TRAVEL_EXPERIENCES = [
+  "Escape",
+  "Retreat",
+  "Discovery",
+  "Getaway",
+  "Highlights",
+  "Journey",
+  "Hideaway",
+  "Odyssey"
+];
+var TRAVEL_FLAVOURS = ["Hidden", "Golden", "Slow", "Secret", "Grand"];
+
+// src/nic-demo/products.ts
+function isTravelTopic(topic) {
+  return /\b(travel|trip|tour|tours|holiday|holidays|vacation|journey|destination|destinations|itinerar\w*|cruise|getaway|resort|voyage|expedition)\b/i.test(
+    topic
+  );
+}
+function deriveStyle(seeds) {
+  const blocks = seeds.map((s) => s.product).filter((p) => p !== void 0);
+  if (blocks.length === 0) return void 0;
+  const prices = blocks.map((b) => Number(b.regular_price ?? "")).filter((n) => n > 0);
+  const [min, max] = prices.length ? [Math.min(...prices), Math.max(...prices)] : [BASE_PRICES[0], BASE_PRICES[BASE_PRICES.length - 1]];
+  const badges = blocks.map((b) => b.badge).filter((b) => !!b);
+  const ratings = blocks.filter((b) => b.rating).map((b) => Number(b.rating));
+  const reviews = blocks.filter((b) => b.review_count).map((b) => Number(b.review_count));
+  const withAttrs = blocks.filter((b) => (b.attributes?.length ?? 0) > 0);
+  const byName = /* @__PURE__ */ new Map();
+  for (const block of withAttrs) {
+    for (const attr of block.attributes ?? []) {
+      const list = byName.get(attr.name) ?? [];
+      list.push(attr.values);
+      byName.set(attr.name, list);
+    }
+  }
+  const attrs = [];
+  for (const [name, samples] of byName) {
+    if (samples.length * 2 < withAttrs.length) continue;
+    attrs.push({ name, kind: classify(samples), samples });
+  }
+  return {
+    min,
+    max,
+    decimals: blocks.some((b) => /\./.test(b.regular_price ?? "")),
+    anySale: blocks.some((b) => !!b.sale_price),
+    badges: [...new Set(badges)],
+    badgeRatio: badges.length / blocks.length,
+    ...ratings.length ? { rating: [Math.min(...ratings), Math.max(...ratings)] } : {},
+    ...reviews.length ? { reviews: [Math.min(...reviews), Math.max(...reviews)] } : {},
+    attrs
+  };
+}
+var STEP = /^(\D*?)(\d+)(?:\s*\|\s*(.*))?$/;
+function classify(samples) {
+  const all = samples.flat();
+  if (all.every((v) => STEP.test(v)) && all.some((v) => v.includes("|")) && all.length > 1)
+    return "route";
+  if (samples.every((s) => s.length === 1) && all.every((v) => /^\d+(\.\d+)?\s+\S.*$/.test(v)))
+    return "unit";
+  if (samples.some((s) => s.length > 1)) return "list";
+  return "single";
+}
+function roundNice(value) {
+  const step = value >= 1e3 ? 50 : value >= 200 ? 10 : value >= 50 ? 5 : 1;
+  return Math.max(step, Math.round(value / step) * step);
+}
+function money(style, value) {
+  return style.decimals ? value.toFixed(2) : String(value);
+}
+var pick3 = (random, list) => list[Math.floor(random() * list.length)];
+function shuffled(random, list) {
+  return [...list].map((v) => [random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
+}
+function between(random, lo, hi) {
+  return lo + random() * (hi - lo);
+}
+function styledFields(style, random, ctx) {
+  const price = roundNice(between(random, style.min * 0.75, style.max * 1.25));
+  let sale = "";
+  if (style.anySale && ctx.index % 3 === 1) {
+    let cut = roundNice(price * 0.85);
+    if (cut >= price) cut = Math.max(1, price - 1);
+    sale = money(style, cut);
+  }
+  const out = {
+    type: "simple",
+    regular_price: money(style, price),
+    sale_price: sale
+  };
+  if (style.badges.length > 0 && random() < style.badgeRatio) {
+    out.badge = pick3(random, style.badges);
+  }
+  if (style.rating) {
+    const [lo, hi] = style.rating;
+    out.rating = Math.min(5, Math.max(0, between(random, lo, hi))).toFixed(1);
+  }
+  if (style.reviews) {
+    const [lo, hi] = style.reviews;
+    out.review_count = String(
+      Math.max(1, Math.round(between(random, lo * 0.7, Math.max(hi, lo + 1) * 1.2)))
+    );
+  }
+  if (style.attrs.length > 0) out.attributes = styledAttributes(style, random, ctx);
+  return out;
+}
+function styledAttributes(style, random, ctx) {
+  let days;
+  const durations = /* @__PURE__ */ new Map();
+  for (const attr of style.attrs) {
+    if (attr.kind !== "unit") continue;
+    const value = unitValue(attr, random);
+    durations.set(attr.name, value);
+    const match = /^(\d+)\s+(day|night)/i.exec(value);
+    if (match && days === void 0) days = Number(match[1]);
+  }
+  const labels = [
+    ...new Set(style.attrs.flatMap((a) => a.kind === "route" ? routeLabels(a) : []))
+  ];
+  return style.attrs.map((attr) => {
+    switch (attr.kind) {
+      case "unit":
+        return { name: attr.name, values: [durations.get(attr.name)] };
+      case "route":
+        return {
+          name: attr.name,
+          values: routeValue(attr, random, days, ctx.dest, labels)
+        };
+      case "list":
+        return { name: attr.name, values: listValue(attr, random) };
+      default: {
+        if (ctx.dest && /location|destination|country|where/i.test(attr.name)) {
+          return { name: attr.name, values: [ctx.dest.country] };
+        }
+        return { name: attr.name, values: [pick3(random, attr.samples.flat())] };
+      }
+    }
+  });
+}
+function unitValue(attr, random) {
+  const parsed = attr.samples.map((s) => /^(\d+(?:\.\d+)?)\s+(.+)$/.exec(s[0]));
+  const nums = parsed.map((m) => Number(m[1]));
+  const lo = Math.min(...nums);
+  const hi = Math.max(...nums);
+  const n = Math.round(between(random, lo, hi));
+  return `${n} ${pick3(random, parsed)[2]}`;
+}
+function listValue(attr, random) {
+  const pool = [...new Set(attr.samples.flat())];
+  const sizes = attr.samples.map((s) => s.length);
+  const n = Math.min(
+    pool.length,
+    Math.round(between(random, Math.min(...sizes), Math.max(...sizes)))
+  );
+  const chosen = new Set(shuffled(random, pool).slice(0, Math.max(1, n)));
+  return pool.filter((v) => chosen.has(v));
+}
+function routeLabels(attr) {
+  return attr.samples.flat().flatMap((v) => {
+    const label = STEP.exec(v)?.[3];
+    return label ? [label.trim()] : [];
+  });
+}
+function routeValue(attr, random, days, dest, labelPool) {
+  const template = pick3(random, attr.samples).map((v) => {
+    const m = STEP.exec(v);
+    return { prefix: m[1] ?? "", day: Number(m[2]), label: m[3]?.trim() };
+  });
+  const first = template[0].day;
+  const lastTemplate = template[template.length - 1].day;
+  const last = days && days > first ? days : lastTemplate;
+  const span = Math.max(1, lastTemplate - first);
+  const stops = dest ? [...dest.stops] : shuffled(random, labelPool.length ? labelPool : ["Arrival"]);
+  let nextStop = 0;
+  let prev = first - 1;
+  return template.map((step, i) => {
+    let day = i === 0 ? first : Math.round(first + (step.day - first) * (last - first) / span);
+    day = Math.max(day, prev + 1);
+    prev = day;
+    const label = step.label === void 0 ? void 0 : stops[nextStop++ % stops.length];
+    return label ? `${step.prefix}${day} | ${label}` : `${step.prefix}${day}`;
+  });
+}
+function travelTitles(n, random) {
+  const out = [];
+  const places = shuffled(random, DESTINATIONS);
+  const experiences = shuffled(random, TRAVEL_EXPERIENCES);
+  for (let i = 0; out.length < n; i++) {
+    const dest = places[i % places.length];
+    const round = Math.floor(i / places.length);
+    const exp = experiences[(i + round) % experiences.length];
+    const flavour = round === 0 ? "" : `${TRAVEL_FLAVOURS[(i + round) % TRAVEL_FLAVOURS.length]} `;
+    out.push({ title: `${flavour}${dest.place} ${exp}`, dest });
+  }
+  return out;
+}
 
 // src/nic-demo/generate.ts
 var DEFAULT_RATIO = {
@@ -35823,6 +36080,7 @@ async function generateNicContent(options) {
     }
     const typeSeed = hashString(`${rootSeed}:${type}`);
     const random = seededRandom(typeSeed);
+    const productStyle = type === "product" ? deriveStyle(seeds) : void 0;
     const planned = await planItems(
       type,
       spec.count,
@@ -35849,6 +36107,7 @@ async function generateNicContent(options) {
         terms,
         now,
         itemSeed: hashString(`${typeSeed}:${plan.key}`),
+        productStyle,
         warnings
       });
       list.push(item);
@@ -35886,7 +36145,12 @@ async function planItems(type, count, seeds, topic, profile, engine, typeSeed, r
   const takenTitles = new Set(seeds.map((s) => s.title.toLowerCase()));
   const takenKeys = new Set(seeds.map((s) => s.key));
   let titles;
-  if (type === "post") {
+  const dests = /* @__PURE__ */ new Map();
+  if (type === "product" && isTravelTopic(topic)) {
+    const plans = travelTitles(extras + seeds.length + 2, random);
+    for (const p of plans) if (p.dest) dests.set(p.title, p.dest);
+    titles = plans.map((p) => p.title);
+  } else if (type === "post") {
     titles = await engine.generateTitles(topic, extras + seeds.length + 2, typeSeed);
   } else {
     titles = vocabTitles(type, extras + seeds.length + 2, profile, random);
@@ -35897,7 +36161,7 @@ async function planItems(type, count, seeds, topic, profile, engine, typeSeed, r
     if (!clean || takenTitles.has(clean.toLowerCase())) continue;
     const key = uniqueKey(slugify3(clean) || `${type}-${planned.length + 1}`, takenKeys);
     takenTitles.add(clean.toLowerCase());
-    planned.push({ title: clean, key });
+    planned.push({ title: clean, key, dest: dests.get(title) });
   }
   while (planned.length - seeds.length < extras) {
     const n = planned.length + 1;
@@ -35915,12 +36179,12 @@ function vocabTitles(type, n, profile, random) {
       out.push(title);
     }
   };
-  const shuffled = (arr) => [...arr].map((v) => [random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
+  const shuffled2 = (arr) => [...arr].map((v) => [random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
   switch (type) {
     case "team":
     case "testimonial": {
-      const firsts = shuffled(FIRST_NAMES);
-      const lasts = shuffled(LAST_NAMES);
+      const firsts = shuffled2(FIRST_NAMES);
+      const lasts = shuffled2(LAST_NAMES);
       for (let i = 0; out.length < n && i < n * 4; i++) {
         const first = firsts[i % firsts.length];
         const last = lasts[(i * 7 + Math.floor(i / firsts.length)) % lasts.length];
@@ -35929,8 +36193,8 @@ function vocabTitles(type, n, profile, random) {
       break;
     }
     case "portfolio": {
-      const adjectives = shuffled(PROJECT_ADJECTIVES);
-      const nouns = shuffled(PROJECT_NOUNS);
+      const adjectives = shuffled2(PROJECT_ADJECTIVES);
+      const nouns = shuffled2(PROJECT_NOUNS);
       for (let i = 0; out.length < n && i < n * 4; i++) {
         push(
           `${adjectives[i % adjectives.length]} ${nouns[Math.floor(i / adjectives.length) % nouns.length]}`
@@ -35939,12 +36203,12 @@ function vocabTitles(type, n, profile, random) {
       break;
     }
     case "service":
-      for (const title of shuffled(SERVICE_TITLES)) push(title);
+      for (const title of shuffled2(SERVICE_TITLES)) push(title);
       break;
     case "product": {
-      const adjectives = shuffled(PRODUCT_ADJECTIVES);
-      const nouns = shuffled(PRODUCT_NOUNS);
-      const subject = capitalize(profile.terms[0] ?? profile.subject);
+      const adjectives = shuffled2(PRODUCT_ADJECTIVES);
+      const nouns = shuffled2(PRODUCT_NOUNS);
+      const subject = capitalize(profile.subject);
       for (let i = 0; out.length < n && i < n * 4; i++) {
         push(
           `${adjectives[i % adjectives.length]} ${subject} ${nouns[Math.floor(i / adjectives.length) % nouns.length]}`
@@ -36013,8 +36277,10 @@ async function buildItem(a) {
   const meta3 = buildMeta(a, random);
   if (Object.keys(meta3).length > 0) item.meta = meta3;
   const itemTerms = assignTerms(type, a.terms, index, random);
-  if (itemTerms) item.terms = itemTerms;
-  if (type === "product") item.product = buildProduct(index, random);
+  const seedTerms = seedTermsFor(type, seed, a.warnings);
+  const mergedTerms = { ...itemTerms ?? {}, ...seedTerms };
+  if (Object.keys(mergedTerms).length > 0) item.terms = mergedTerms;
+  if (type === "product") item.product = buildProductItem(a, random);
   return item;
 }
 async function safeFetch(a, request, count) {
@@ -36123,17 +36389,17 @@ function buildMeta(a, random) {
     if (allowed.includes(key) && meta3[key] === void 0) meta3[key] = make();
   };
   const year = a.now.getUTCFullYear();
-  const pick3 = (list) => list[Math.floor(random() * list.length)];
+  const pick4 = (list) => list[Math.floor(random() * list.length)];
   switch (type) {
     case "team":
-      fill2("nic_role", () => pick3(ROLES));
+      fill2("nic_role", () => pick4(ROLES));
       break;
     case "portfolio":
-      fill2("nic_client", () => pick3(COMPANIES));
+      fill2("nic_client", () => pick4(COMPANIES));
       fill2("nic_year", () => String(year - Math.floor(random() * 4)));
       break;
     case "testimonial":
-      fill2("nic_company", () => pick3(COMPANIES));
+      fill2("nic_company", () => pick4(COMPANIES));
       fill2("nic_rating", () => random() < 0.8 ? "5" : "4");
       break;
     case "service":
@@ -36171,6 +36437,7 @@ function buildTerms(requested, request, profile, rootSeed) {
     )
   );
   const terms = {};
+  const seededTaxonomies = {};
   if (requested.includes("post")) {
     terms.category = make(CATEGORIES(profile), size("post", 3, 5));
     terms.post_tag = make(TAG_NAMES, size("post", 4, 6));
@@ -36185,7 +36452,30 @@ function buildTerms(requested, request, profile, rootSeed) {
     terms.product_cat = make(PRODUCT_CATEGORY_NAMES, size("product", 2, 4));
     terms.product_tag = make(PRODUCT_TAG_NAMES, 3);
   }
+  for (const type of requested) {
+    for (const seed of request.types[type]?.seeds ?? []) {
+      for (const [taxonomy, keys] of Object.entries(seed.terms ?? {})) {
+        if (!TYPE_TAXONOMIES[type].includes(taxonomy)) continue;
+        const fromSeeds = seededTaxonomies[taxonomy] ??= /* @__PURE__ */ new Set();
+        for (const key of keys) fromSeeds.add(key);
+      }
+    }
+  }
+  for (const [taxonomy, keySet] of Object.entries(seededTaxonomies)) {
+    const exclusive = taxonomy === "product_cat" || taxonomy === "product_tag";
+    const existing = exclusive ? [] : terms[taxonomy] ?? [];
+    const have = new Set(existing.map((t) => t.key));
+    const list = [...existing];
+    for (const key of keySet) {
+      if (have.has(key)) continue;
+      list.push({ key, name: termName(key) });
+    }
+    terms[taxonomy] = list;
+  }
   return terms;
+}
+function termName(key) {
+  return key.split("-").filter(Boolean).map((w) => capitalize(w)).join(" ");
 }
 function CATEGORIES(profile) {
   const subject = capitalize(profile.terms[0] ?? profile.subject);
@@ -36220,6 +36510,55 @@ function assignTerms(type, terms, index, random) {
   const cleaned = Object.fromEntries(Object.entries(out).filter(([, v]) => v.length > 0));
   return Object.keys(cleaned).length ? cleaned : void 0;
 }
+function buildProductItem(a, random) {
+  const { index, plan, productStyle: style } = a;
+  const seedBlock = plan.seed?.product;
+  if (!style) return buildProduct(index, random);
+  const defaults = {
+    stock_status: index % 7 === 6 ? "outofstock" : "instock",
+    featured: index < 2
+  };
+  if (seedBlock) {
+    const filled = styledFields(style, random, { index });
+    return {
+      type: "simple",
+      regular_price: nonEmpty(seedBlock.regular_price) ?? filled.regular_price,
+      sale_price: seedBlock.sale_price ?? "",
+      sku: nonEmpty(seedBlock.sku) ?? "",
+      stock_status: seedBlock.stock_status ?? defaults.stock_status,
+      featured: seedBlock.featured ?? defaults.featured,
+      ...seedBlock.badge !== void 0 ? { badge: seedBlock.badge } : {},
+      ...seedBlock.rating !== void 0 ? { rating: seedBlock.rating } : {},
+      ...seedBlock.review_count !== void 0 ? { review_count: seedBlock.review_count } : {},
+      ...seedBlock.attributes?.length ? { attributes: seedBlock.attributes } : {}
+    };
+  }
+  const fields = styledFields(style, random, { index, dest: plan.dest });
+  return {
+    type: "simple",
+    regular_price: fields.regular_price,
+    sale_price: fields.sale_price,
+    sku: "",
+    ...defaults,
+    ...fields.badge ? { badge: fields.badge } : {},
+    ...fields.rating ? { rating: fields.rating } : {},
+    ...fields.review_count ? { review_count: fields.review_count } : {},
+    ...fields.attributes ? { attributes: fields.attributes } : {}
+  };
+}
+function seedTermsFor(type, seed, warnings) {
+  const out = {};
+  for (const [taxonomy, keys] of Object.entries(seed?.terms ?? {})) {
+    if (!TYPE_TAXONOMIES[type].includes(taxonomy)) {
+      warnings.push(
+        `types.${type} seed "${seed?.key}": taxonomy "${taxonomy}" is not allowed on ${type} and was dropped`
+      );
+      continue;
+    }
+    if (keys.length > 0) out[taxonomy] = [...keys];
+  }
+  return out;
+}
 function buildProduct(index, random) {
   const base = BASE_PRICES[Math.floor(random() * BASE_PRICES.length)];
   const onSale = index % 3 === 1;
@@ -36236,9 +36575,11 @@ function buildProduct(index, random) {
 }
 function assignSkus(items, theme) {
   const prefix = theme.split("-").filter(Boolean).map((w) => w[0].toUpperCase()).join("").replace(/[^A-Z0-9]/g, "").slice(0, 4) || "NIC";
-  const used = /* @__PURE__ */ new Set();
+  const used = new Set(
+    items.map((item) => item.product?.sku ?? "").filter((sku) => sku !== "")
+  );
   for (const [i, item] of items.entries()) {
-    if (!item.product) continue;
+    if (!item.product || item.product.sku !== "") continue;
     const code = item.title.toUpperCase().replace(/[^A-Z0-9 ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 4) || "ITM";
     let n = i + 1;
     let sku = `${prefix}-${code}-${String(n).padStart(3, "0")}`;
@@ -36834,6 +37175,44 @@ var nic_content_1_schema_default = {
             },
             featured: {
               type: "boolean"
+            },
+            badge: {
+              type: "string",
+              maxLength: 40
+            },
+            rating: {
+              type: "string",
+              pattern: "^[0-5](\\.\\d)?$"
+            },
+            review_count: {
+              type: "string",
+              pattern: "^\\d{1,7}$"
+            },
+            attributes: {
+              type: "array",
+              maxItems: 12,
+              items: {
+                type: "object",
+                additionalProperties: false,
+                required: ["name", "values"],
+                properties: {
+                  name: {
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 60
+                  },
+                  values: {
+                    type: "array",
+                    minItems: 1,
+                    maxItems: 20,
+                    items: {
+                      type: "string",
+                      minLength: 1,
+                      maxLength: 120
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -36853,25 +37232,46 @@ var nic_content_request_1_schema_default = {
   additionalProperties: false,
   required: ["format", "theme", "target", "site", "types"],
   properties: {
-    format: { const: "nic-content-request/1" },
-    theme: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{0,99}$" },
-    target: { enum: ["themeforest", "wordpress.org", "client", "private"] },
+    format: {
+      const: "nic-content-request/1"
+    },
+    theme: {
+      type: "string",
+      pattern: "^[a-z0-9][a-z0-9-]{0,99}$"
+    },
+    target: {
+      enum: ["themeforest", "wordpress.org", "client", "private"]
+    },
     site: {
       type: "object",
       additionalProperties: false,
       required: ["name", "topic"],
       properties: {
-        name: { type: "string", minLength: 1 },
-        topic: { type: "string", minLength: 1 },
-        language: { type: "string", default: "en" },
-        tone: { type: "string" }
+        name: {
+          type: "string",
+          minLength: 1
+        },
+        topic: {
+          type: "string",
+          minLength: 1
+        },
+        language: {
+          type: "string",
+          default: "en"
+        },
+        tone: {
+          type: "string"
+        }
       }
     },
     images: {
       type: "object",
       additionalProperties: false,
       properties: {
-        source: { enum: ["auto", "local", "ai", "stock", "none"], default: "auto" }
+        source: {
+          enum: ["auto", "local", "ai", "stock", "none"],
+          default: "auto"
+        }
       }
     },
     types: {
@@ -36879,12 +37279,24 @@ var nic_content_request_1_schema_default = {
       additionalProperties: false,
       minProperties: 1,
       properties: {
-        post: { $ref: "#/$defs/typeRequest" },
-        team: { $ref: "#/$defs/typeRequest" },
-        portfolio: { $ref: "#/$defs/typeRequest" },
-        testimonial: { $ref: "#/$defs/typeRequest" },
-        service: { $ref: "#/$defs/typeRequest" },
-        product: { $ref: "#/$defs/typeRequest" }
+        post: {
+          $ref: "#/$defs/typeRequest"
+        },
+        team: {
+          $ref: "#/$defs/typeRequest"
+        },
+        portfolio: {
+          $ref: "#/$defs/typeRequest"
+        },
+        testimonial: {
+          $ref: "#/$defs/typeRequest"
+        },
+        service: {
+          $ref: "#/$defs/typeRequest"
+        },
+        product: {
+          $ref: "#/$defs/typeRequest"
+        }
       }
     }
   },
@@ -36894,7 +37306,11 @@ var nic_content_request_1_schema_default = {
       additionalProperties: false,
       required: ["count"],
       properties: {
-        count: { type: "integer", minimum: 0, maximum: 50 },
+        count: {
+          type: "integer",
+          minimum: 0,
+          maximum: 50
+        },
         seeds: {
           type: "array",
           description: "The source design's own items. key, title and every non-empty field are kept verbatim.",
@@ -36903,16 +37319,48 @@ var nic_content_request_1_schema_default = {
             additionalProperties: false,
             required: ["key", "title"],
             properties: {
-              key: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{0,99}$" },
-              title: { type: "string", minLength: 1 },
-              content: { type: "string" },
-              excerpt: { type: "string" },
-              meta: { type: "object", additionalProperties: { type: "string" } },
+              key: {
+                type: "string",
+                pattern: "^[a-z0-9][a-z0-9-]{0,99}$"
+              },
+              title: {
+                type: "string",
+                minLength: 1
+              },
+              content: {
+                type: "string"
+              },
+              excerpt: {
+                type: "string"
+              },
+              meta: {
+                type: "object",
+                additionalProperties: {
+                  type: "string"
+                }
+              },
               image_size: {
                 type: "array",
-                items: { type: "integer", minimum: 1 },
+                items: {
+                  type: "integer",
+                  minimum: 1
+                },
                 minItems: 2,
                 maxItems: 2
+              },
+              product: {
+                description: "Product seeds only: the nic-content-1 product block (see that schema's $defs.product.properties.product).",
+                type: "object"
+              },
+              terms: {
+                type: "object",
+                additionalProperties: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    pattern: "^[a-z0-9][a-z0-9-]{0,99}$"
+                  }
+                }
               }
             }
           }
@@ -37069,6 +37517,15 @@ function productProblems(at, item, skus) {
     if (!(Number(product.sale_price) < regular)) {
       problems.push(`${at}: sale_price must be lower than regular_price`);
     }
+  }
+  if (product.rating !== void 0 && Number(product.rating) > 5) {
+    problems.push(`${at}: rating must be between 0 and 5`);
+  }
+  const attrSlugs = /* @__PURE__ */ new Set();
+  for (const attr of product.attributes ?? []) {
+    const slug = attr.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    if (attrSlugs.has(slug)) problems.push(`${at}: duplicate attribute "${attr.name}"`);
+    attrSlugs.add(slug);
   }
   if (skus.has(product.sku)) problems.push(`${at}: duplicate sku "${product.sku}"`);
   skus.add(product.sku);
@@ -39015,7 +39472,7 @@ function registerContentTools(server) {
     "export_content",
     {
       title: "Export demo content as an importable file",
-      description: 'Generates the same content generate_posts would, but writes it to disk as an import file instead of publishing it live. Needs no site and no credentials. platform "ghost" writes content-export.zip with the images bundled inside; platform "wordpress" writes demo-content.xml (WXR) whose images the WordPress importer downloads from their source URLs at import time \u2014 so for wordpress use a URL-backed imageSource (stock) or none, never local/ai. Use this to ship demo content inside a theme package; use generate_posts when you have a live site to fill. Pass `pages` for static pages \u2014 set needsBody false where a theme template renders the page itself, or suppliedBody to use markup you already have (for wordpress, suppliedBody should be serialized Gutenberg block markup). platform "nic-demo" writes the NIC Core demo package (posts.json + content-media/) from a content request \u2014 pass `request` and `credits`; it ignores topic/count/pages.',
+      description: 'Generates the same content generate_posts would, but writes it to disk as an import file instead of publishing it live. Needs no site and no credentials. platform "ghost" writes content-export.zip with the images bundled inside; platform "wordpress" writes demo-content.xml (WXR) whose images the WordPress importer downloads from their source URLs at import time \u2014 so for wordpress use a URL-backed imageSource (stock) or none, never local/ai. Use this to ship demo content inside a theme package; use generate_posts when you have a live site to fill. Pass `pages` for static pages \u2014 set needsBody false where a theme template renders the page itself, or suppliedBody to use markup you already have (for wordpress, suppliedBody should be serialized Gutenberg block markup). platform "nic-demo" writes the NIC Core demo package (posts.json + content-media/) from a content request \u2014 pass `request` and `credits`; it ignores topic/count/pages. Product seeds (`types.product.seeds[]`) may carry a WooCommerce `product` block (badge, rating, review_count, attributes) and `terms` (product_cat/product_tag slugs): they are kept verbatim and extra products are generated in the same style (attribute names and shapes, price range, categories, topic-named titles).',
       inputSchema: {
         platform: external_exports.enum(["ghost", "wordpress", "nic-demo"]).default("ghost").describe(
           "Which CMS the file targets: ghost \u2192 content-export.zip, wordpress \u2192 demo-content.xml (WXR 1.2), nic-demo \u2192 posts.json + content-media/ for a NIC Core theme (needs `request` and `credits`; outDir is the theme's demo/ folder)."
@@ -39035,9 +39492,13 @@ function registerContentTools(server) {
             suppliedBody: external_exports.string().optional().describe("Final markup to use verbatim instead of generating a body.")
           })
         ).optional().describe("Static pages to include, e.g. about, privacy-policy, style-guide."),
-        navigation: external_exports.array(external_exports.object({ label: external_exports.string(), url: external_exports.string() })).optional().describe("Primary menu. Imported as a site setting, so the theme header fills in."),
+        navigation: external_exports.array(external_exports.object({ label: external_exports.string(), url: external_exports.string() })).optional().describe(
+          "Primary menu. Imported as a site setting, so the theme header fills in."
+        ),
         secondaryNavigation: external_exports.array(external_exports.object({ label: external_exports.string(), url: external_exports.string() })).optional().describe("Secondary menu, which most themes render in the footer."),
-        imageSource: external_exports.enum(["auto", "local", "stock", "ai", "none"]).default("auto").describe("Same meaning as in generate_posts. Images are bundled into the archive."),
+        imageSource: external_exports.enum(["auto", "local", "stock", "ai", "none"]).default("auto").describe(
+          "Same meaning as in generate_posts. Images are bundled into the archive."
+        ),
         titles: external_exports.array(external_exports.string()).optional().describe("Your own post titles."),
         authorName: external_exports.string().optional(),
         includeVideo: external_exports.boolean().default(true),
@@ -39053,10 +39514,13 @@ function registerContentTools(server) {
       loadUserEnv();
       if (args.platform === "nic-demo") {
         if (!args.request || !args.credits) {
-          throw new ThemeseedError('platform "nic-demo" needs both `request` and `credits`', {
-            code: "NIC_DEMO_USAGE",
-            hint: "Pass request (a nic-content-request/1 object or file path) and credits (output path)."
-          });
+          throw new ThemeseedError(
+            'platform "nic-demo" needs both `request` and `credits`',
+            {
+              code: "NIC_DEMO_USAGE",
+              hint: "Pass request (a nic-content-request/1 object or file path) and credits (output path)."
+            }
+          );
         }
         let report2;
         try {

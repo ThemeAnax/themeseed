@@ -7,25 +7,46 @@
   "additionalProperties": false,
   "required": ["format", "theme", "target", "site", "types"],
   "properties": {
-    "format": { "const": "nic-content-request/1" },
-    "theme": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,99}$" },
-    "target": { "enum": ["themeforest", "wordpress.org", "client", "private"] },
+    "format": {
+      "const": "nic-content-request/1"
+    },
+    "theme": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,99}$"
+    },
+    "target": {
+      "enum": ["themeforest", "wordpress.org", "client", "private"]
+    },
     "site": {
       "type": "object",
       "additionalProperties": false,
       "required": ["name", "topic"],
       "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "topic": { "type": "string", "minLength": 1 },
-        "language": { "type": "string", "default": "en" },
-        "tone": { "type": "string" }
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "default": "en"
+        },
+        "tone": {
+          "type": "string"
+        }
       }
     },
     "images": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "source": { "enum": ["auto", "local", "ai", "stock", "none"], "default": "auto" }
+        "source": {
+          "enum": ["auto", "local", "ai", "stock", "none"],
+          "default": "auto"
+        }
       }
     },
     "types": {
@@ -33,12 +54,24 @@
       "additionalProperties": false,
       "minProperties": 1,
       "properties": {
-        "post": { "$ref": "#/$defs/typeRequest" },
-        "team": { "$ref": "#/$defs/typeRequest" },
-        "portfolio": { "$ref": "#/$defs/typeRequest" },
-        "testimonial": { "$ref": "#/$defs/typeRequest" },
-        "service": { "$ref": "#/$defs/typeRequest" },
-        "product": { "$ref": "#/$defs/typeRequest" }
+        "post": {
+          "$ref": "#/$defs/typeRequest"
+        },
+        "team": {
+          "$ref": "#/$defs/typeRequest"
+        },
+        "portfolio": {
+          "$ref": "#/$defs/typeRequest"
+        },
+        "testimonial": {
+          "$ref": "#/$defs/typeRequest"
+        },
+        "service": {
+          "$ref": "#/$defs/typeRequest"
+        },
+        "product": {
+          "$ref": "#/$defs/typeRequest"
+        }
       }
     }
   },
@@ -48,7 +81,11 @@
       "additionalProperties": false,
       "required": ["count"],
       "properties": {
-        "count": { "type": "integer", "minimum": 0, "maximum": 50 },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
         "seeds": {
           "type": "array",
           "description": "The source design's own items. key, title and every non-empty field are kept verbatim.",
@@ -57,16 +94,48 @@
             "additionalProperties": false,
             "required": ["key", "title"],
             "properties": {
-              "key": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,99}$" },
-              "title": { "type": "string", "minLength": 1 },
-              "content": { "type": "string" },
-              "excerpt": { "type": "string" },
-              "meta": { "type": "object", "additionalProperties": { "type": "string" } },
+              "key": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]{0,99}$"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "string"
+              },
+              "excerpt": {
+                "type": "string"
+              },
+              "meta": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
               "image_size": {
                 "type": "array",
-                "items": { "type": "integer", "minimum": 1 },
+                "items": {
+                  "type": "integer",
+                  "minimum": 1
+                },
                 "minItems": 2,
                 "maxItems": 2
+              },
+              "product": {
+                "description": "Product seeds only: the nic-content-1 product block (see that schema's $defs.product.properties.product).",
+                "type": "object"
+              },
+              "terms": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,99}$"
+                  }
+                }
               }
             }
           }

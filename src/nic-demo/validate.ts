@@ -180,6 +180,18 @@ function productProblems(at: string, item: NicItem, skus: Set<string>): string[]
       problems.push(`${at}: sale_price must be lower than regular_price`);
     }
   }
+  if (product.rating !== undefined && Number(product.rating) > 5) {
+    problems.push(`${at}: rating must be between 0 and 5`);
+  }
+  const attrSlugs = new Set<string>();
+  for (const attr of product.attributes ?? []) {
+    const slug = attr.name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-');
+    if (attrSlugs.has(slug)) problems.push(`${at}: duplicate attribute "${attr.name}"`);
+    attrSlugs.add(slug);
+  }
   if (skus.has(product.sku)) problems.push(`${at}: duplicate sku "${product.sku}"`);
   skus.add(product.sku);
   return problems;
