@@ -19,6 +19,7 @@ import { randomTopic } from '../content/topics.js';
 import { describeError, ThemeseedError } from '../core/errors.js';
 import { logger } from '../core/logger.js';
 import { exportSite } from '../core/export.js';
+import { exportNicDemo } from '../nic-demo/index.js';
 import { seedSite } from '../core/seed.js';
 import { updatePost } from '../core/update.js';
 import { IMPLEMENTED_PLATFORMS, PLATFORMS, type Platform } from '../core/types.js';
@@ -341,14 +342,21 @@ function registerContentTools(server: McpServer): void {
         'content inside a theme package; use generate_posts when you have a live site ' +
         'to fill. Pass `pages` for static pages — set needsBody false where a theme template ' +
         'renders the page itself, or suppliedBody to use markup you already have (for ' +
-        'wordpress, suppliedBody should be serialized Gutenberg block markup).',
+        'wordpress, suppliedBody should be serialized Gutenberg block markup). ' +
+        'platform "nic-demo" writes the NIC Core demo package (posts.json + content-media/) from ' +
+        'a content request — pass `request` and `credits`; it ignores topic/count/pages. ' +
+        'Product seeds (`types.product.seeds[]`) may carry a WooCommerce `product` block ' +
+        '(badge, rating, review_count, attributes) and `terms` (product_cat/product_tag slugs): ' +
+        'they are kept verbatim and extra products are generated in the same style ' +
+        '(attribute names and shapes, price range, categories, topic-named titles).',
       inputSchema: {
         platform: z
-          .enum(['ghost', 'wordpress'])
+          .enum(['ghost', 'wordpress', 'nic-demo'])
           .default('ghost')
           .describe(
             'Which CMS the file targets: ghost → content-export.zip, wordpress → ' +
-              'demo-content.xml (WXR 1.2).'
+              'demo-content.xml (WXR 1.2), nic-demo → posts.json + content-media/ for a NIC Core ' +
+              "theme (needs `request` and `credits`; outDir is the theme's demo/ folder)."
           ),
         topic: z
           .string()
@@ -356,8 +364,17 @@ function registerContentTools(server: McpServer): void {
           .describe('Subject of the publication, e.g. "SaaS productivity blog".'),
         outDir: z
           .string()
-          .describe('Directory to write content-export.zip into. Created if missing.'),
-        count: z.number().int().min(1).max(50).default(12).describe('How many posts to create.'),
+          .describe(
+            'Directory to write into. Created if missing. For platform "nic-demo" this is the ' +
+              "theme's demo/ folder; only posts.json and content-media/ are replaced there."
+          ),
+        count: z
+          .number()
+          .int()
+          .min(1)
+          .max(50)
+          .default(12)
+          .describe('How many posts to create.'),
         pages: z
           .array(
             z.object({
@@ -381,7 +398,9 @@ function registerContentTools(server: McpServer): void {
         navigation: z
           .array(z.object({ label: z.string(), url: z.string() }))
           .optional()
-          .describe('Primary menu. Imported as a site setting, so the theme header fills in.'),
+          .describe(
+            'Primary menu. Imported as a site setting, so the theme header fills in.'
+          ),
         secondaryNavigation: z
           .array(z.object({ label: z.string(), url: z.string() }))
           .optional()
@@ -389,14 +408,73 @@ function registerContentTools(server: McpServer): void {
         imageSource: z
           .enum(['auto', 'local', 'stock', 'ai', 'none'])
           .default('auto')
-          .describe('Same meaning as in generate_posts. Images are bundled into the archive.'),
+          .describe(
+            'Same meaning as in generate_posts. Images are bundled into the archive.'
+          ),
         titles: z.array(z.string()).optional().describe('Your own post titles.'),
         authorName: z.string().optional(),
         includeVideo: z.boolean().default(true),
+        request: z
+          .union([z.string(), z.record(z.string(), z.unknown())])
+          .optional()
+          .describe(
+            'platform "nic-demo" only: a nic-content-request/1 document, or the path to one. ' +
+              'Seeds are kept verbatim; stock images are refused for themeforest/wordpress.org targets.'
+          ),
+        credits: z
+          .string()
+          .optional()
+          .describe(
+            'platform "nic-demo" only: where to write the image credits JSON. Must be outside outDir.'
+          ),
       },
     },
     async (args) => {
       loadUserEnv();
+
+      if (args.platform === 'nic-demo') {
+        if (!args.request || !args.credits) {
+          throw new ThemeseedError(
+            'platform "nic-demo" needs both `request` and `credits`',
+            {
+              code: 'NIC_DEMO_USAGE',
+              hint: 'Pass request (a nic-content-request/1 object or file path) and credits (output path).',
+            }
+          );
+        }
+        let report;
+        try {
+          report = await exportNicDemo({
+            request: args.request,
+            outDir: args.outDir,
+            creditsPath: args.credits,
+          });
+        } catch (err) {
+          // The default handler keeps only the message; a refusal's fix lives in the hint.
+          if (err instanceof ThemeseedError) {
+            return {
+              content: [{ type: 'text' as const, text: describeError(err) }],
+              isError: true,
+              structuredContent: {
+                ok: false,
+                code: err.code,
+                error: err.message,
+                ...(err.hint ? { hint: err.hint } : {}),
+              },
+            };
+          }
+          throw err;
+        }
+        const counts = Object.entries(report.counts)
+          .map(([type, n]) => `${type} ${n}`)
+          .join(', ');
+        const lines = [
+          `Wrote ${args.outDir}/posts.json and ${report.written.length - 1} image(s) (${counts})`,
+          `  credits: ${report.credits}`,
+          ...report.warnings.map((w) => `  warning: ${w}`),
+        ];
+        return text(lines.join('\n'), { ...report, platform: 'nic-demo' });
+      }
 
       const topic = args.topic?.trim() || (await askForTopic(server));
       const site =
@@ -425,7 +503,9 @@ function registerContentTools(server: McpServer): void {
       const imagesLine =
         args.platform === 'wordpress'
           ? `  images:  ${report.stats.images} referenced (the importer downloads them)${
-              report.stats.failedImages ? `, ${report.stats.failedImages} could not travel` : ''
+              report.stats.failedImages
+                ? `, ${report.stats.failedImages} could not travel`
+                : ''
             }`
           : `  images:  ${report.stats.images} bundled${
               report.stats.failedImages ? `, ${report.stats.failedImages} failed` : ''

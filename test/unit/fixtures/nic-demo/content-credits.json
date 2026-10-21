@@ -1,0 +1,70 @@
+{
+  "assets": [
+    {
+      "path": "demo/content-media/portfolio-maldives-2.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/portfolio-maldives.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/post-long-haul.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/post-packing.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/product-bali.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/product-maldives-2.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/product-maldives.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/service-honeymoon.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/team-ana.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/team-ben.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    },
+    {
+      "path": "demo/content-media/testimonial-priya.png",
+      "license": "GPL-2.0-or-later",
+      "source": "Generated fixture image",
+      "author": "Northwind Studio"
+    }
+  ]
+}

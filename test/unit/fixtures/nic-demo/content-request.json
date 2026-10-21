@@ -1,0 +1,76 @@
+{
+  "format": "nic-content-request/1",
+  "theme": "northwind-fixture",
+  "target": "themeforest",
+  "site": {
+    "name": "Northwind Studio",
+    "topic": "boutique travel agency — tailor-made holidays",
+    "language": "en",
+    "tone": "warm, practical"
+  },
+  "images": {
+    "source": "auto"
+  },
+  "types": {
+    "post": {
+      "count": 2,
+      "seeds": [
+        {
+          "key": "long-haul-without-the-zombie-arrival",
+          "title": "Long-haul without the zombie arrival",
+          "image_size": [420, 360]
+        }
+      ]
+    },
+    "team": {
+      "count": 2,
+      "seeds": [
+        {
+          "key": "ana-lima",
+          "title": "Ana Lima",
+          "meta": {
+            "nic_role": "Bali & Indonesia"
+          },
+          "image_size": [380, 500]
+        }
+      ]
+    },
+    "portfolio": {
+      "count": 1,
+      "seeds": [
+        {
+          "key": "maldives",
+          "title": "Maldives",
+          "meta": {
+            "nic_client": "from $2,890"
+          },
+          "image_size": [560, 747]
+        }
+      ]
+    },
+    "testimonial": {
+      "count": 1,
+      "seeds": [
+        {
+          "key": "priya-sam",
+          "title": "Priya & Sam",
+          "content": "<p>Our ferry got cancelled on day three. Marco had moved us before we found Wi-Fi.</p>"
+        }
+      ]
+    },
+    "service": {
+      "count": 1,
+      "seeds": [
+        {
+          "key": "honeymoon",
+          "title": "Honeymoons",
+          "excerpt": "No group transfers, no 7 a.m. starts."
+        }
+      ]
+    },
+    "product": {
+      "count": 2,
+      "seeds": []
+    }
+  }
+}

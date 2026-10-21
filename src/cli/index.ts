@@ -26,6 +26,7 @@ import {
 } from './commands/content.js';
 import { imagesCommand } from './commands/images.js';
 import { initCommand } from './commands/init.js';
+import { nicDemoCommand } from './commands/nic-demo.js';
 import { installCommand, printMcpConfig, uninstallCommand } from './commands/install.js';
 import {
   addSiteCommand,
@@ -221,6 +222,28 @@ program
   )
   .option('-y, --yes', 'Do not prompt for confirmation')
   .action((options) => exportCommand(options));
+
+program
+  .command('nic-demo')
+  .description(
+    'Write demo content for a NIC Core theme (posts.json + content-media/) from a ' +
+      'nic-content-request/1 file. Exit 0 written, 1 refused/failed, 2 usage'
+  )
+  .option('--request <file>', 'Content request JSON (nic-content-request/1)')
+  .option(
+    '--out <dir>',
+    "The theme's demo/ directory — only posts.json and content-media/ are replaced"
+  )
+  .option('--credits <file>', 'Where to write image credits (must be outside --out)')
+  .option('--json', 'Print one machine-readable report object on stdout')
+  // commander exits 1 on a bad flag; this command's contract reserves 1 for
+  // refusals and uses 2 for usage errors.
+  .exitOverride((err) => {
+    const informational =
+      err.code === 'commander.helpDisplayed' || err.code === 'commander.version';
+    process.exit(informational ? err.exitCode : 2);
+  })
+  .action((options) => nicDemoCommand(options));
 
 program
   .command('update <id> [site]')

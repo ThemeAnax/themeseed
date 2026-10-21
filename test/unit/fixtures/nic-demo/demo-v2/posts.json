@@ -1,0 +1,173 @@
+{
+  "format": "nic-content/1",
+  "generator": "fixture",
+  "theme": "northwind-fixture",
+  "terms": {
+    "category": [
+      {
+        "key": "travel-tips",
+        "name": "Travel tips"
+      },
+      {
+        "key": "guides",
+        "name": "Guides"
+      }
+    ],
+    "post_tag": [
+      {
+        "key": "flights",
+        "name": "Flights"
+      },
+      {
+        "key": "packing",
+        "name": "Packing"
+      }
+    ],
+    "nic_portfolio_category": [
+      {
+        "key": "beach",
+        "name": "Beach"
+      }
+    ],
+    "product_cat": [
+      {
+        "key": "island-escapes",
+        "name": "Island escapes"
+      }
+    ],
+    "product_tag": [
+      {
+        "key": "all-inclusive",
+        "name": "All inclusive"
+      }
+    ]
+  },
+  "items": {
+    "post": [
+      {
+        "key": "long-haul-without-the-zombie-arrival",
+        "title": "Long-haul without the zombie arrival",
+        "excerpt": "Five habits that get you off a 14-hour flight ready for dinner.",
+        "content": "<!-- wp:paragraph --><p>Sleep on the clock of where you land, not where you left.</p><!-- /wp:paragraph -->\n<!-- wp:image --><figure class=\"wp-block-image\"><img src=\"content-media/post-packing.png\" alt=\"Packed bag\"/></figure><!-- /wp:image -->",
+        "date": "2026-08-02T09:00:00",
+        "image": "content-media/post-long-haul.png",
+        "terms": {
+          "category": ["travel-tips"],
+          "post_tag": ["flights"]
+        },
+        "menu_order": 0
+      },
+      {
+        "key": "pack-for-ten-days-in-one-bag",
+        "title": "Pack for ten days in one bag",
+        "excerpt": "A carry-on list that survives two climates.",
+        "content": "<p>Roll, don't fold.</p>",
+        "date": "2026-07-18T10:30:00",
+        "image": "content-media/post-packing.png",
+        "terms": {
+          "category": ["guides"],
+          "post_tag": ["packing"]
+        }
+      }
+    ],
+    "team": [
+      {
+        "key": "ana-lima",
+        "title": "Ana Lima",
+        "image": "content-media/team-ana.png",
+        "meta": {
+          "nic_role": "Bali & Indonesia",
+          "nic_linkedin": "https://www.linkedin.com/in/example-ana"
+        }
+      },
+      {
+        "key": "ben-okafor",
+        "title": "Ben Okafor",
+        "image": "content-media/team-ben.png",
+        "meta": {
+          "nic_role": "Southern Africa"
+        }
+      }
+    ],
+    "portfolio": [
+      {
+        "key": "maldives",
+        "title": "Maldives",
+        "excerpt": "Seven nights, one overwater villa.",
+        "content": "<p>Seaplane at sunrise.</p>",
+        "image": "content-media/portfolio-maldives.png",
+        "gallery": ["content-media/portfolio-maldives-2.png"],
+        "meta": {
+          "nic_client": "from $2,890",
+          "nic_year": "2025"
+        },
+        "terms": {
+          "nic_portfolio_category": ["beach"]
+        }
+      }
+    ],
+    "testimonial": [
+      {
+        "key": "priya-sam",
+        "title": "Priya & Sam",
+        "content": "<p>Our ferry got cancelled on day three. Marco had moved us before we found Wi-Fi.</p>",
+        "image": "content-media/testimonial-priya.png",
+        "meta": {
+          "nic_company": "Honeymoon, 2025",
+          "nic_rating": "5"
+        }
+      }
+    ],
+    "service": [
+      {
+        "key": "honeymoon",
+        "title": "Honeymoons",
+        "excerpt": "No group transfers, no 7 a.m. starts.",
+        "content": "<p>One splurge night where it counts.</p>",
+        "image": "content-media/service-honeymoon.png",
+        "meta": {
+          "nic_icon": "💍"
+        }
+      }
+    ],
+    "product": [
+      {
+        "key": "maldives-overwater-7n",
+        "title": "Maldives overwater villa — 7 nights",
+        "excerpt": "Half board, seaplane transfers.",
+        "content": "<p>Seven nights over the lagoon.</p>",
+        "date": "2026-06-01T08:00:00",
+        "image": "content-media/product-maldives.png",
+        "gallery": ["content-media/product-maldives-2.png"],
+        "terms": {
+          "product_cat": ["island-escapes"],
+          "product_tag": ["all-inclusive"]
+        },
+        "product": {
+          "type": "simple",
+          "regular_price": "2890.00",
+          "sale_price": "2590.00",
+          "sku": "NW-MAL-7N",
+          "stock_status": "instock",
+          "featured": true
+        }
+      },
+      {
+        "key": "bali-rice-terraces-5n",
+        "title": "Bali rice terraces — 5 nights",
+        "image": "content-media/product-bali.png",
+        "terms": {
+          "product_cat": ["island-escapes"]
+        },
+        "product": {
+          "type": "simple",
+          "regular_price": "1450",
+          "sale_price": "",
+          "sku": "NW-BAL-5N",
+          "stock_status": "outofstock",
+          "featured": false
+        }
+      }
+    ]
+  }
+}
